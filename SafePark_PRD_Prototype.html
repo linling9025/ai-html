@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePark - PRD & Prototype</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #0A84FF;
+            --primary-dark: #0066CC;
+            --success: #30D158;
+            --warning: #FF9F0A;
+            --danger: #FF453A;
+            --bg-dark: #000000;
+            --bg-card: #1C1C1E;
+            --bg-secondary: #2C2C2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8E8E93;
+        }
+        
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%); }
+        
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .glow { box-shadow: 0 0 40px rgba(10,132,255,0.3); }
+        
+        .phone-frame {
+            width: 375px; height: 812px;
+            background: #000; border-radius: 50px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5), inset 0 0 0 3px #333;
+            position: relative; overflow: hidden;
+        }
+        .phone-notch {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 35px; background: #000;
+            border-radius: 0 0 20px 20px; z-index: 100;
+        }
+        .phone-screen { height: 100%; overflow-y: auto; padding-top: 50px; }
+        .phone-screen::-webkit-scrollbar { display: none; }
+        
+        .safety-score { 
+            width: 120px; height: 120px; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: 800;
+        }
+        .score-high { background: linear-gradient(135deg, #30D158, #00C853); }
+        .score-medium { background: linear-gradient(135deg, #FF9F0A, #FFB800); }
+        .score-low { background: linear-gradient(135deg, #FF453A, #FF6B6B); }
+        
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%;
+            transform: translateX(-50%); width: 5px; height: 5px;
+            background: var(--primary); border-radius: 50%;
+        }
+        
+        .prd-section { background: rgba(255,255,255,0.02); border-left: 3px solid var(--primary); }
+        .table-custom th { background: rgba(10,132,255,0.2); }
+        .table-custom td, .table-custom th { border: 1px solid rgba(255,255,255,0.1); }
+        
+        .tab-btn.active { background: var(--primary); color: white; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        
+        .route-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .route-line { width: 3px; height: 30px; margin-left: 4.5px; }
+        
+        /* SVG diagram styles */
+        svg text {
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <!-- Header -->
+    <header class="glass sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-white"></i>
+                </div>
+                <span class="text-xl font-bold">SafePark</span>
+            </div>
+            <nav class="flex space-x-2">
+                <button class="tab-btn active px-4 py-2 rounded-full text-sm font-medium transition" onclick="showSection('prd')">PRD 文档</button>
+                <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-800 hover:bg-gray-700 transition" onclick="showSection('prototype')">交互原型</button>
+                <button class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-800 hover:bg-gray-700 transition" onclick="showSection('design')">设计理念</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- PRD Section -->
+    <section id="prd" class="content-section active max-w-5xl mx-auto px-6 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">SafePark 产品需求文档</h1>
+            <p class="text-gray-400">Product Requirements Document v1.0</p>
+        </div>
+
+        <!-- Document Info -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center"><i class="fas fa-file-alt mr-3 text-blue-400"></i>文档信息 (Document Information)</h2>
+            <table class="w-full table-custom text-sm">
+                <thead><tr><th class="p-3 text-left rounded-tl-lg">版本</th><th class="p-3 text-left">日期</th><th class="p-3 text-left">作者</th><th class="p-3 text-left">描述</th><th class="p-3 text-left rounded-tr-lg">状态</th></tr></thead>
+                <tbody><tr><td class="p-3">1.0</td><td class="p-3">2025-12-01</td><td class="p-3">Product Team</td><td class="p-3">初稿 - 完整PRD</td><td class="p-3"><span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs">Draft</span></td></tr></tbody>
+            </table>
+        </div>
+
+        <!-- Related Documents -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center"><i class="fas fa-link mr-3 text-blue-400"></i>相关文档 (Related Documents)</h2>
+            <ul class="space-y-2 text-gray-300">
+                <li class="flex items-center"><i class="fas fa-chevron-right mr-2 text-blue-400 text-xs"></i>FBI Uniform Crime Report (UCR) - Vehicle Theft Statistics</li>
+                <li class="flex items-center"><i class="fas fa-chevron-right mr-2 text-blue-400 text-xs"></i>NICB Hot Spots Report 2024</li>
+                <li class="flex items-center"><i class="fas fa-chevron-right mr-2 text-blue-400 text-xs"></i>Apple Human Interface Guidelines - Maps</li>
+                <li class="flex items-center"><i class="fas fa-chevron-right mr-2 text-blue-400 text-xs"></i>CCPA & GDPR Compliance Checklist</li>
+            </ul>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="prd-section glass rounded-2xl p-6 mb-8 pl-8">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">1. 项目摘要 (Executive Summary)</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">1.1 问题陈述 (Problem Statement)</h3>
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                        <p class="text-gray-300 leading-relaxed">在美国，<strong class="text-white">每年有超过100万辆汽车遭遇破窗盗窃</strong>（车内物品被盗），其中旧金山、洛杉矶、西雅图等城市尤为严重。现有地图应用（Google Maps、Apple Maps）仅提供停车位导航，<strong class="text-red-400">完全忽视了停车场安全性评估</strong>。用户在陌生区域停车时面临以下核心痛点：</p>
+                        <ul class="mt-3 space-y-2 text-gray-300">
+                            <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>无法获知目标停车场的历史犯罪数据</li>
+                            <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>不了解周边区域的实时安全状况</li>
+                            <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>无法比较多个停车选项的安全性</li>
+                            <li class="flex items-start"><i class="fas fa-times-circle text-red-400 mr-2 mt-1"></i>夜间返回车辆时的人身安全担忧</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">1.2 目标用户 (Target Audience)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800/50 rounded-xl p-4">
+                            <div class="flex items-center mb-3"><div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mr-3"><i class="fas fa-briefcase text-purple-400"></i></div><div><h4 class="font-semibold">Urban Commuters</h4><p class="text-xs text-gray-400">城市通勤者</p></div></div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• 年龄: 25-45岁</li>
+                                <li>• 日常在城市停车</li>
+                                <li>• 高度依赖智能手机</li>
+                                <li>• 愿为安全付费</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-xl p-4">
+                            <div class="flex items-center mb-3"><div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mr-3"><i class="fas fa-plane text-green-400"></i></div><div><h4 class="font-semibold">Travelers & Tourists</h4><p class="text-xs text-gray-400">旅行者与游客</p></div></div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• 不熟悉当地治安</li>
+                                <li>• 租车用户</li>
+                                <li>• 车内常有贵重物品</li>
+                                <li>• 需要即时信息</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-xl p-4">
+                            <div class="flex items-center mb-3"><div class="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mr-3"><i class="fas fa-car text-orange-400"></i></div><div><h4 class="font-semibold">Rideshare Drivers</h4><p class="text-xs text-gray-400">网约车司机</p></div></div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• Uber/Lyft司机</li>
+                                <li>• 频繁在各区域停车</li>
+                                <li>• 车辆是主要收入来源</li>
+                                <li>• 需要快速决策</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-xl p-4">
+                            <div class="flex items-center mb-3"><div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mr-3"><i class="fas fa-gem text-blue-400"></i></div><div><h4 class="font-semibold">Luxury Car Owners</h4><p class="text-xs text-gray-400">豪车车主</p></div></div>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• 高价值车辆</li>
+                                <li>• 安全意识强</li>
+                                <li>• 愿支付Premium订阅</li>
+                                <li>• 追求优质体验</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-gray-400 text-sm"><strong>市场规模 (TAM):</strong> 美国2.8亿注册车辆，目标市场约5000万城市驾驶者</p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">1.3 价值主张 (Value Proposition)</h3>
+                    <div class="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-5 border border-blue-500/30">
+                        <p class="text-xl font-medium text-center mb-4">"Park Smart. Stay Safe."</p>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div><div class="text-3xl font-bold text-blue-400">87%</div><p class="text-xs text-gray-400 mt-1">降低破窗风险</p></div>
+                            <div><div class="text-3xl font-bold text-green-400">实时</div><p class="text-xs text-gray-400 mt-1">犯罪数据更新</p></div>
+                            <div><div class="text-3xl font-bold text-purple-400">AI</div><p class="text-xs text-gray-400 mt-1">智能安全预测</p></div>
+                        </div>
+                    </div>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-center text-gray-300"><i class="fas fa-check-circle text-green-400 mr-2"></i><strong>唯一性：</strong>首个基于真实犯罪数据的停车安全App</li>
+                        <li class="flex items-center text-gray-300"><i class="fas fa-check-circle text-green-400 mr-2"></i><strong>权威性：</strong>整合警局、FBI、保险公司数据</li>
+                        <li class="flex items-center text-gray-300"><i class="fas fa-check-circle text-green-400 mr-2"></i><strong>智能化：</strong>ML模型预测犯罪热点时段</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">1.4 上线计划 (Launch Roadmap)</h3>
+                    <div class="relative">
+                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-700"></div>
+                        <div class="space-y-6 ml-10">
+                            <div class="relative"><div class="absolute -left-8 w-4 h-4 bg-green-500 rounded-full border-4 border-gray-900"></div><div class="bg-gray-800/50 rounded-lg p-3"><p class="text-green-400 text-sm font-medium">Q1 2026 - Alpha</p><p class="text-gray-300 text-sm">核心功能开发，旧金山市场测试</p></div></div>
+                            <div class="relative"><div class="absolute -left-8 w-4 h-4 bg-blue-500 rounded-full border-4 border-gray-900"></div><div class="bg-gray-800/50 rounded-lg p-3"><p class="text-blue-400 text-sm font-medium">Q2 2026 - Beta</p><p class="text-gray-300 text-sm">扩展至加州主要城市，社区功能上线</p></div></div>
+                            <div class="relative"><div class="absolute -left-8 w-4 h-4 bg-purple-500 rounded-full border-4 border-gray-900"></div><div class="bg-gray-800/50 rounded-lg p-3"><p class="text-purple-400 text-sm font-medium">Q3 2026 - Launch</p><p class="text-gray-300 text-sm">全美50州上线，Premium订阅开放</p></div></div>
+                            <div class="relative"><div class="absolute -left-8 w-4 h-4 bg-orange-500 rounded-full border-4 border-gray-900"></div><div class="bg-gray-800/50 rounded-lg p-3"><p class="text-orange-400 text-sm font-medium">Q4 2026 - Scale</p><p class="text-gray-300 text-sm">车载系统集成，B2B保险合作</p></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">1.5 资源与前置条件 (Resources & Prerequisites)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800/30 rounded-xl p-4">
+                            <h4 class="font-medium mb-2 text-blue-400"><i class="fas fa-database mr-2"></i>数据源</h4>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• FBI UCR API</li>
+                                <li>• 各州警局Open Data</li>
+                                <li>• NICB Theft Data</li>
+                                <li>• 用户众包报告</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-800/30 rounded-xl p-4">
+                            <h4 class="font-medium mb-2 text-green-400"><i class="fas fa-plug mr-2"></i>第三方API</h4>
+                            <ul class="text-sm text-gray-300 space-y-1">
+                                <li>• Google Maps Platform</li>
+                                <li>• Mapbox Navigation</li>
+                                <li>• Stripe Payments</li>
+                                <li>• Firebase Auth (SSO)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solution Overview -->
+        <div class="prd-section glass rounded-2xl p-6 mb-8 pl-8">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">2. 方案概述 (Solution Overview)</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-4">2.1 核心业务流程</h3>
+                <div class="bg-gray-900/50 rounded-xl p-6">
+                    <svg viewBox="0 0 900 120" class="w-full h-auto">
+                        <!-- Flow: User Opens App -->
+                        <rect x="10" y="40" width="140" height="40" rx="8" fill="#0A84FF" opacity="0.9"/>
+                        <text x="80" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">User Opens App</text>
+                        
+                        <!-- Arrow -->
+                        <path d="M 150 60 L 180 60" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Enter Destination -->
+                        <rect x="180" y="40" width="120" height="40" rx="8" fill="#0A84FF" opacity="0.8"/>
+                        <text x="240" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">Enter Destination</text>
+                        
+                        <!-- Arrow -->
+                        <path d="M 300 60 L 320 60" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Calculate Scores -->
+                        <rect x="320" y="40" width="130" height="40" rx="8" fill="#30D158" opacity="0.8"/>
+                        <text x="385" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">Calculate Scores</text>
+                        
+                        <!-- Arrow -->
+                        <path d="M 450 60 L 480 60" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Display Results -->
+                        <rect x="480" y="40" width="120" height="40" rx="8" fill="#0A84FF" opacity="0.8"/>
+                        <text x="540" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">Display Results</text>
+                        
+                        <!-- Arrow -->
+                        <path d="M 600 60 L 630 60" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Navigate -->
+                        <rect x="630" y="40" width="100" height="40" rx="8" fill="#0A84FF" opacity="0.8"/>
+                        <text x="680" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">Navigate</text>
+                        
+                        <!-- Arrow -->
+                        <path d="M 730 60 L 760 60" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Park Safely -->
+                        <rect x="760" y="40" width="130" height="40" rx="8" fill="#30D158" opacity="0.9"/>
+                        <text x="825" y="65" text-anchor="middle" fill="white" font-size="13" font-weight="500">Park Safely</text>
+                        
+                        <!-- Arrow marker definition -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#8E8E93"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-semibold mb-4">2.2 关键功能流程</h3>
+                <div class="bg-gray-900/50 rounded-xl p-6">
+                    <svg viewBox="0 0 800 260" class="w-full h-auto">
+                        <!-- Search Flow Group -->
+                        <rect x="10" y="10" width="220" height="230" rx="12" fill="none" stroke="#0A84FF" stroke-width="2" stroke-dasharray="5,5" opacity="0.5"/>
+                        <text x="120" y="30" text-anchor="middle" fill="#0A84FF" font-size="14" font-weight="600">Search Flow</text>
+                        <rect x="30" y="50" width="180" height="35" rx="6" fill="#0A84FF" opacity="0.7"/>
+                        <text x="120" y="72" text-anchor="middle" fill="white" font-size="12">Destination Input</text>
+                        <path d="M 120 85 L 120 105" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="30" y="105" width="180" height="35" rx="6" fill="#0A84FF" opacity="0.7"/>
+                        <text x="120" y="127" text-anchor="middle" fill="white" font-size="12">Radius Filter</text>
+                        <path d="M 120 140 L 120 160" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="30" y="160" width="180" height="35" rx="6" fill="#0A84FF" opacity="0.7"/>
+                        <text x="120" y="182" text-anchor="middle" fill="white" font-size="12">Safety Preference</text>
+                        
+                        <!-- Arrow from Search to Score -->
+                        <path d="M 230 125 L 270 125" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <!-- Scoring Engine Group -->
+                        <rect x="270" y="10" width="240" height="230" rx="12" fill="none" stroke="#30D158" stroke-width="2" stroke-dasharray="5,5" opacity="0.5"/>
+                        <text x="390" y="30" text-anchor="middle" fill="#30D158" font-size="14" font-weight="600">Scoring Engine</text>
+                        <rect x="290" y="50" width="200" height="35" rx="6" fill="#30D158" opacity="0.6"/>
+                        <text x="390" y="72" text-anchor="middle" fill="white" font-size="12">Historical Data</text>
+                        <path d="M 390 85 L 390 135" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="290" y="100" width="200" height="35" rx="6" fill="#30D158" opacity="0.6"/>
+                        <text x="390" y="122" text-anchor="middle" fill="white" font-size="12">Real-time Reports</text>
+                        <rect x="290" y="135" width="200" height="35" rx="6" fill="#FF9F0A" opacity="0.8"/>
+                        <text x="390" y="157" text-anchor="middle" fill="white" font-size="12" font-weight="600">AI Safety Score</text>
+                        <path d="M 390 170 L 390 185" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="290" y="185" width="200" height="35" rx="6" fill="#30D158" opacity="0.6"/>
+                        <text x="390" y="207" text-anchor="middle" fill="white" font-size="12">Environmental Factors</text>
+                        
+                        <!-- Arrow from Score to Navigate -->
+                        <path d="M 510 125 L 550 125" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        
+                        <!-- Navigation Group -->
+                        <rect x="550" y="10" width="240" height="230" rx="12" fill="none" stroke="#FF453A" stroke-width="2" stroke-dasharray="5,5" opacity="0.5"/>
+                        <text x="670" y="30" text-anchor="middle" fill="#FF453A" font-size="14" font-weight="600">Navigation</text>
+                        <rect x="570" y="70" width="200" height="35" rx="6" fill="#FF453A" opacity="0.7"/>
+                        <text x="670" y="92" text-anchor="middle" fill="white" font-size="12">Optimal Route</text>
+                        <path d="M 670 105 L 670 125" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="570" y="125" width="200" height="35" rx="6" fill="#FF453A" opacity="0.7"/>
+                        <text x="670" y="147" text-anchor="middle" fill="white" font-size="12">Avoid Hotspots</text>
+                        <path d="M 670 160 L 670 180" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow2)"/>
+                        <rect x="570" y="180" width="200" height="35" rx="6" fill="#FF453A" opacity="0.7"/>
+                        <text x="670" y="202" text-anchor="middle" fill="white" font-size="12">Safe Walk Path</text>
+                        
+                        <defs>
+                            <marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#8E8E93"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Specifications -->
+        <div class="prd-section glass rounded-2xl p-6 mb-8 pl-8">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">3. 详细功能规格 (Detailed Feature Specifications)</h2>
+            
+            <div class="space-y-6">
+                <div class="border-l-2 border-green-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">3.1 智能安全评分系统 (Safety Score Engine)</h3>
+                    <p class="text-gray-300 mb-3">基于多维度数据的AI驱动安全评估</p>
+                    <div class="bg-gray-800/30 rounded-lg p-4">
+                        <h4 class="text-sm font-medium mb-2 text-gray-400">3.1.1 评分维度</h4>
+                        <ul class="grid grid-cols-2 gap-2 text-sm">
+                            <li class="flex items-center text-gray-300"><i class="fas fa-chart-line text-blue-400 mr-2"></i>历史犯罪频率 (40%权重)</li>
+                            <li class="flex items-center text-gray-300"><i class="fas fa-clock text-yellow-400 mr-2"></i>时段风险系数 (20%权重)</li>
+                            <li class="flex items-center text-gray-300"><i class="fas fa-lightbulb text-green-400 mr-2"></i>照明与监控设施 (15%权重)</li>
+                            <li class="flex items-center text-gray-300"><i class="fas fa-users text-purple-400 mr-2"></i>人流密度分析 (15%权重)</li>
+                            <li class="flex items-center text-gray-300"><i class="fas fa-comments text-orange-400 mr-2"></i>用户实时反馈 (10%权重)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-800/30 rounded-lg p-4 mt-3">
+                        <h4 class="text-sm font-medium mb-2 text-gray-400">3.1.2 分数呈现</h4>
+                        <div class="flex space-x-4">
+                            <div class="text-center"><div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-xl font-bold">A+</div><p class="text-xs mt-1 text-gray-400">85-100</p></div>
+                            <div class="text-center"><div class="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xl font-bold">B</div><p class="text-xs mt-1 text-gray-400">60-84</p></div>
+                            <div class="text-center"><div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-xl font-bold">C</div><p class="text-xs mt-1 text-gray-400">0-59</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-l-2 border-blue-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">3.2 智能避险导航 (Safe Route Navigation)</h3>
+                    <p class="text-gray-300 mb-3">不仅找到停车位，更规划最安全的步行路线</p>
+                    <div class="bg-gray-800/30 rounded-lg p-4">
+                        <h4 class="text-sm font-medium mb-2 text-gray-400">3.2.1 路线优化因素</h4>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-center"><i class="fas fa-route text-blue-400 mr-2"></i>绕开已知犯罪热点区域</li>
+                            <li class="flex items-center"><i class="fas fa-street-view text-green-400 mr-2"></i>优先选择主干道与繁华街区</li>
+                            <li class="flex items-center"><i class="fas fa-video text-purple-400 mr-2"></i>经过有监控覆盖的路段</li>
+                            <li class="flex items-center"><i class="fas fa-sun text-yellow-400 mr-2"></i>夜间模式自动启用照明路线</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-l-2 border-purple-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">3.3 实时警报系统 (Real-time Alert System)</h3>
+                    <p class="text-gray-300 mb-3">主动推送安全信息，让用户始终掌握周边动态</p>
+                    <div class="bg-gray-800/30 rounded-lg p-4">
+                        <h4 class="text-sm font-medium mb-2 text-gray-400">3.3.1 警报类型</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center p-2 bg-red-500/10 rounded-lg"><i class="fas fa-exclamation-triangle text-red-400 mr-3"></i><div><p class="text-sm font-medium">Critical Alert</p><p class="text-xs text-gray-400">附近发生犯罪事件</p></div></div>
+                            <div class="flex items-center p-2 bg-yellow-500/10 rounded-lg"><i class="fas fa-info-circle text-yellow-400 mr-3"></i><div><p class="text-sm font-medium">Advisory</p><p class="text-xs text-gray-400">区域风险等级变化</p></div></div>
+                            <div class="flex items-center p-2 bg-green-500/10 rounded-lg"><i class="fas fa-bell text-green-400 mr-3"></i><div><p class="text-sm font-medium">Reminder</p><p class="text-xs text-gray-400">建议返回时间提醒</p></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-l-2 border-orange-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">3.4 社区众包系统 (Community Reports)</h3>
+                    <p class="text-gray-300 mb-3">用户贡献实时信息，形成安全互助网络</p>
+                    <div class="bg-gray-800/30 rounded-lg p-4">
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-center"><i class="fas fa-camera text-blue-400 mr-2"></i>一键上报可疑活动（支持拍照）</li>
+                            <li class="flex items-center"><i class="fas fa-star text-yellow-400 mr-2"></i>停车场安全评价与评论</li>
+                            <li class="flex items-center"><i class="fas fa-trophy text-purple-400 mr-2"></i>Gamification：贡献积分与徽章</li>
+                            <li class="flex items-center"><i class="fas fa-shield-alt text-green-400 mr-2"></i>AI自动过滤虚假报告</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Non-Functional Requirements -->
+        <div class="prd-section glass rounded-2xl p-6 mb-8 pl-8">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">4. 非功能性需求 (Non-Functional Requirements)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-800/30 rounded-xl p-5">
+                    <h3 class="font-semibold mb-3 flex items-center"><i class="fas fa-tachometer-alt text-green-400 mr-2"></i>4.1 性能</h3>
+                    <ul class="text-sm text-gray-300 space-y-2">
+                        <li>• 首屏加载 < 2秒</li>
+                        <li>• 安全评分计算 < 500ms</li>
+                        <li>• 支持10万并发用户</li>
+                        <li>• 99.9% Uptime SLA</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800/30 rounded-xl p-5">
+                    <h3 class="font-semibold mb-3 flex items-center"><i class="fas fa-lock text-blue-400 mr-2"></i>4.2 安全与隐私</h3>
+                    <ul class="text-sm text-gray-300 space-y-2">
+                        <li>• 符合CCPA/GDPR</li>
+                        <li>• 端到端加密 (E2E)</li>
+                        <li>• 位置数据匿名化</li>
+                        <li>• SOC 2 Type II认证</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800/30 rounded-xl p-5">
+                    <h3 class="font-semibold mb-3 flex items-center"><i class="fas fa-universal-access text-purple-400 mr-2"></i>4.3 可访问性</h3>
+                    <ul class="text-sm text-gray-300 space-y-2">
+                        <li>• WCAG 2.1 AA标准</li>
+                        <li>• VoiceOver/TalkBack支持</li>
+                        <li>• iOS 15+ / Android 10+</li>
+                        <li>• 支持西班牙语/中文</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Metrics -->
+        <div class="prd-section glass rounded-2xl p-6 pl-8">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">5. 成功指标与风险评估</h2>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">5.1 KPIs</h3>
+                    <div class="space-y-3">
+                        <div class="bg-gray-800/30 rounded-lg p-3"><div class="flex justify-between items-center"><span class="text-gray-300">DAU</span><span class="text-green-400 font-semibold">100K (Y1)</span></div></div>
+                        <div class="bg-gray-800/30 rounded-lg p-3"><div class="flex justify-between items-center"><span class="text-gray-300">D7 Retention</span><span class="text-green-400 font-semibold">> 40%</span></div></div>
+                        <div class="bg-gray-800/30 rounded-lg p-3"><div class="flex justify-between items-center"><span class="text-gray-300">Premium转化率</span><span class="text-green-400 font-semibold">> 5%</span></div></div>
+                        <div class="bg-gray-800/30 rounded-lg p-3"><div class="flex justify-between items-center"><span class="text-gray-300">NPS</span><span class="text-green-400 font-semibold">> 50</span></div></div>
+                        <div class="bg-gray-800/30 rounded-lg p-3"><div class="flex justify-between items-center"><span class="text-gray-300">App Store评分</span><span class="text-green-400 font-semibold">> 4.5</span></div></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">5.2 风险评估</h3>
+                    <div class="space-y-3">
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                            <p class="text-sm font-medium text-red-400">数据获取风险</p>
+                            <p class="text-xs text-gray-400 mt-1">缓解：多源数据整合，建立警局合作关系</p>
+                        </div>
+                        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                            <p class="text-sm font-medium text-yellow-400">法律责任风险</p>
+                            <p class="text-xs text-gray-400 mt-1">缓解：明确免责声明，仅提供参考信息</p>
+                        </div>
+                        <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                            <p class="text-sm font-medium text-blue-400">竞争者模仿</p>
+                            <p class="text-xs text-gray-400 mt-1">缓解：快速迭代，建立数据护城河</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prototype Section -->
+    <section id="prototype" class="content-section max-w-7xl mx-auto px-6 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">High-Fidelity Prototype</h1>
+            <p class="text-gray-400">交互原型展示 - 按用户旅程顺序排列</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-12">
+            <!-- Screen 1: Onboarding -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gradient-to-b from-gray-900 to-black p-6 flex flex-col">
+                        <div class="flex-1 flex flex-col items-center justify-center">
+                            <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-3xl flex items-center justify-center mb-8 animate-float glow">
+                                <i class="fas fa-shield-alt text-4xl"></i>
+                            </div>
+                            <h1 class="text-2xl font-bold mb-2">SafePark</h1>
+                            <p class="text-gray-400 text-center text-sm mb-8">Park Smart. Stay Safe.</p>
+                            <div class="flex space-x-2 mb-8">
+                                <div class="w-8 h-2 bg-blue-500 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                            </div>
+                            <div class="w-full space-y-3">
+                                <button class="w-full py-3 bg-white text-black rounded-xl font-semibold flex items-center justify-center space-x-2">
+                                    <i class="fab fa-apple text-xl"></i>
+                                    <span>Continue with Apple</span>
+                                </button>
+                                <button class="w-full py-3 bg-blue-600 rounded-xl font-semibold flex items-center justify-center space-x-2">
+                                    <i class="fab fa-google"></i>
+                                    <span>Continue with Google</span>
+                                </button>
+                                <button class="w-full py-3 bg-gray-800 rounded-xl font-medium">
+                                    Sign up with Email
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-center text-xs text-gray-500 mt-4">By continuing, you agree to our Terms & Privacy Policy</p>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">📱 Onboarding Screen</h3>
+                    <p class="text-sm text-gray-300">采用Apple/Google SSO实现零摩擦注册，符合美国用户习惯。品牌视觉突出安全主题，建立信任感。</p>
+                </div>
+            </div>
+
+            <!-- Screen 2: Home / Map View -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gray-900">
+                        <!-- Map Background -->
+                        <div class="relative h-2/3 bg-gradient-to-b from-gray-800 via-gray-900 to-black">
+                            <!-- Stylized Map Pattern -->
+                            <div class="absolute inset-0" style="background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, transparent 1px, transparent 40px, rgba(255,255,255,0.02) 41px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, transparent 1px, transparent 40px, rgba(255,255,255,0.02) 41px);"></div>
+                            <!-- Map Overlays -->
+                            <div class="absolute inset-0">
+                                <!-- Safety Zones -->
+                                <div class="absolute top-1/4 left-1/4 w-20 h-20 bg-green-500/20 rounded-full border-2 border-green-500 animate-pulse"></div>
+                                <div class="absolute top-1/2 right-1/4 w-16 h-16 bg-red-500/20 rounded-full border-2 border-red-500 animate-pulse"></div>
+                                <!-- Parking Markers -->
+                                <div class="absolute top-1/3 left-1/3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg">A+</div>
+                                <div class="absolute top-1/2 left-1/2 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg">B</div>
+                                <div class="absolute bottom-1/3 right-1/3 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg">C</div>
+                            </div>
+                            <!-- Search Bar -->
+                            <div class="absolute top-4 left-4 right-4">
+                                <div class="bg-gray-900/90 backdrop-blur rounded-2xl p-4 flex items-center space-x-3">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                    <input type="text" placeholder="Where are you heading?" class="bg-transparent flex-1 outline-none text-white placeholder-gray-500">
+                                    <i class="fas fa-microphone text-blue-400"></i>
+                                </div>
+                            </div>
+                            <!-- Current Location -->
+                            <div class="absolute bottom-4 right-4">
+                                <button class="w-12 h-12 bg-gray-900/90 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-location-arrow text-blue-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Bottom Sheet -->
+                        <div class="bg-gray-900 rounded-t-3xl -mt-6 relative z-10 p-6">
+                            <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-4"></div>
+                            <h3 class="font-semibold mb-3">Nearby Safe Spots</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center bg-gray-800 rounded-xl p-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center font-bold mr-3">92</div>
+                                    <div class="flex-1"><p class="font-medium text-sm">Union Square Garage</p><p class="text-xs text-gray-400">0.3 mi · $4/hr · 24/7 Security</p></div>
+                                    <i class="fas fa-chevron-right text-gray-500"></i>
+                                </div>
+                                <div class="flex items-center bg-gray-800 rounded-xl p-3">
+                                    <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center font-bold mr-3">71</div>
+                                    <div class="flex-1"><p class="font-medium text-sm">5th & Mission Parking</p><p class="text-xs text-gray-400">0.5 mi · $3/hr · Camera Monitored</p></div>
+                                    <i class="fas fa-chevron-right text-gray-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">🗺️ Home / Map View</h3>
+                    <p class="text-sm text-gray-300">地图直接显示安全评分色块，绿/黄/红一目了然。底部Sheet展示推荐停车场列表，评分+距离+价格三位一体。</p>
+                </div>
+            </div>
+
+            <!-- Screen 3: Parking Detail -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gray-900">
+                        <!-- Header Image -->
+                        <div class="relative h-48">
+                            <img src="https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&h=200&fit=crop" class="w-full h-full object-cover">
+                            <div class="absolute top-4 left-4">
+                                <button class="w-10 h-10 bg-black/50 backdrop-blur rounded-full flex items-center justify-center">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                            </div>
+                            <div class="absolute top-4 right-4">
+                                <button class="w-10 h-10 bg-black/50 backdrop-blur rounded-full flex items-center justify-center">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Content -->
+                        <div class="p-6 -mt-6 bg-gray-900 rounded-t-3xl relative">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h2 class="text-xl font-bold">Union Square Garage</h2>
+                                    <p class="text-gray-400 text-sm">333 Post St, San Francisco</p>
+                                </div>
+                                <div class="safety-score score-high w-16 h-16 text-2xl">92</div>
+                            </div>
+                            <!-- Safety Breakdown -->
+                            <div class="bg-gray-800 rounded-xl p-4 mb-4">
+                                <h4 class="font-medium mb-3 text-sm">Safety Breakdown</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between"><span class="text-sm text-gray-400">Crime History</span><div class="flex items-center"><div class="w-24 h-2 bg-gray-700 rounded-full mr-2"><div class="w-5/6 h-full bg-green-500 rounded-full"></div></div><span class="text-xs text-green-400">Low</span></div></div>
+                                    <div class="flex items-center justify-between"><span class="text-sm text-gray-400">Lighting</span><div class="flex items-center"><div class="w-24 h-2 bg-gray-700 rounded-full mr-2"><div class="w-full h-full bg-green-500 rounded-full"></div></div><span class="text-xs text-green-400">Excellent</span></div></div>
+                                    <div class="flex items-center justify-between"><span class="text-sm text-gray-400">Foot Traffic</span><div class="flex items-center"><div class="w-24 h-2 bg-gray-700 rounded-full mr-2"><div class="w-4/6 h-full bg-yellow-500 rounded-full"></div></div><span class="text-xs text-yellow-400">Moderate</span></div></div>
+                                    <div class="flex items-center justify-between"><span class="text-sm text-gray-400">Security</span><div class="flex items-center"><div class="w-24 h-2 bg-gray-700 rounded-full mr-2"><div class="w-full h-full bg-green-500 rounded-full"></div></div><span class="text-xs text-green-400">24/7 Guard</span></div></div>
+                                </div>
+                            </div>
+                            <!-- Features -->
+                            <div class="flex space-x-2 mb-4">
+                                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs"><i class="fas fa-video mr-1"></i>CCTV</span>
+                                <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs"><i class="fas fa-user-shield mr-1"></i>Guard</span>
+                                <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs"><i class="fas fa-lightbulb mr-1"></i>Well-lit</span>
+                            </div>
+                            <!-- Price & CTA -->
+                            <div class="flex items-center justify-between">
+                                <div><span class="text-2xl font-bold">$4</span><span class="text-gray-400">/hour</span></div>
+                                <button class="px-8 py-3 bg-blue-500 rounded-xl font-semibold">Navigate Here</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">📊 Parking Detail</h3>
+                    <p class="text-sm text-gray-300">详细展示安全评分的各维度分解，让用户理解评分依据。Feature标签快速传达关键安全设施信息。</p>
+                </div>
+            </div>
+
+            <!-- Screen 4: Navigation -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gray-900">
+                        <!-- Map with Route -->
+                        <div class="relative h-3/4 bg-gradient-to-b from-blue-900/30 to-gray-900">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg class="w-full h-full" viewBox="0 0 375 600">
+                                    <!-- Safe Route (Blue) -->
+                                    <path d="M187 550 Q 150 450, 200 350 Q 250 250, 187 150" stroke="#0A84FF" stroke-width="6" fill="none" stroke-dasharray="10,5" class="animate-pulse"/>
+                                    <!-- Danger Zone -->
+                                    <circle cx="280" cy="300" r="40" fill="rgba(255,69,58,0.2)" stroke="#FF453A" stroke-width="2"/>
+                                    <text x="280" y="305" text-anchor="middle" fill="#FF453A" font-size="10">⚠️ Hotspot</text>
+                                    <!-- Start Point -->
+                                    <circle cx="187" cy="550" r="12" fill="#30D158"/>
+                                    <text x="187" y="555" text-anchor="middle" fill="white" font-size="10">📍</text>
+                                    <!-- End Point -->
+                                    <circle cx="187" cy="150" r="12" fill="#0A84FF"/>
+                                    <text x="187" y="155" text-anchor="middle" fill="white" font-size="10">P</text>
+                                </svg>
+                            </div>
+                            <!-- Top Info Bar -->
+                            <div class="absolute top-4 left-4 right-4 bg-gray-900/90 backdrop-blur rounded-2xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><i class="fas fa-walking"></i></div>
+                                        <div><p class="font-semibold">Walk to Union Square</p><p class="text-xs text-gray-400">Safe route · 6 min</p></div>
+                                    </div>
+                                    <button class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center"><i class="fas fa-times text-red-400"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Bottom Sheet -->
+                        <div class="bg-gray-900 rounded-t-3xl -mt-6 relative z-10 p-6">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center mb-1"><i class="fas fa-shield-alt text-green-400 mr-2"></i><span class="text-sm font-medium">Safe Route Active</span></div>
+                                    <p class="text-xs text-gray-400">Avoiding 1 high-risk area</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xl font-bold">0.4 mi</p>
+                                    <p class="text-xs text-gray-400">vs 0.3 mi direct</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button class="flex-1 py-3 bg-blue-500 rounded-xl font-semibold">Start Walking</button>
+                                <button class="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center"><i class="fas fa-share-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">🛤️ Safe Route Navigation</h3>
+                    <p class="text-sm text-gray-300">核心差异化功能：路线会主动绕开犯罪热点，并清晰标注危险区域。虽然稍远但更安全，用户一目了然。</p>
+                </div>
+            </div>
+
+            <!-- Screen 5: Parked State -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gray-900 p-6">
+                        <!-- Timer Card -->
+                        <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-6 mb-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm opacity-80">Currently Parked</span>
+                                <span class="px-2 py-1 bg-white/20 rounded-full text-xs">Level 3, Spot B42</span>
+                            </div>
+                            <div class="text-center mb-4">
+                                <p class="text-5xl font-bold">02:34:18</p>
+                                <p class="text-sm opacity-80 mt-1">Time Parked</p>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <div><span class="opacity-60">Est. Cost</span><p class="font-semibold">$10.28</p></div>
+                                <div class="text-right"><span class="opacity-60">Meter Expires</span><p class="font-semibold text-yellow-300">1:26:42</p></div>
+                            </div>
+                        </div>
+                        <!-- Safety Status -->
+                        <div class="bg-gray-800 rounded-2xl p-4 mb-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center"><i class="fas fa-check-circle text-green-400 text-xl"></i></div>
+                                    <div><p class="font-medium">Area Status: Safe</p><p class="text-xs text-gray-400">No incidents in last 4 hours</p></div>
+                                </div>
+                                <i class="fas fa-bell text-gray-500"></i>
+                            </div>
+                        </div>
+                        <!-- Quick Actions -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <button class="bg-gray-800 rounded-xl p-4 text-left">
+                                <i class="fas fa-walking text-blue-400 mb-2"></i>
+                                <p class="text-sm font-medium">Safe Walk Back</p>
+                                <p class="text-xs text-gray-400">Get safe route</p>
+                            </button>
+                            <button class="bg-gray-800 rounded-xl p-4 text-left">
+                                <i class="fas fa-share-alt text-purple-400 mb-2"></i>
+                                <p class="text-sm font-medium">Share Location</p>
+                                <p class="text-xs text-gray-400">With contacts</p>
+                            </button>
+                            <button class="bg-gray-800 rounded-xl p-4 text-left">
+                                <i class="fas fa-camera text-orange-400 mb-2"></i>
+                                <p class="text-sm font-medium">Report Issue</p>
+                                <p class="text-xs text-gray-400">Suspicious activity</p>
+                            </button>
+                            <button class="bg-gray-800 rounded-xl p-4 text-left">
+                                <i class="fas fa-clock text-green-400 mb-2"></i>
+                                <p class="text-sm font-medium">Extend Time</p>
+                                <p class="text-xs text-gray-400">Add parking hours</p>
+                            </button>
+                        </div>
+                        <!-- Find My Car -->
+                        <button class="w-full py-4 bg-gray-800 rounded-xl flex items-center justify-center space-x-2">
+                            <i class="fas fa-car text-blue-400"></i>
+                            <span class="font-medium">Find My Car</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">🚗 Parked State</h3>
+                    <p class="text-sm text-gray-300">停车后持续提供价值：实时安全状态监控、超时提醒、一键报告可疑活动、安全返回路线等功能增强用户粘性。</p>
+                </div>
+            </div>
+
+            <!-- Screen 6: Community Reports -->
+            <div class="flex flex-col items-center">
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen bg-gray-900 p-6">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold">Community Reports</h2>
+                            <button class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <!-- Filter Tabs -->
+                        <div class="flex space-x-2 mb-4 overflow-x-auto">
+                            <button class="px-4 py-2 bg-blue-500 rounded-full text-sm whitespace-nowrap">All</button>
+                            <button class="px-4 py-2 bg-gray-800 rounded-full text-sm whitespace-nowrap">Break-ins</button>
+                            <button class="px-4 py-2 bg-gray-800 rounded-full text-sm whitespace-nowrap">Suspicious</button>
+                            <button class="px-4 py-2 bg-gray-800 rounded-full text-sm whitespace-nowrap">Theft</button>
+                        </div>
+                        <!-- Reports List -->
+                        <div class="space-y-4">
+                            <div class="bg-gray-800 rounded-xl p-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center"><i class="fas fa-exclamation-triangle text-red-400"></i></div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1"><span class="font-medium text-sm">Car Break-in Reported</span><span class="text-xs text-gray-500">2h ago</span></div>
+                                        <p class="text-xs text-gray-400 mb-2">Mission & 16th St - Window smashed, laptop stolen from back seat</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span><i class="fas fa-check-circle text-green-400 mr-1"></i>Verified</span>
+                                            <span><i class="fas fa-thumbs-up mr-1"></i>24 confirmations</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800 rounded-xl p-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center"><i class="fas fa-eye text-yellow-400"></i></div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1"><span class="font-medium text-sm">Suspicious Activity</span><span class="text-xs text-gray-500">5h ago</span></div>
+                                        <p class="text-xs text-gray-400 mb-2">SOMA Parking - Group checking car doors after midnight</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span><i class="fas fa-user-check mr-1"></i>User report</span>
+                                            <span><i class="fas fa-thumbs-up mr-1"></i>8 confirmations</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800 rounded-xl p-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center"><i class="fas fa-shield-alt text-green-400"></i></div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1"><span class="font-medium text-sm">Safety Improvement</span><span class="text-xs text-gray-500">1d ago</span></div>
+                                        <p class="text-xs text-gray-400 mb-2">Financial District - New security cameras installed</p>
+                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                            <span><i class="fas fa-check-circle text-green-400 mr-1"></i>Official</span>
+                                            <span><i class="fas fa-thumbs-up mr-1"></i>156 likes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 glass rounded-xl p-4 max-w-sm">
+                    <h3 class="font-semibold text-blue-400 mb-2">👥 Community Reports</h3>
+                    <p class="text-sm text-gray-300">用户众包系统形成安全互助网络。采用Gamification机制激励贡献，AI自动验证报告真实性，确保数据质量。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Design Rationale Section -->
+    <section id="design" class="content-section max-w-5xl mx-auto px-6 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">设计理念阐述</h1>
+            <p class="text-gray-400">Design Rationale & Innovation</p>
+        </div>
+
+        <!-- User Flow -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fas fa-project-diagram mr-3 text-blue-400"></i>用户流程图 (User Flow)</h2>
+            <div class="bg-gray-900/50 rounded-xl p-6 overflow-x-auto">
+                <svg viewBox="0 0 800 600" class="w-full" style="min-height: 500px;">
+                    <!-- App Launch -->
+                    <rect x="320" y="20" width="160" height="50" rx="25" fill="#0A84FF"/>
+                    <text x="400" y="50" text-anchor="middle" fill="white" font-size="14" font-weight="500">App Launch</text>
+                    
+                    <!-- Arrow down -->
+                    <path d="M 400 70 L 400 100" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Logged In Decision -->
+                    <path d="M 400 100 L 480 140 L 400 180 L 320 140 Z" fill="#FF9F0A"/>
+                    <text x="400" y="145" text-anchor="middle" fill="white" font-size="13" font-weight="500">Logged In?</text>
+                    
+                    <!-- No path to SSO Login -->
+                    <path d="M 320 140 L 200 140" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <text x="260" y="130" text-anchor="middle" fill="#FF453A" font-size="11">No</text>
+                    <rect x="60" y="115" width="140" height="50" rx="8" fill="#6E6E73"/>
+                    <text x="130" y="145" text-anchor="middle" fill="white" font-size="13">SSO Login</text>
+                    
+                    <!-- SSO to Home -->
+                    <path d="M 130 165 L 130 240 L 280 240" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Yes path to Home -->
+                    <path d="M 400 180 L 400 220" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <text x="420" y="200" text-anchor="start" fill="#30D158" font-size="11">Yes</text>
+                    
+                    <!-- Home Map View -->
+                    <rect x="280" y="220" width="240" height="50" rx="8" fill="#0A84FF"/>
+                    <text x="400" y="250" text-anchor="middle" fill="white" font-size="14" font-weight="600">Home Map View</text>
+                    
+                    <!-- Arrow down -->
+                    <path d="M 400 270 L 400 300" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Search -->
+                    <rect x="300" y="300" width="200" height="40" rx="8" fill="#30D158"/>
+                    <text x="400" y="325" text-anchor="middle" fill="white" font-size="13">Search Destination</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M 400 340 L 400 365" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- View Lots -->
+                    <rect x="290" y="365" width="220" height="40" rx="8" fill="#0A84FF"/>
+                    <text x="400" y="390" text-anchor="middle" fill="white" font-size="13">View Safety-Ranked Lots</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M 400 405 L 400 430" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Select Lot -->
+                    <rect x="310" y="430" width="180" height="40" rx="8" fill="#0A84FF"/>
+                    <text x="400" y="455" text-anchor="middle" fill="white" font-size="13">Select Parking Lot</text>
+                    
+                    <!-- Arrow -->
+                    <path d="M 400 470 L 400 495" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Proceed Decision -->
+                    <path d="M 400 495 L 470 525 L 400 555 L 330 525 Z" fill="#FF9F0A"/>
+                    <text x="400" y="530" text-anchor="middle" fill="white" font-size="12">Proceed?</text>
+                    
+                    <!-- No - back to lots -->
+                    <path d="M 330 525 L 240 525 L 240 385 L 290 385" stroke="#FF453A" stroke-width="2" marker-end="url(#arrow3)" stroke-dasharray="5,5"/>
+                    <text x="260" y="520" text-anchor="middle" fill="#FF453A" font-size="11">No</text>
+                    
+                    <!-- Yes - Navigate -->
+                    <path d="M 470 525 L 600 525" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <text x="530" y="515" text-anchor="middle" fill="#30D158" font-size="11">Yes</text>
+                    <rect x="600" y="505" width="140" height="40" rx="8" fill="#30D158"/>
+                    <text x="670" y="530" text-anchor="middle" fill="white" font-size="13">Get Safe Route</text>
+                    
+                    <!-- Arrow down from navigate -->
+                    <path d="M 670 545 L 670 560 L 490 560" stroke="#8E8E93" stroke-width="2" marker-end="url(#arrow3)"/>
+                    
+                    <!-- Park -->
+                    <rect x="490" y="555" width="150" height="40" rx="8" fill="#0A84FF"/>
+                    <text x="565" y="580" text-anchor="middle" fill="white" font-size="13">Navigate & Park</text>
+                    
+                    <defs>
+                        <marker id="arrow3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#8E8E93"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Feature Map -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fas fa-sitemap mr-3 text-green-400"></i>功能架构图 (Feature Map)</h2>
+            <div class="bg-gray-900/50 rounded-xl p-6 overflow-x-auto">
+                <svg viewBox="0 0 900 320" class="w-full" style="min-height: 300px;">
+                    <!-- Core Features -->
+                    <rect x="50" y="20" width="240" height="280" rx="16" fill="none" stroke="#0A84FF" stroke-width="3" opacity="0.8"/>
+                    <text x="170" y="50" text-anchor="middle" fill="#0A84FF" font-size="16" font-weight="700">Core Features</text>
+                    
+                    <rect x="70" y="80" width="200" height="50" rx="8" fill="#0A84FF" opacity="0.8"/>
+                    <text x="170" y="110" text-anchor="middle" fill="white" font-size="13" font-weight="500">Safety Score Engine</text>
+                    
+                    <rect x="70" y="150" width="200" height="50" rx="8" fill="#0A84FF" opacity="0.8"/>
+                    <text x="170" y="180" text-anchor="middle" fill="white" font-size="13" font-weight="500">Safe Route Navigation</text>
+                    
+                    <rect x="70" y="220" width="200" height="50" rx="8" fill="#0A84FF" opacity="0.8"/>
+                    <text x="170" y="250" text-anchor="middle" fill="white" font-size="13" font-weight="500">Real-time Alerts</text>
+                    
+                    <!-- Arrow to Social -->
+                    <path d="M 290 160 L 330 160" stroke="#8E8E93" stroke-width="3" marker-end="url(#arrow4)"/>
+                    
+                    <!-- Social Features -->
+                    <rect x="330" y="20" width="240" height="280" rx="16" fill="none" stroke="#30D158" stroke-width="3" opacity="0.8"/>
+                    <text x="450" y="50" text-anchor="middle" fill="#30D158" font-size="16" font-weight="700">Social Features</text>
+                    
+                    <rect x="350" y="80" width="200" height="50" rx="8" fill="#30D158" opacity="0.8"/>
+                    <text x="450" y="110" text-anchor="middle" fill="white" font-size="13" font-weight="500">Community Reports</text>
+                    
+                    <rect x="350" y="150" width="200" height="50" rx="8" fill="#30D158" opacity="0.8"/>
+                    <text x="450" y="180" text-anchor="middle" fill="white" font-size="13" font-weight="500">Gamification</text>
+                    
+                    <rect x="350" y="220" width="200" height="50" rx="8" fill="#30D158" opacity="0.8"/>
+                    <text x="450" y="250" text-anchor="middle" fill="white" font-size="13" font-weight="500">Safety Reviews</text>
+                    
+                    <!-- Arrow to Premium -->
+                    <path d="M 570 160 L 610 160" stroke="#8E8E93" stroke-width="3" marker-end="url(#arrow4)"/>
+                    
+                    <!-- Premium Features -->
+                    <rect x="610" y="20" width="240" height="280" rx="16" fill="none" stroke="#FF9F0A" stroke-width="3" opacity="0.8"/>
+                    <text x="730" y="50" text-anchor="middle" fill="#FF9F0A" font-size="16" font-weight="700">Premium Features</text>
+                    
+                    <rect x="630" y="80" width="200" height="50" rx="8" fill="#FF9F0A" opacity="0.8"/>
+                    <text x="730" y="110" text-anchor="middle" fill="white" font-size="13" font-weight="500">Advanced Analytics</text>
+                    
+                    <rect x="630" y="150" width="200" height="50" rx="8" fill="#FF9F0A" opacity="0.8"/>
+                    <text x="730" y="180" text-anchor="middle" fill="white" font-size="13" font-weight="500">Insurance Integration</text>
+                    
+                    <rect x="630" y="220" width="200" height="50" rx="8" fill="#FF9F0A" opacity="0.8"/>
+                    <text x="730" y="250" text-anchor="middle" fill="white" font-size="13" font-weight="500">Family Sharing</text>
+                    
+                    <defs>
+                        <marker id="arrow4" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                            <polygon points="0 0, 12 4, 0 8" fill="#8E8E93"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Pain Points Deep Dive -->
+        <div class="glass rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fas fa-crosshairs mr-3 text-red-400"></i>痛点与解决方案深度解析</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gray-800/50 rounded-xl p-5">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-times-circle text-red-400 text-xl"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-400 mb-2">痛点 1：信息真空</h4>
+                            <p class="text-gray-300 text-sm mb-3">用户在陌生区域停车时，完全无法获知该地点的历史犯罪数据，只能凭直觉或外观判断。</p>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                <h5 class="font-medium text-green-400 text-sm mb-1"><i class="fas fa-check-circle mr-1"></i>解决方案</h5>
+                                <p class="text-gray-300 text-xs">通过整合FBI UCR、各州警局Open Data和NICB数据，为每个停车场生成0-100的<strong>Safety Score</strong>。地图视图直接用绿/黄/红色块呈现，用户无需点击即可获得直观安全感知。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800/50 rounded-xl p-5">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-route text-red-400 text-xl"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-400 mb-2">痛点 2：步行盲区</h4>
+                            <p class="text-gray-300 text-sm mb-3">现有导航只考虑最短路径，完全忽视沿途安全性，夜间返回车辆时风险极高。</p>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                <h5 class="font-medium text-green-400 text-sm mb-1"><i class="fas fa-check-circle mr-1"></i>解决方案</h5>
+                                <p class="text-gray-300 text-xs"><strong>Safe Route Navigation</strong> 功能会主动绕开犯罪热点区域，优先选择照明良好、人流密集的路段。虽然可能稍远，但显著降低人身安全风险。界面清晰标注绕行原因。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800/50 rounded-xl p-5">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-clock text-red-400 text-xl"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-400 mb-2">痛点 3：时效性缺失</h4>
+                            <p class="text-gray-300 text-sm mb-3">犯罪活动具有时段规律性，但用户无法获知"现在这个时间段"的真实风险。</p>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                <h5 class="font-medium text-green-400 text-sm mb-1"><i class="fas fa-check-circle mr-1"></i>解决方案</h5>
+                                <p class="text-gray-300 text-xs">AI模型分析历史数据，计算<strong>时段风险系数</strong>（如：该区域周五晚间风险上升40%）。结合用户众包的<strong>实时报告</strong>，提供动态更新的安全状态和主动推送警报。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800/50 rounded-xl p-5">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-user-friends text-red-400 text-xl"></i></div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-400 mb-2">痛点 4：孤立无援感</h4>
+                            <p class="text-gray-300 text-sm mb-3">夜间独自返回车辆时缺乏安全感，无法快速与他人分享位置或求助。</p>
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                <h5 class="font-medium text-green-400 text-sm mb-1"><i class="fas fa-check-circle mr-1"></i>解决方案</h5>
+                                <p class="text-gray-300 text-xs">Parked Dashboard提供<strong>一键分享位置</strong>功能，可实时将GPS坐标发送给紧急联系人。Premium版本支持<strong>SOS一键报警</strong>，直连当地911。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Innovation Highlights -->
+        <div class="glass rounded-2xl p-6">
+            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fas fa-lightbulb mr-3 text-yellow-400"></i>创新亮点 (Innovation Highlights)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-5">
+                    <div class="flex items-center mb-3"><div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3"><i class="fas fa-brain"></i></div><h4 class="font-semibold">AI预测模型</h4></div>
+                    <p class="text-sm text-gray-300">基于时间序列分析的犯罪风险预测，准确率达87%，提前预警高风险时段。</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-5">
+                    <div class="flex items-center mb-3"><div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3"><i class="fas fa-users"></i></div><h4 class="font-semibold">众包验证机制</h4></div>
+                    <p class="text-sm text-gray-300">用户报告需经过多人确认+AI异常检测，确保信息真实性，杜绝恶意报告。</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-5">
+                    <div class="flex items-center mb-3"><div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3"><i class="fas fa-handshake"></i></div><h4 class="font-semibold">保险合作模式</h4></div>
+                    <p class="text-sm text-gray-300">与车险公司合作，使用SafePark的用户可享受保费折扣，实现三方共赢。</p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-5">
+                    <div class="flex items-center mb-3"><div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mr-3"><i class="fas fa-car"></i></div><h4 class="font-semibold">车载系统集成</h4></div>
+                    <p class="text-sm text-gray-300">计划与Apple CarPlay/Android Auto深度集成，实现无缝车载体验。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass mt-12 py-8">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt text-sm"></i></div>
+                <span class="font-bold">SafePark</span>
+            </div>
+            <p class="text-gray-400 text-sm">Park Smart. Stay Safe.</p>
+            <p class="text-gray-500 text-xs mt-2">© 2025 SafePark Inc. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            // Reset all tabs
+            document.querySelectorAll('.tab-btn').forEach(b => { 
+                b.classList.remove('active', 'bg-blue-500'); 
+                b.classList.add('bg-gray-800'); 
+            });
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            // Activate clicked tab
+            event.target.classList.add('active');
+            event.target.classList.remove('bg-gray-800');
+        }
+    </script>
+</body>
+</html>
+
