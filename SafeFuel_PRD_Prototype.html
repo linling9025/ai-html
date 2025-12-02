@@ -6,7 +6,6 @@
     <title>SafeFuel - Smart Fuel Finder | PRD & Prototype</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.7/mermaid.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
@@ -79,6 +78,83 @@
             transition: all 0.3s;
         }
         .metric-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        
+        /* Flow diagram styles */
+        .flow-step {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .flow-step:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+            transform: translateY(-2px);
+        }
+        .flow-arrow {
+            color: #10B981;
+            font-size: 1.5rem;
+            margin: 8px 0;
+        }
+        .flow-decision {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            padding: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .feature-node {
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid #10B981;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        .feature-node:hover {
+            background: rgba(16, 185, 129, 0.25);
+            transform: scale(1.05);
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .scroll-indicator:hover { opacity: 0.7; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-15px); }
+            60% { transform: translateX(-50%) translateY(-8px); }
+        }
+        
+        .scroll-indicator.hidden { opacity: 0; pointer-events: none; }
+        
+        /* Hero section gradient hint */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.8));
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="min-h-screen text-white">
@@ -98,6 +174,16 @@
             </nav>
         </div>
     </header>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator" onclick="smoothScrollDown()">
+        <div class="flex flex-col items-center">
+            <span class="text-green-400 text-sm font-medium mb-2 opacity-80">Scroll to explore</span>
+            <div class="w-12 h-12 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center border-2 border-green-400">
+                <i class="fas fa-chevron-down text-green-400 text-xl"></i>
+            </div>
+        </div>
+    </div>
 
     <!-- PRD Section -->
     <div id="prd" class="content-section active">
@@ -425,20 +511,64 @@
                 
                 <h3 class="text-xl font-semibold mb-3 text-green-300">2.1 核心业务流程</h3>
                 <div class="bg-gray-900 p-6 rounded-xl mb-6">
-                    <pre class="mermaid">
-graph LR
-    A[用户打开 App] --> B[获取当前位置]
-    B --> C[设置目的地<br/>可选]
-    C --> D[系统查询周边<br/>加油站]
-    D --> E[获取实时油价]
-    D --> F[获取安全评分]
-    D --> G[计算路线偏离]
-    E --> H[AI 智能排序]
-    F --> H
-    G --> H
-    H --> I[展示推荐列表]
-    I --> J[用户选择<br/>导航前往]
-                    </pre>
+                    <div class="flex flex-wrap justify-center items-center gap-4">
+                        <div class="flow-step">
+                            <i class="fas fa-mobile-alt text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">用户打开 App</div>
+                        </div>
+                        <i class="fas fa-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <i class="fas fa-map-marker-alt text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">获取当前位置</div>
+                        </div>
+                        <i class="fas fa-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <i class="fas fa-map-pin text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">设置目的地</div>
+                            <div class="text-xs text-gray-400">(可选)</div>
+                        </div>
+                        <i class="fas fa-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <i class="fas fa-search text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">查询周边加油站</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center my-3">
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="flow-step">
+                            <i class="fas fa-dollar-sign text-yellow-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">获取实时油价</div>
+                        </div>
+                        <div class="flow-step">
+                            <i class="fas fa-shield-alt text-blue-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">获取安全评分</div>
+                        </div>
+                        <div class="flow-step">
+                            <i class="fas fa-route text-purple-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">计算路线偏离</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center my-3">
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                    </div>
+                    <div class="flex flex-wrap justify-center items-center gap-4">
+                        <div class="flow-step bg-gradient-to-r from-green-900 to-emerald-900 border-green-400">
+                            <i class="fas fa-brain text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">AI 智能排序</div>
+                        </div>
+                        <i class="fas fa-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <i class="fas fa-list text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">展示推荐列表</div>
+                        </div>
+                        <i class="fas fa-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <i class="fas fa-navigation text-green-400 text-xl mb-2"></i>
+                            <div class="text-sm text-white font-semibold">导航前往</div>
+                        </div>
+                    </div>
                 </div>
 
                 <h3 class="text-xl font-semibold mb-3 text-green-300">2.2 关键功能流程</h3>
@@ -1349,32 +1479,92 @@ graph LR
                     用户流程图 (User Flow)
                 </h2>
                 <div class="bg-gray-900 p-6 rounded-xl">
-                    <pre class="mermaid">
-flowchart TD
-    A[打开 App] --> B{首次使用?}
-    B -->|是| C[Onboarding<br/>3 步引导]
-    B -->|否| D[主界面]
-    C --> E[SSO 登录<br/>Google/Apple]
-    E --> F[位置权限请求]
-    F --> D
-    D --> G{选择视图}
-    G -->|地图| H[Map View<br/>可视化标注]
-    G -->|列表| I[List View<br/>智能排序]
-    H --> J[点击加油站]
-    I --> J
-    J --> K[详情页<br/>价格+安全+评价]
-    K --> L{用户决策}
-    L -->|满意| M[点击 Navigate]
-    L -->|不满意| N[返回列表]
-    M --> O[选择导航 App<br/>Google Maps/Waze]
-    O --> P[前往加油]
-    P --> Q[加油后提示<br/>更新价格/评价]
-    Q --> R{参与 UGC?}
-    R -->|是| S[上传价格/照片<br/>获得积分]
-    R -->|否| T[结束]
-    S --> T
-    N --> I
-                    </pre>
+                    <!-- Row 1 -->
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="flow-step w-48">打开 App</div>
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                        <div class="flow-decision w-48 flex items-center justify-center">
+                            <span class="text-sm text-white font-semibold">首次使用?</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 2 - Split -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+                        <!-- Left path - Yes -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-yellow-400 mb-2">→ 是</div>
+                            <div class="flow-step w-48 mb-2">Onboarding<br/>3步引导</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-step w-48 mb-2">SSO 登录<br/>Google/Apple</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-step w-48">位置权限请求</div>
+                        </div>
+                        
+                        <!-- Right path - No -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-yellow-400 mb-2">→ 否</div>
+                            <div class="flow-step w-48" style="margin-top: 140px;">主界面</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 3 - Merge -->
+                    <div class="flex flex-col items-center mb-4">
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                        <div class="flow-decision w-48 flex items-center justify-center">
+                            <span class="text-sm text-white font-semibold">选择视图</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 4 - Split views -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-yellow-400 mb-2">→ 地图</div>
+                            <div class="flow-step w-48">Map View<br/>可视化标注</div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-yellow-400 mb-2">→ 列表</div>
+                            <div class="flow-step w-48">List View<br/>智能排序</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 5 - Merge to details -->
+                    <div class="flex flex-col items-center mb-4">
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                        <div class="flow-step w-56">点击加油站</div>
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                        <div class="flow-step w-56">详情页<br/>价格+安全+评价</div>
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                        <div class="flow-decision w-48 flex items-center justify-center">
+                            <span class="text-sm text-white font-semibold">用户决策</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 6 - Decision paths -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-green-400 mb-2">→ 满意</div>
+                            <div class="flow-step w-48 mb-2">点击 Navigate</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-step w-48 mb-2">选择导航 App<br/>Google Maps/Waze</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-step w-48 mb-2">前往加油</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-step w-48 mb-2">加油后提示<br/>更新价格/评价</div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="flow-decision w-48 flex items-center justify-center">
+                                <span class="text-sm text-white font-semibold">参与 UGC?</span>
+                            </div>
+                            <i class="fas fa-arrow-down flow-arrow"></i>
+                            <div class="text-xs text-gray-400 mb-2">→ 是 / 否</div>
+                            <div class="flow-step w-48 bg-green-900 border-green-400">结束</div>
+                        </div>
+                        
+                        <div class="flex flex-col items-center">
+                            <div class="text-xs text-red-400 mb-2">→ 不满意</div>
+                            <div class="flow-step w-48">返回列表</div>
+                            <div class="text-xs text-gray-400 mt-2">↑ 重新选择</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1385,34 +1575,82 @@ flowchart TD
                     功能架构图 (Feature Map)
                 </h2>
                 <div class="bg-gray-900 p-6 rounded-xl">
-                    <pre class="mermaid">
-graph TB
-    A[SafeFuel App] --> B[Discovery]
-    A --> C[Navigation]
-    A --> D[Community]
-    A --> E[Profile]
-    
-    B --> B1[Map View]
-    B --> B2[List View]
-    B --> B3[Filters]
-    B --> B4[Search]
-    
-    C --> C1[Station Detail]
-    C --> C2[Price History]
-    C --> C3[Safety Score]
-    C --> C4[Reviews]
-    C --> C5[Navigate CTA]
-    
-    D --> D1[Update Price]
-    D --> D2[Upload Photo]
-    D --> D3[Write Review]
-    D --> D4[Share Station]
-    
-    E --> E1[Preferences]
-    E --> E2[Saved Stations]
-    E --> E3[Rewards Points]
-    E --> E4[Settings]
-                    </pre>
+                    <!-- Root -->
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="flow-step w-56 text-lg font-bold bg-gradient-to-r from-green-900 to-emerald-900 border-green-400">
+                            <i class="fas fa-gas-pump text-green-400 text-2xl mb-2"></i>
+                            <div>SafeFuel App</div>
+                        </div>
+                        <i class="fas fa-arrow-down flow-arrow"></i>
+                    </div>
+                    
+                    <!-- Level 1 - Main Modules -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="flex flex-col items-center">
+                            <div class="feature-node w-full bg-blue-900 bg-opacity-30 border-blue-400">
+                                <i class="fas fa-compass text-blue-400 mb-1"></i>
+                                <div class="font-bold">Discovery</div>
+                            </div>
+                            <i class="fas fa-arrow-down text-blue-400 text-sm mt-2"></i>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="feature-node w-full bg-purple-900 bg-opacity-30 border-purple-400">
+                                <i class="fas fa-map-marked-alt text-purple-400 mb-1"></i>
+                                <div class="font-bold">Navigation</div>
+                            </div>
+                            <i class="fas fa-arrow-down text-purple-400 text-sm mt-2"></i>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="feature-node w-full bg-yellow-900 bg-opacity-30 border-yellow-400">
+                                <i class="fas fa-users text-yellow-400 mb-1"></i>
+                                <div class="font-bold">Community</div>
+                            </div>
+                            <i class="fas fa-arrow-down text-yellow-400 text-sm mt-2"></i>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="feature-node w-full bg-pink-900 bg-opacity-30 border-pink-400">
+                                <i class="fas fa-user-circle text-pink-400 mb-1"></i>
+                                <div class="font-bold">Profile</div>
+                            </div>
+                            <i class="fas fa-arrow-down text-pink-400 text-sm mt-2"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Level 2 - Sub Features -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <!-- Discovery features -->
+                        <div class="space-y-2">
+                            <div class="feature-node text-xs bg-blue-900 bg-opacity-20">Map View</div>
+                            <div class="feature-node text-xs bg-blue-900 bg-opacity-20">List View</div>
+                            <div class="feature-node text-xs bg-blue-900 bg-opacity-20">Filters</div>
+                            <div class="feature-node text-xs bg-blue-900 bg-opacity-20">Search</div>
+                        </div>
+                        
+                        <!-- Navigation features -->
+                        <div class="space-y-2">
+                            <div class="feature-node text-xs bg-purple-900 bg-opacity-20">Station Detail</div>
+                            <div class="feature-node text-xs bg-purple-900 bg-opacity-20">Price History</div>
+                            <div class="feature-node text-xs bg-purple-900 bg-opacity-20">Safety Score</div>
+                            <div class="feature-node text-xs bg-purple-900 bg-opacity-20">Reviews</div>
+                            <div class="feature-node text-xs bg-purple-900 bg-opacity-20">Navigate CTA</div>
+                        </div>
+                        
+                        <!-- Community features -->
+                        <div class="space-y-2">
+                            <div class="feature-node text-xs bg-yellow-900 bg-opacity-20">Update Price</div>
+                            <div class="feature-node text-xs bg-yellow-900 bg-opacity-20">Upload Photo</div>
+                            <div class="feature-node text-xs bg-yellow-900 bg-opacity-20">Write Review</div>
+                            <div class="feature-node text-xs bg-yellow-900 bg-opacity-20">Share Station</div>
+                        </div>
+                        
+                        <!-- Profile features -->
+                        <div class="space-y-2">
+                            <div class="feature-node text-xs bg-pink-900 bg-opacity-20">Preferences</div>
+                            <div class="feature-node text-xs bg-pink-900 bg-opacity-20">Saved Stations</div>
+                            <div class="feature-node text-xs bg-pink-900 bg-opacity-20">Rewards Points</div>
+                            <div class="feature-node text-xs bg-pink-900 bg-opacity-20">Settings</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1600,26 +1838,6 @@ graph TB
 
     <!-- JavaScript -->
     <script>
-        // Initialize Mermaid
-        mermaid.initialize({ 
-            startOnLoad: true,
-            theme: 'dark',
-            themeVariables: {
-                primaryColor: '#10B981',
-                primaryTextColor: '#F1F5F9',
-                primaryBorderColor: '#059669',
-                lineColor: '#6EE7B7',
-                secondaryColor: '#1E293B',
-                tertiaryColor: '#334155',
-                background: '#0F172A',
-                mainBkg: '#1E293B',
-                secondBkg: '#334155',
-                textColor: '#F1F5F9',
-                border1: '#475569',
-                border2: '#64748B'
-            }
-        });
-
         // Tab switching
         function showSection(sectionId) {
             // Hide all sections
@@ -1642,7 +1860,35 @@ graph TB
             
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Reset scroll indicator
+            setTimeout(() => {
+                const indicator = document.getElementById('scrollIndicator');
+                if (indicator) indicator.classList.remove('hidden');
+            }, 500);
         }
+
+        // Smooth scroll down function
+        function smoothScrollDown() {
+            window.scrollBy({
+                top: window.innerHeight * 0.8,
+                behavior: 'smooth'
+            });
+        }
+
+        // Hide scroll indicator on scroll
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            const indicator = document.getElementById('scrollIndicator');
+            if (!indicator) return;
+            
+            // Hide indicator after scrolling down
+            if (window.scrollY > 200) {
+                indicator.classList.add('hidden');
+            } else {
+                indicator.classList.remove('hidden');
+            }
+        });
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
