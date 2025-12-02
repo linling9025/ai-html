@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeFuel - Smart Fuel Finder | PRD & Prototype</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.1.7/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --success: #10B981;
+            --bg-dark: #0F172A;
+            --bg-card: #1E293B;
+            --bg-secondary: #334155;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+        }
+        
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); }
+        
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .glow-green { box-shadow: 0 0 30px rgba(16,185,129,0.4); }
+        
+        .phone-frame {
+            width: 375px; height: 812px;
+            background: #000; border-radius: 50px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.6), inset 0 0 0 3px #334155;
+            position: relative; overflow: hidden;
+        }
+        .phone-notch {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 150px; height: 35px; background: #000;
+            border-radius: 0 0 20px 20px; z-index: 100;
+        }
+        .phone-screen { height: 100%; overflow-y: auto; padding-top: 50px; background: #F8FAFC; }
+        .phone-screen::-webkit-scrollbar { display: none; }
+        
+        .price-badge { font-size: 2.5rem; font-weight: 900; }
+        .safety-badge { 
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800;
+        }
+        .safety-high { background: linear-gradient(135deg, #10B981, #059669); }
+        .safety-medium { background: linear-gradient(135deg, #F59E0B, #D97706); }
+        .safety-low { background: linear-gradient(135deg, #EF4444, #DC2626); }
+        
+        .tab-btn { transition: all 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; transform: translateY(-2px); }
+        .content-section { display: none; animation: fadeIn 0.5s; }
+        .content-section.active { display: block; }
+        
+        @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+        
+        .prd-section { 
+            background: rgba(255,255,255,0.03); 
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+        .prd-section:hover { background: rgba(255,255,255,0.05); }
+        
+        .table-custom th { background: rgba(16,185,129,0.2); font-weight: 600; }
+        .table-custom td, .table-custom th { border: 1px solid rgba(255,255,255,0.1); padding: 12px; }
+        
+        .map-container { background: #E5E7EB; position: relative; height: 400px; border-radius: 16px; }
+        .station-pin { position: absolute; width: 40px; height: 40px; }
+        
+        .metric-card { 
+            background: rgba(16,185,129,0.1); 
+            border: 2px solid rgba(16,185,129,0.3);
+            transition: all 0.3s;
+        }
+        .metric-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <!-- Header -->
+    <header class="glass sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl flex items-center justify-center glow-green">
+                    <i class="fas fa-gas-pump text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold">SafeFuel</span>
+            </div>
+            <nav class="flex space-x-2">
+                <button class="tab-btn active px-5 py-2 rounded-full text-sm font-semibold" onclick="showSection('prd')">PRD 文档</button>
+                <button class="tab-btn px-5 py-2 rounded-full text-sm font-semibold bg-gray-800 hover:bg-gray-700" onclick="showSection('prototype')">交互原型</button>
+                <button class="tab-btn px-5 py-2 rounded-full text-sm font-semibold bg-gray-800 hover:bg-gray-700" onclick="showSection('design')">设计理念</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- PRD Section -->
+    <div id="prd" class="content-section active">
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            <!-- Hero -->
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-2 bg-green-500 bg-opacity-20 rounded-full text-green-400 text-sm font-semibold mb-4">
+                    美国市场产品需求文档 (US Market PRD)
+                </div>
+                <h1 class="text-5xl font-black mb-4 bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">
+                    SafeFuel
+                </h1>
+                <p class="text-2xl text-gray-400 font-light">Smart Fuel Finder with Safety Intelligence</p>
+                <p class="text-lg text-gray-500 mt-2">结合专业油价与全城安全数据的智能加油助手</p>
+            </div>
+
+            <!-- Document Information -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-file-alt text-green-400 mr-3"></i>
+                    文档信息 (Document Information)
+                </h2>
+                <table class="table-custom w-full text-left">
+                    <thead>
+                        <tr>
+                            <th>版本</th>
+                            <th>日期</th>
+                            <th>作者</th>
+                            <th>描述</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold">1.0</td>
+                            <td>2025-12-02</td>
+                            <td>Ling Lin</td>
+                            <td>SafeFuel 初稿</td>
+                            <td><span class="px-3 py-1 bg-yellow-500 bg-opacity-20 text-yellow-400 rounded-full text-sm">草稿</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-6">
+                    <h3 class="font-semibold mb-2 text-gray-300">相关文档 (Related Documents)</h3>
+                    <ul class="text-gray-400 space-y-2 text-sm">
+                        <li>• <a href="https://www.gasbuddy.com/" target="_blank" class="text-green-400 hover:text-green-300 underline">GasBuddy - Find Cheap Gas Prices</a></li>
+                        <li>• <a href="https://cde.ucr.cjis.gov/LATEST/webapp/#/pages/home" target="_blank" class="text-green-400 hover:text-green-300 underline">FBI Crime Data Explorer</a></li>
+                        <li>• <a href="https://www.nist.gov/cyberframework" target="_blank" class="text-green-400 hover:text-green-300 underline">NIST Cybersecurity Framework</a></li>
+                        <li>• <a href="https://developer.apple.com/design/human-interface-guidelines/" target="_blank" class="text-green-400 hover:text-green-300 underline">Human Interface Guidelines - Apple Developer</a></li>
+                        <li>• <a href="https://m.material.io/design" target="_blank" class="text-green-400 hover:text-green-300 underline">Material Design - Google Design System</a></li>
+                        <li>• <a href="https://stripe.com/docs/security/guide" target="_blank" class="text-green-400 hover:text-green-300 underline">Stripe Security Guide</a></li>
+                        <li>• <a href="https://www.w3.org/WAI/WCAG21/quickref/" target="_blank" class="text-green-400 hover:text-green-300 underline">WCAG 2.1 Quick Reference</a></li>
+                        <li>• <a href="https://oag.ca.gov/privacy/ccpa" target="_blank" class="text-green-400 hover:text-green-300 underline">California Consumer Privacy Act (CCPA)</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-lightbulb text-green-400 mr-3"></i>
+                    1. 项目摘要 (Executive Summary)
+                </h2>
+                
+                <h3 class="text-xl font-semibold mb-3 text-green-300">1.1 问题陈述 (Problem Statement)</h3>
+                <p class="text-gray-300 mb-6 leading-relaxed">
+                    美国驾驶者面临三大核心痛点：<br><br>
+                    <strong class="text-white">💸 油价信息碎片化</strong>：现有应用（如GasBuddy）仅提供价格数据，但缺乏智能推荐引擎，用户需要手动比较多个加油站，决策成本高。<br><br>
+                    <strong class="text-white">🚨 安全隐患被忽视</strong>：特别是在大城市（如洛杉矶、芝加哥、底特律），部分低价加油站位于犯罪高发区。用户为省钱可能将自己置于危险环境，缺乏安全评分的透明信息。<br><br>
+                    <strong class="text-white">🗺️ 路线不优化</strong>：推荐的加油站可能需要大幅绕路，浪费时间和燃油，实际节省的金额被额外消耗抵消，缺少路线效率考量。
+                </p>
+
+                <h3 class="text-xl font-semibold mb-3 text-green-300">1.2 目标用户 (Target Audience)</h3>
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🚗 通勤族 (Daily Commuters)</h4>
+                        <p class="text-sm text-gray-400">年龄 25-55岁，日均通勤 30-60 分钟，对油价敏感，重视安全和效率</p>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🚙 Rideshare 司机</h4>
+                        <p class="text-sm text-gray-400">Uber/Lyft 司机，需要频繁加油，ROI 高度依赖燃油成本优化</p>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🏙️ 城市驾驶者</h4>
+                        <p class="text-sm text-gray-400">生活在犯罪率较高城市的驾驶者，对个人安全尤为关注</p>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🗺️ 公路旅行者</h4>
+                        <p class="text-sm text-gray-400">跨州长途驾驶，需要在陌生区域快速找到安全可靠的加油站</p>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    <strong>市场规模</strong>：美国有超过 2.76 亿持证驾驶者，平均每周加油 1-2 次。针对安全敏感型用户（约 30-40%），潜在 TAM 约 8000 万用户。
+                </p>
+
+                <h3 class="text-xl font-semibold mb-3 mt-6 text-green-300">1.3 价值主张 (Value Proposition)</h3>
+                <div class="bg-gradient-to-r from-green-500 to-emerald-500 bg-opacity-10 border-2 border-green-500 border-opacity-30 rounded-xl p-6 mb-6">
+                    <p class="text-lg font-semibold text-white mb-3">SafeFuel = 最优价格 × 最高安全 × 最短路线</p>
+                    <p class="text-gray-300 leading-relaxed">
+                        SafeFuel 通过 AI 驱动的多维度智能推荐引擎，综合考虑<strong>油价</strong>、<strong>区域犯罪率</strong>、<strong>路线偏离度</strong>三大核心指标，
+                        为用户推荐最符合个人偏好的加油站。不仅省钱，更保障安全，真正做到"不绕路的聪明选择"。
+                    </p>
+                </div>
+                <p class="text-gray-300"><strong>差异化竞争优势</strong>：</p>
+                <ul class="text-gray-400 space-y-2 mt-2 ml-4">
+                    <li>✓ <strong>业界首创</strong>：整合 FBI/Local Police Department 犯罪数据，实时呈现加油站安全评分</li>
+                    <li>✓ <strong>智能推荐</strong>：基于用户当前位置、目的地和偏好权重的多目标优化算法</li>
+                    <li>✓ <strong>透明化决策</strong>：清晰展示每个推荐的价格节省、安全等级、额外里程数</li>
+                    <li>✓ <strong>社区驱动</strong>：用户可实时更新价格、上传照片、分享安全体验</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold mb-3 mt-6 text-green-300">1.4 上线计划 (Launch Roadmap)</h3>
+                <div class="space-y-3">
+                    <div class="flex items-start">
+                        <div class="w-24 text-green-400 font-semibold">Phase 1</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-white">MVP 开发 (Q1 2026)</div>
+                            <div class="text-sm text-gray-400">iOS App，覆盖加州、德州、纽约三大市场，核心功能上线</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-24 text-green-400 font-semibold">Phase 2</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-white">全美扩展 (Q2-Q3 2026)</div>
+                            <div class="text-sm text-gray-400">Android App 发布，覆盖全美 50 州，集成更多数据源</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-24 text-green-400 font-semibold">Phase 3</div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-white">高级功能 (Q4 2026)</div>
+                            <div class="text-sm text-gray-400">Premium 订阅，预测性油价分析，Fleet Management 企业版</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-3 mt-6 text-green-300">1.5 资源与前置条件 (Resources & Prerequisites)</h3>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-3">👥 技术团队配置</h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-xl">
+                            <h5 class="text-sm font-semibold text-green-400 mb-2">核心开发团队</h5>
+                            <ul class="text-sm text-gray-400 space-y-1">
+                                <li>• iOS/Android 开发工程师（2-3 名）</li>
+                                <li>• 后端工程师 - Node.js/Python（2 名）</li>
+                                <li>• ML Engineer - 推荐算法（1 名）</li>
+                                <li>• DevOps Engineer - Cloud部署（1 名）</li>
+                                <li>• UI/UX Designer（1 名）</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-xl">
+                            <h5 class="text-sm font-semibold text-green-400 mb-2">支持团队</h5>
+                            <ul class="text-sm text-gray-400 space-y-1">
+                                <li>• Product Manager（1 名）</li>
+                                <li>• QA Engineer（1 名）</li>
+                                <li>• Data Analyst（1 名）</li>
+                                <li>• Legal Counsel（隐私合规顾问）</li>
+                                <li>• Community Manager（UGC管理）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-3">🛢️ 油价数据获取方式</h4>
+                    <div class="space-y-3">
+                        <div class="bg-gradient-to-r from-blue-900 to-blue-800 bg-opacity-30 border border-blue-500 border-opacity-30 p-4 rounded-xl">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-database text-blue-400 text-lg mt-1"></i>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-white mb-2">主要数据源</h5>
+                                    <ul class="text-sm text-gray-300 space-y-2">
+                                        <li>
+                                            <strong class="text-blue-300">OPIS (Oil Price Information Service)</strong><br>
+                                            <span class="text-xs text-gray-400">专业级油价数据API，覆盖全美 150,000+ 加油站，实时更新</span><br>
+                                            <a href="https://www.opisnet.com/" target="_blank" class="text-blue-400 text-xs underline hover:text-blue-300">→ opisnet.com</a>
+                                        </li>
+                                        <li>
+                                            <strong class="text-blue-300">GasBuddy Business API</strong><br>
+                                            <span class="text-xs text-gray-400">社区驱动的价格数据，支持商业授权，日更新频率高</span><br>
+                                            <a href="https://www.gasbuddy.com/business" target="_blank" class="text-blue-400 text-xs underline hover:text-blue-300">→ gasbuddy.com/business</a>
+                                        </li>
+                                        <li>
+                                            <strong class="text-blue-300">AAA Fuel Gauge Report</strong><br>
+                                            <span class="text-xs text-gray-400">AAA官方油价报告，提供州级和城市级平均价格数据</span><br>
+                                            <a href="https://gasprices.aaa.com/" target="_blank" class="text-blue-400 text-xs underline hover:text-blue-300">→ gasprices.aaa.com</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 bg-opacity-50 p-3 rounded-lg">
+                            <p class="text-xs text-gray-400">
+                                <strong class="text-gray-300">补充方式：</strong>用户实时上传（UGC）+ 照片验证 + 众包审核机制
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-3">🚨 犯罪数据获取方式</h4>
+                    <div class="space-y-3">
+                        <div class="bg-gradient-to-r from-red-900 to-red-800 bg-opacity-30 border border-red-500 border-opacity-30 p-4 rounded-xl">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-shield-alt text-red-400 text-lg mt-1"></i>
+                                <div class="flex-1">
+                                    <h5 class="font-semibold text-white mb-2">官方数据源</h5>
+                                    <ul class="text-sm text-gray-300 space-y-2">
+                                        <li>
+                                            <strong class="text-red-300">FBI Crime Data Explorer API</strong><br>
+                                            <span class="text-xs text-gray-400">联邦调查局统一犯罪报告 (UCR)，提供全国犯罪统计数据</span><br>
+                                            <a href="https://cde.ucr.cjis.gov/LATEST/webapp/#/pages/home" target="_blank" class="text-red-400 text-xs underline hover:text-red-300">→ FBI CDE</a>
+                                        </li>
+                                        <li>
+                                            <strong class="text-red-300">Local Police Department Open Data</strong><br>
+                                            <span class="text-xs text-gray-400">各大城市警局公开数据平台（如 LAPD, NYPD, CPD Open Data）</span><br>
+                                            <span class="text-xs text-gray-500">示例：</span>
+                                            <a href="https://data.lacity.org/" target="_blank" class="text-red-400 text-xs underline hover:text-red-300">LA Open Data</a>, 
+                                            <a href="https://opendata.cityofnewyork.us/" target="_blank" class="text-red-400 text-xs underline hover:text-red-300">NYC OpenData</a>
+                                        </li>
+                                        <li>
+                                            <strong class="text-red-300">SpotCrime API</strong><br>
+                                            <span class="text-xs text-gray-400">聚合全美犯罪数据的第三方平台，提供地理坐标级犯罪事件</span><br>
+                                            <a href="https://spotcrime.com/" target="_blank" class="text-red-400 text-xs underline hover:text-red-300">→ spotcrime.com</a>
+                                        </li>
+                                        <li>
+                                            <strong class="text-red-300">CrimeReports by Motorola Solutions</strong><br>
+                                            <span class="text-xs text-gray-400">与 2,000+ 执法机构合作，提供近实时犯罪报告</span><br>
+                                            <a href="https://www.crimereports.com/" target="_blank" class="text-red-400 text-xs underline hover:text-red-300">→ crimereports.com</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 bg-opacity-50 p-3 rounded-lg">
+                            <p class="text-xs text-gray-400">
+                                <strong class="text-gray-300">数据处理：</strong>整合多源数据 → 地理半径0.5英里聚合 → 加权评分算法 → A-F等级生成 → 每周更新
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-3">🗺️ 地图与导航服务</h4>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-xl">
+                            <h5 class="text-sm font-semibold text-green-400 mb-2">Google Maps Platform</h5>
+                            <ul class="text-xs text-gray-400 space-y-1">
+                                <li>• Places API（加油站POI数据）</li>
+                                <li>• Directions API（路线规划）</li>
+                                <li>• Distance Matrix API（距离计算）</li>
+                                <li>• Geocoding API（地址解析）</li>
+                            </ul>
+                            <a href="https://developers.google.com/maps" target="_blank" class="text-green-400 text-xs underline hover:text-green-300 mt-2 inline-block">→ Google Maps Docs</a>
+                        </div>
+                        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-xl">
+                            <h5 class="text-sm font-semibold text-green-400 mb-2">Mapbox（备选方案）</h5>
+                            <ul class="text-xs text-gray-400 space-y-1">
+                                <li>• Navigation SDK（导航功能）</li>
+                                <li>• Geocoding API（地址搜索）</li>
+                                <li>• Directions API（路线优化）</li>
+                                <li>• 成本优势（比 Google 低 30-40%）</li>
+                            </ul>
+                            <a href="https://www.mapbox.com/" target="_blank" class="text-green-400 text-xs underline hover:text-green-300 mt-2 inline-block">→ Mapbox Platform</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-3">🔧 其他关键服务</h4>
+                    <div class="space-y-3">
+                        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-xl">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <h5 class="text-sm font-semibold text-blue-400 mb-2">身份验证</h5>
+                                    <ul class="text-xs text-gray-400 space-y-1">
+                                        <li>• <a href="https://firebase.google.com/docs/auth" target="_blank" class="text-blue-400 underline hover:text-blue-300">Firebase Authentication</a> - Google/Apple SSO</li>
+                                        <li>• <a href="https://auth0.com/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Auth0</a> - 企业级身份管理（备选）</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-semibold text-purple-400 mb-2">支付处理</h5>
+                                    <ul class="text-xs text-gray-400 space-y-1">
+                                        <li>• <a href="https://stripe.com/docs/api" target="_blank" class="text-purple-400 underline hover:text-purple-300">Stripe API</a> - Premium 订阅支付</li>
+                                        <li>• Apple/Google In-App Purchase - 应用内购买</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-semibold text-green-400 mb-2">云服务</h5>
+                                    <ul class="text-xs text-gray-400 space-y-1">
+                                        <li>• <a href="https://aws.amazon.com/" target="_blank" class="text-green-400 underline hover:text-green-300">AWS</a> / <a href="https://cloud.google.com/" target="_blank" class="text-green-400 underline hover:text-green-300">GCP</a> - 后端部署</li>
+                                        <li>• <a href="https://www.cloudflare.com/" target="_blank" class="text-green-400 underline hover:text-green-300">Cloudflare</a> - CDN 与 DDoS 防护</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-semibold text-yellow-400 mb-2">分析与监控</h5>
+                                    <ul class="text-xs text-gray-400 space-y-1">
+                                        <li>• <a href="https://mixpanel.com/" target="_blank" class="text-yellow-400 underline hover:text-yellow-300">Mixpanel</a> - 用户行为分析</li>
+                                        <li>• <a href="https://sentry.io/" target="_blank" class="text-yellow-400 underline hover:text-yellow-300">Sentry</a> - 错误追踪</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-orange-900 bg-opacity-20 border-l-4 border-orange-500 p-4 rounded-r-xl">
+                    <p class="text-sm text-orange-300 font-semibold mb-2">⚠️ 前置条件与成本预估</p>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>• <strong>API 授权成本</strong>：OPIS 约 $2,000-5,000/月；Google Maps API 约 $500-2,000/月（基于使用量）</li>
+                        <li>• <strong>开发周期</strong>：MVP 需 4-6 个月（iOS + Android + 后端）</li>
+                        <li>• <strong>数据合规</strong>：需咨询法律团队确保犯罪数据使用符合隐私法规</li>
+                        <li>• <strong>服务器成本</strong>：初期月均 $1,500-3,000（AWS/GCP）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Solution Overview -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-rocket text-green-400 mr-3"></i>
+                    2. 方案概述 (Solution Overview)
+                </h2>
+                
+                <h3 class="text-xl font-semibold mb-3 text-green-300">2.1 核心业务流程</h3>
+                <div class="bg-gray-900 p-6 rounded-xl mb-6">
+                    <pre class="mermaid">
+graph LR
+    A[用户打开 App] --> B[获取当前位置]
+    B --> C[设置目的地<br/>可选]
+    C --> D[系统查询周边<br/>加油站]
+    D --> E[获取实时油价]
+    D --> F[获取安全评分]
+    D --> G[计算路线偏离]
+    E --> H[AI 智能排序]
+    F --> H
+    G --> H
+    H --> I[展示推荐列表]
+    I --> J[用户选择<br/>导航前往]
+                    </pre>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-3 text-green-300">2.2 关键功能流程</h3>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🎯 智能推荐引擎</h4>
+                        <p class="text-sm text-gray-400">
+                            基于用户偏好权重（价格优先/安全优先/平衡模式），使用加权评分算法：<br>
+                            <code class="text-green-400">Score = w1×(Price) + w2×(Safety) + w3×(Route Efficiency)</code>
+                        </p>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">🔐 安全评分系统</h4>
+                        <p class="text-sm text-gray-400">
+                            整合过去 12 个月内半径 0.5 英里范围的犯罪数据（暴力犯罪、财产犯罪），生成 A-F 评级，并提供详细犯罪类型分布图。
+                        </p>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-50 p-5 rounded-xl">
+                        <h4 class="font-semibold text-white mb-2">📍 路线优化</h4>
+                        <p class="text-sm text-gray-400">
+                            计算用户当前路线（前往目的地）的偏离里程数，优先推荐"顺路"的加油站，减少不必要的绕行。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Specifications -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-cog text-green-400 mr-3"></i>
+                    3. 详细功能规格 (Detailed Feature Specifications)
+                </h2>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">3.1 主界面 - 地图视图</h3>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-2">功能描述</h4>
+                    <p class="text-gray-400 mb-4">
+                        以地图为主视图，实时显示用户当前位置周边的加油站，每个站点标注价格和安全评分标识。支持缩放、平移交互。
+                    </p>
+                    <h4 class="font-semibold text-white mb-2">关键元素</h4>
+                    <ul class="text-gray-400 space-y-1 ml-4 text-sm">
+                        <li>• 顶部搜索栏：输入目的地地址</li>
+                        <li>• 地图标注：绿色（A-B评级）、黄色（C评级）、红色（D-F评级）</li>
+                        <li>• 底部抽屉：快速切换"列表视图"</li>
+                        <li>• 浮动按钮：定位、筛选器、偏好设置</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">3.2 推荐列表</h3>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-2">功能描述</h4>
+                    <p class="text-gray-400 mb-4">
+                        卡片式列表展示排序后的加油站，每张卡片包含：站点名称、距离、油价、安全评分、预计节省金额、额外里程数。
+                    </p>
+                    <h4 class="font-semibold text-white mb-2">交互逻辑</h4>
+                    <ul class="text-gray-400 space-y-1 ml-4 text-sm">
+                        <li>• 点击卡片：展开详情页</li>
+                        <li>• 左滑：收藏</li>
+                        <li>• 右滑：分享</li>
+                        <li>• "Navigate" 按钮：一键启动导航（Google Maps/Apple Maps/Waze）</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">3.3 加油站详情页</h3>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-white mb-2">核心信息</h4>
+                    <ul class="text-gray-400 space-y-2 ml-4 text-sm">
+                        <li>• <strong>价格历史趋势图</strong>：过去 7 天价格波动曲线</li>
+                        <li>• <strong>安全详情</strong>：犯罪类型分布（抢劫、盗窃、暴力），最近事件列表</li>
+                        <li>• <strong>用户评价</strong>：评分、照片、最新评论</li>
+                        <li>• <strong>设施信息</strong>：24小时营业、洗手间、便利店、车辆服务</li>
+                        <li>• <strong>支付方式</strong>：现金、信用卡、Apple Pay、会员折扣</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">3.4 偏好设置</h3>
+                <div class="mb-6">
+                    <p class="text-gray-400 mb-3">
+                        用户可自定义推荐权重，实时调整排序结果：
+                    </p>
+                    <div class="bg-gray-900 p-4 rounded-xl space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-300">Price Weight (价格权重)</span>
+                                <span class="text-green-400">40%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-300">Safety Weight (安全权重)</span>
+                                <span class="text-green-400">40%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-300">Route Efficiency (路线权重)</span>
+                                <span class="text-green-400">20%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">3.5 社区功能</h3>
+                <div class="mb-6">
+                    <ul class="text-gray-400 space-y-2 ml-4 text-sm">
+                        <li>• <strong>价格更新</strong>：用户可上传最新油价（附照片验证，奖励积分）</li>
+                        <li>• <strong>安全反馈</strong>：分享实地体验（光线条件、人流量、监控情况）</li>
+                        <li>• <strong>照片分享</strong>：加油站外观、设施、夜间环境</li>
+                        <li>• <strong>评论系统</strong>：5星评分 + 文字评价</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Non-Functional Requirements -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-shield-alt text-green-400 mr-3"></i>
+                    4. 非功能性需求 (Non-Functional Requirements)
+                </h2>
+
+                <h3 class="text-xl font-semibold mb-3 text-green-300">4.1 性能 (Performance)</h3>
+                <ul class="text-gray-400 space-y-2 ml-4 mb-6">
+                    <li>• App 启动时间 < 2 秒</li>
+                    <li>• 地图加载时间 < 1.5 秒</li>
+                    <li>• 推荐结果生成 < 500ms</li>
+                    <li>• 支持离线缓存（最近搜索结果保留24小时）</li>
+                    <li>• 支持 10,000+ 并发用户无性能降级</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold mb-3 text-green-300">4.2 安全与隐私 (Security & Privacy)</h3>
+                <ul class="text-gray-400 space-y-2 ml-4 mb-6">
+                    <li>• <strong>CCPA/GDPR 合规</strong>：用户可随时删除账户和所有数据</li>
+                    <li>• <strong>位置隐私</strong>：仅在使用时获取位置，不后台追踪</li>
+                    <li>• <strong>数据加密</strong>：传输层 TLS 1.3，存储层 AES-256</li>
+                    <li>• <strong>OAuth 2.0</strong>：支持 Google / Apple / Email 登录</li>
+                    <li>• <strong>支付安全</strong>：PCI DSS Level 1 认证（通过 Stripe）</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold mb-3 text-green-300">4.3 可访问性与兼容性 (Accessibility & Compatibility)</h3>
+                <ul class="text-gray-400 space-y-2 ml-4">
+                    <li>• <strong>无障碍标准</strong>：符合 WCAG 2.1 AA 级别</li>
+                    <li>• <strong>语音导航</strong>：集成 VoiceOver (iOS) / TalkBack (Android)</li>
+                    <li>• <strong>系统兼容</strong>：iOS 14+, Android 10+</li>
+                    <li>• <strong>浏览器支持</strong>：Chrome, Safari, Firefox (最新两个版本)</li>
+                    <li>• <strong>响应式设计</strong>：适配 iPhone SE 至 iPad Pro 全系列</li>
+                </ul>
+            </div>
+
+            <!-- Success Metrics -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-chart-line text-green-400 mr-3"></i>
+                    5. 成功指标与风险评估 (Success Metrics & Risk Assessment)
+                </h2>
+
+                <h3 class="text-xl font-semibold mb-4 text-green-300">5.1 成功指标 (KPIs)</h3>
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="metric-card p-5 rounded-xl">
+                        <div class="text-3xl font-black text-green-400 mb-2">100K</div>
+                        <div class="text-sm text-gray-400">DAU (6个月内)</div>
+                    </div>
+                    <div class="metric-card p-5 rounded-xl">
+                        <div class="text-3xl font-black text-green-400 mb-2">40%</div>
+                        <div class="text-sm text-gray-400">Week 4 Retention</div>
+                    </div>
+                    <div class="metric-card p-5 rounded-xl">
+                        <div class="text-3xl font-black text-green-400 mb-2">4.5+</div>
+                        <div class="text-sm text-gray-400">App Store Rating</div>
+                    </div>
+                    <div class="metric-card p-5 rounded-xl">
+                        <div class="text-3xl font-black text-green-400 mb-2">60+</div>
+                        <div class="text-sm text-gray-400">NPS Score</div>
+                    </div>
+                </div>
+                <ul class="text-gray-400 space-y-1 text-sm ml-4">
+                    <li>• <strong>用户获取成本 (CAC)</strong>: < $3.50</li>
+                    <li>• <strong>生命周期价值 (LTV)</strong>: > $25 (12个月)</li>
+                    <li>• <strong>转化率</strong>: 25% (导航点击/查看比例)</li>
+                    <li>• <strong>UGC 贡献率</strong>: 15% 活跃用户每月更新价格</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold mb-4 mt-6 text-green-300">5.2 风险评估 (Risk Assessment)</h3>
+                <div class="space-y-3">
+                    <div class="bg-red-900 bg-opacity-20 border border-red-500 border-opacity-30 p-4 rounded-xl">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-red-400 mr-3 mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">数据准确性风险</div>
+                                <div class="text-sm text-gray-400 mb-2">油价和犯罪数据可能存在延迟或不准确</div>
+                                <div class="text-xs text-gray-500"><strong>缓解措施</strong>：建立社区验证机制，多源数据交叉验证，显示数据更新时间戳</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-900 bg-opacity-20 border border-yellow-500 border-opacity-30 p-4 rounded-xl">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-circle text-yellow-400 mr-3 mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">竞争风险</div>
+                                <div class="text-sm text-gray-400 mb-2">GasBuddy 可能快速复制安全评分功能</div>
+                                <div class="text-xs text-gray-500"><strong>缓解措施</strong>：专注极致用户体验，建立专利保护，快速迭代 AI 推荐算法</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-orange-900 bg-opacity-20 border border-orange-500 border-opacity-30 p-4 rounded-xl">
+                        <div class="flex items-start">
+                            <i class="fas fa-balance-scale text-orange-400 mr-3 mt-1"></i>
+                            <div class="flex-1">
+                                <div class="font-semibold text-white mb-1">法律合规风险</div>
+                                <div class="text-sm text-gray-400 mb-2">犯罪数据展示可能引发地区歧视争议</div>
+                                <div class="text-xs text-gray-500"><strong>缓解措施</strong>：仅展示客观数据，不进行主观评价；提供详细数据来源说明；咨询法律团队确保合规</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prototype Section -->
+    <div id="prototype" class="content-section">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-black mb-4">高保真交互原型</h1>
+                <p class="text-xl text-gray-400">High-Fidelity Interactive Prototype</p>
+            </div>
+
+            <!-- Screen 1: Onboarding -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-center">1. Onboarding Experience</h2>
+                <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <strong>痛点解决</strong>：首次用户需要快速理解产品价值。通过简洁的3步引导+无摩擦SSO登录，降低用户流失率。
+                </p>
+                <div class="flex justify-center gap-8 flex-wrap">
+                    <!-- Onboarding Screen 1 -->
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-gradient-to-b from-green-50 to-white">
+                            <div class="p-8 h-full flex flex-col items-center justify-between">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-500 to-emerald-400 rounded-3xl flex items-center justify-center shadow-2xl">
+                                            <i class="fas fa-gas-pump text-white text-5xl"></i>
+                                        </div>
+                                        <h1 class="text-3xl font-black text-gray-900 mb-3">Welcome to SafeFuel</h1>
+                                        <p class="text-gray-600 text-lg">Find the cheapest, safest gas stations on your route</p>
+                                    </div>
+                                </div>
+                                <div class="w-full">
+                                    <div class="flex justify-center gap-2 mb-6">
+                                        <div class="w-8 h-2 bg-green-500 rounded-full"></div>
+                                        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                                    </div>
+                                    <button class="w-full bg-green-500 text-white font-semibold py-4 rounded-2xl shadow-lg">
+                                        Get Started
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Screen -->
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-white">
+                            <div class="p-8 h-full flex flex-col">
+                                <div class="mb-8">
+                                    <button class="text-gray-400">
+                                        <i class="fas fa-arrow-left text-xl"></i>
+                                    </button>
+                                </div>
+                                <div class="flex-1">
+                                    <h2 class="text-3xl font-black text-gray-900 mb-2">Sign In</h2>
+                                    <p class="text-gray-500 mb-8">Choose your preferred sign-in method</p>
+                                    
+                                    <div class="space-y-3 mb-6">
+                                        <button class="w-full bg-white border-2 border-gray-200 text-gray-800 font-semibold py-4 rounded-2xl flex items-center justify-center shadow-sm">
+                                            <i class="fab fa-google text-xl mr-3 text-red-500"></i>
+                                            Continue with Google
+                                        </button>
+                                        <button class="w-full bg-black text-white font-semibold py-4 rounded-2xl flex items-center justify-center">
+                                            <i class="fab fa-apple text-xl mr-3"></i>
+                                            Continue with Apple
+                                        </button>
+                                        <button class="w-full bg-white border-2 border-gray-200 text-gray-800 font-semibold py-4 rounded-2xl flex items-center justify-center shadow-sm">
+                                            <i class="fas fa-envelope text-xl mr-3 text-gray-500"></i>
+                                            Continue with Email
+                                        </button>
+                                    </div>
+
+                                    <p class="text-xs text-gray-400 text-center">
+                                        By continuing, you agree to our <span class="text-green-600">Terms</span> and <span class="text-green-600">Privacy Policy</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center text-sm text-gray-500 max-w-2xl mx-auto">
+                    💡 <strong>设计说明</strong>：使用 Google/Apple SSO 简化注册流程，符合美国用户习惯。首屏突出产品核心价值"cheapest + safest"。
+                </div>
+            </div>
+
+            <!-- Screen 2: Map View -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-center">2. Map View - Discovery</h2>
+                <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <strong>痛点解决</strong>：传统App缺乏视觉化安全信息。通过颜色编码的标注（绿/黄/红）让用户一目了然识别安全区域。
+                </p>
+                <div class="flex justify-center">
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-gray-100">
+                            <!-- Top Search Bar -->
+                            <div class="p-4 bg-white shadow-md">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="flex-1 bg-gray-100 rounded-xl px-4 py-3 flex items-center">
+                                        <i class="fas fa-search text-gray-400 mr-2"></i>
+                                        <input type="text" placeholder="Enter destination" class="bg-transparent text-sm flex-1 outline-none text-gray-700" />
+                                    </div>
+                                    <button class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-sliders-h text-white text-sm"></i>
+                                    </button>
+                                </div>
+                                <div class="flex gap-2 text-xs">
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">Balanced</span>
+                                    <span class="px-3 py-1 bg-gray-200 text-gray-600 rounded-full">Price First</span>
+                                    <span class="px-3 py-1 bg-gray-200 text-gray-600 rounded-full">Safety First</span>
+                                </div>
+                            </div>
+
+                            <!-- Map Area -->
+                            <div class="map-container relative">
+                                <!-- Map Pins -->
+                                <div class="station-pin" style="top: 30%; left: 40%;">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
+                                        A
+                                    </div>
+                                </div>
+                                <div class="station-pin" style="top: 50%; left: 60%;">
+                                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
+                                        C
+                                    </div>
+                                </div>
+                                <div class="station-pin" style="top: 70%; left: 25%;">
+                                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white">
+                                        F
+                                    </div>
+                                </div>
+                                <!-- User Location -->
+                                <div class="station-pin" style="top: 50%; left: 50%;">
+                                    <div class="w-4 h-4 bg-blue-600 rounded-full border-4 border-blue-200 shadow-lg"></div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Drawer -->
+                            <div class="bg-white rounded-t-3xl shadow-2xl p-4 absolute bottom-0 w-full">
+                                <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="text-lg font-bold text-gray-900">Nearby Stations</h3>
+                                    <button class="text-green-600 text-sm font-semibold">View All</button>
+                                </div>
+                                
+                                <!-- Top Station Card -->
+                                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-2xl p-4">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <h4 class="font-bold text-gray-900">Shell Station</h4>
+                                                <span class="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded">A</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500">1247 Market St • 0.8 mi</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-2xl font-black text-green-600">$3.45</div>
+                                            <div class="text-xs text-gray-500">per gallon</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 bg-green-500 text-white font-semibold py-2.5 rounded-xl text-sm">
+                                            Navigate
+                                        </button>
+                                        <button class="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-heart text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center text-sm text-gray-500 max-w-2xl mx-auto">
+                    💡 <strong>设计说明</strong>：地图标注使用国际通用的颜色语言（绿=安全，红=危险）。快速偏好切换标签让用户实时调整推荐逻辑。
+                </div>
+            </div>
+
+            <!-- Screen 3: List View -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-center">3. List View - Smart Recommendations</h2>
+                <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <strong>痛点解决</strong>：GasBuddy 用户需手动比较多个选项。SafeFuel 通过 AI 排序和清晰的卡片设计，直接呈现最佳选择。
+                </p>
+                <div class="flex justify-center">
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-gray-50">
+                            <div class="p-4 h-full overflow-y-auto">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-2xl font-black text-gray-900">Top Picks</h2>
+                                    <button class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-map text-gray-600"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Best Match Badge -->
+                                <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl p-4 mb-4 shadow-lg">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <i class="fas fa-star"></i>
+                                        <span class="font-bold text-sm">BEST MATCH FOR YOU</span>
+                                    </div>
+                                    <p class="text-sm opacity-90">Based on your balanced preference</p>
+                                </div>
+
+                                <!-- Station Cards -->
+                                <div class="space-y-3">
+                                    <!-- Card 1 -->
+                                    <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-green-500">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h3 class="font-bold text-gray-900 text-lg">Shell</h3>
+                                                    <div class="safety-badge safety-high text-white text-xs">A</div>
+                                                </div>
+                                                <p class="text-sm text-gray-500">1247 Market St</p>
+                                                <div class="flex gap-3 mt-2 text-xs text-gray-600">
+                                                    <span><i class="fas fa-route text-green-600 mr-1"></i>0.8 mi</span>
+                                                    <span><i class="fas fa-plus text-orange-500 mr-1"></i>+0.2 mi detour</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-3xl font-black text-green-600">$3.45</div>
+                                                <div class="text-xs text-green-600 font-semibold">Save $2.40</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-xl">
+                                                <i class="fas fa-navigation mr-2"></i>Navigate
+                                            </button>
+                                            <button class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-info text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card 2 -->
+                                    <div class="bg-white rounded-2xl p-4 shadow-sm">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h3 class="font-bold text-gray-900">Chevron</h3>
+                                                    <div class="safety-badge safety-high text-white text-xs w-8 h-8">A</div>
+                                                </div>
+                                                <p class="text-sm text-gray-500">890 Oak Avenue</p>
+                                                <div class="flex gap-3 mt-2 text-xs text-gray-600">
+                                                    <span><i class="fas fa-route text-green-600 mr-1"></i>1.2 mi</span>
+                                                    <span><i class="fas fa-plus text-orange-500 mr-1"></i>+0.5 mi detour</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-3xl font-black text-gray-900">$3.49</div>
+                                                <div class="text-xs text-gray-500 font-semibold">Save $2.16</div>
+                                            </div>
+                                        </div>
+                                        <button class="w-full bg-gray-100 text-gray-900 font-semibold py-3 rounded-xl">
+                                            <i class="fas fa-navigation mr-2"></i>Navigate
+                                        </button>
+                                    </div>
+
+                                    <!-- Card 3 - Lower Safety -->
+                                    <div class="bg-white rounded-2xl p-4 shadow-sm opacity-75">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h3 class="font-bold text-gray-900">Arco</h3>
+                                                    <div class="safety-badge safety-low text-white text-xs w-8 h-8">D</div>
+                                                </div>
+                                                <p class="text-sm text-gray-500">543 Elm Street</p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <span class="text-xs text-red-600"><i class="fas fa-exclamation-triangle mr-1"></i>High crime area</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-3xl font-black text-gray-900">$3.29</div>
+                                                <div class="text-xs text-green-600 font-semibold">Save $3.12</div>
+                                            </div>
+                                        </div>
+                                        <button class="w-full bg-gray-100 text-gray-500 font-semibold py-3 rounded-xl">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center text-sm text-gray-500 max-w-2xl mx-auto">
+                    💡 <strong>设计说明</strong>：最佳匹配突出显示，辅助信息（绕路里程、节省金额）帮助用户快速决策。低安全评级站点降低视觉优先级但保留选择权。
+                </div>
+            </div>
+
+            <!-- Screen 4: Detail Page -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-center">4. Station Detail Page</h2>
+                <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <strong>痛点解决</strong>：用户需要更深入的安全信息来建立信心。详细的犯罪数据、用户评价和价格趋势提供透明化决策支持。
+                </p>
+                <div class="flex justify-center">
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-white">
+                            <div class="h-full overflow-y-auto">
+                                <!-- Header Image -->
+                                <div class="relative h-48 bg-gradient-to-br from-green-400 to-blue-500">
+                                    <button class="absolute top-4 left-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-arrow-left text-gray-800"></i>
+                                    </button>
+                                    <button class="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-heart text-red-500"></i>
+                                    </button>
+                                </div>
+
+                                <div class="p-4">
+                                    <!-- Title Section -->
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <h2 class="text-2xl font-black text-gray-900">Shell Station</h2>
+                                                <div class="safety-badge safety-high text-white text-sm w-10 h-10">A</div>
+                                            </div>
+                                            <p class="text-sm text-gray-500">1247 Market St, San Francisco</p>
+                                            <div class="flex items-center gap-1 mt-1">
+                                                <div class="flex text-yellow-400">
+                                                    <i class="fas fa-star text-xs"></i>
+                                                    <i class="fas fa-star text-xs"></i>
+                                                    <i class="fas fa-star text-xs"></i>
+                                                    <i class="fas fa-star text-xs"></i>
+                                                    <i class="fas fa-star-half-alt text-xs"></i>
+                                                </div>
+                                                <span class="text-xs text-gray-600">(4.6 • 328 reviews)</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-3xl font-black text-green-600">$3.45</div>
+                                            <div class="text-xs text-gray-500">Updated 12m ago</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Stats -->
+                                    <div class="grid grid-cols-3 gap-2 mb-4">
+                                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                                            <i class="fas fa-route text-green-600 text-lg mb-1"></i>
+                                            <div class="text-xs font-semibold text-gray-900">0.8 mi</div>
+                                            <div class="text-xs text-gray-500">Distance</div>
+                                        </div>
+                                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                                            <i class="fas fa-clock text-blue-600 text-lg mb-1"></i>
+                                            <div class="text-xs font-semibold text-gray-900">3 min</div>
+                                            <div class="text-xs text-gray-500">Drive time</div>
+                                        </div>
+                                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                                            <i class="fas fa-door-open text-purple-600 text-lg mb-1"></i>
+                                            <div class="text-xs font-semibold text-gray-900">24/7</div>
+                                            <div class="text-xs text-gray-500">Open now</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Safety Details -->
+                                    <div class="bg-green-50 border-2 border-green-200 rounded-2xl p-4 mb-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <i class="fas fa-shield-alt text-green-600"></i>
+                                            <h3 class="font-bold text-gray-900">Safety Score: A</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-3">Very safe area with low crime rate</p>
+                                        <div class="space-y-2 text-xs">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Violent Crime</span>
+                                                <span class="text-green-600 font-semibold">Very Low</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Property Crime</span>
+                                                <span class="text-green-600 font-semibold">Low</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Last 6 Months</span>
+                                                <span class="text-gray-900 font-semibold">2 incidents (0.5 mi radius)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Price History -->
+                                    <div class="bg-gray-50 rounded-2xl p-4 mb-4">
+                                        <h3 class="font-bold text-gray-900 mb-3">Price Trend (7 days)</h3>
+                                        <div class="relative h-24 flex items-end gap-1">
+                                            <div class="flex-1 bg-green-200 rounded-t" style="height: 60%"></div>
+                                            <div class="flex-1 bg-green-300 rounded-t" style="height: 70%"></div>
+                                            <div class="flex-1 bg-green-300 rounded-t" style="height: 65%"></div>
+                                            <div class="flex-1 bg-green-400 rounded-t" style="height: 80%"></div>
+                                            <div class="flex-1 bg-green-400 rounded-t" style="height: 75%"></div>
+                                            <div class="flex-1 bg-green-500 rounded-t" style="height: 90%"></div>
+                                            <div class="flex-1 bg-green-600 rounded-t" style="height: 100%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">Prices trending up by $0.08/gal this week</p>
+                                    </div>
+
+                                    <!-- Amenities -->
+                                    <div class="mb-4">
+                                        <h3 class="font-bold text-gray-900 mb-3">Amenities</h3>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                                <i class="fas fa-shopping-basket mr-1"></i>Convenience Store
+                                            </span>
+                                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                                <i class="fas fa-restroom mr-1"></i>Restroom
+                                            </span>
+                                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                                <i class="fas fa-car-wash mr-1"></i>Car Wash
+                                            </span>
+                                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                                                <i class="fas fa-wind mr-1"></i>Air Pump
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- CTA Button -->
+                                    <button class="w-full bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg mb-4">
+                                        <i class="fas fa-navigation mr-2"></i>Start Navigation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center text-sm text-gray-500 max-w-2xl mx-auto">
+                    💡 <strong>设计说明</strong>：安全评分突出展示，犯罪数据可视化增强可信度。价格趋势图帮助用户判断是否现在加油或等待更好时机。
+                </div>
+            </div>
+
+            <!-- Screen 5: Preferences -->
+            <div class="mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-center">5. Preference Settings</h2>
+                <p class="text-center text-gray-400 mb-8 max-w-2xl mx-auto">
+                    <strong>痛点解决</strong>：不同用户有不同优先级。通过可视化权重调节，让推荐算法真正符合个人需求。
+                </p>
+                <div class="flex justify-center">
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <div class="phone-screen bg-white">
+                            <div class="p-6 h-full overflow-y-auto">
+                                <div class="flex items-center mb-6">
+                                    <button class="w-10 h-10 flex items-center justify-center">
+                                        <i class="fas fa-arrow-left text-gray-800 text-xl"></i>
+                                    </button>
+                                    <h2 class="text-2xl font-black text-gray-900 flex-1 text-center mr-10">Preferences</h2>
+                                </div>
+
+                                <!-- Quick Presets -->
+                                <div class="mb-8">
+                                    <h3 class="font-semibold text-gray-900 mb-3">Quick Presets</h3>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <button class="bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl p-4 text-center shadow-lg">
+                                            <i class="fas fa-balance-scale text-2xl mb-2"></i>
+                                            <div class="text-xs font-semibold">Balanced</div>
+                                        </button>
+                                        <button class="bg-gray-100 text-gray-700 rounded-2xl p-4 text-center">
+                                            <i class="fas fa-dollar-sign text-2xl mb-2"></i>
+                                            <div class="text-xs font-semibold">Price First</div>
+                                        </button>
+                                        <button class="bg-gray-100 text-gray-700 rounded-2xl p-4 text-center">
+                                            <i class="fas fa-shield-alt text-2xl mb-2"></i>
+                                            <div class="text-xs font-semibold">Safety First</div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Weights -->
+                                <div class="mb-8">
+                                    <h3 class="font-semibold text-gray-900 mb-4">Custom Weights</h3>
+                                    
+                                    <div class="space-y-6">
+                                        <!-- Price Weight -->
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <span class="text-sm font-medium text-gray-700">💰 Price Importance</span>
+                                                <span class="text-sm font-bold text-green-600">40%</span>
+                                            </div>
+                                            <input type="range" class="w-full h-2 bg-gray-200 rounded-full appearance-none" value="40" />
+                                            <p class="text-xs text-gray-500 mt-1">How much you care about saving money</p>
+                                        </div>
+
+                                        <!-- Safety Weight -->
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <span class="text-sm font-medium text-gray-700">🛡️ Safety Importance</span>
+                                                <span class="text-sm font-bold text-green-600">40%</span>
+                                            </div>
+                                            <input type="range" class="w-full h-2 bg-gray-200 rounded-full appearance-none" value="40" />
+                                            <p class="text-xs text-gray-500 mt-1">How much you prioritize safe neighborhoods</p>
+                                        </div>
+
+                                        <!-- Route Weight -->
+                                        <div>
+                                            <div class="flex justify-between mb-2">
+                                                <span class="text-sm font-medium text-gray-700">🗺️ Route Efficiency</span>
+                                                <span class="text-sm font-bold text-green-600">20%</span>
+                                            </div>
+                                            <input type="range" class="w-full h-2 bg-gray-200 rounded-full appearance-none" value="20" />
+                                            <p class="text-xs text-gray-500 mt-1">Avoid stations that require detours</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Settings -->
+                                <div class="mb-6">
+                                    <h3 class="font-semibold text-gray-900 mb-3">Additional Settings</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center bg-gray-50 rounded-xl p-4">
+                                            <div>
+                                                <div class="font-medium text-gray-900 text-sm">Search Radius</div>
+                                                <div class="text-xs text-gray-500">How far to search for stations</div>
+                                            </div>
+                                            <select class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                                <option>5 miles</option>
+                                                <option>10 miles</option>
+                                                <option>25 miles</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex justify-between items-center bg-gray-50 rounded-xl p-4">
+                                            <div>
+                                                <div class="font-medium text-gray-900 text-sm">Fuel Type</div>
+                                                <div class="text-xs text-gray-500">Your preferred fuel grade</div>
+                                            </div>
+                                            <select class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                                <option>Regular</option>
+                                                <option>Mid-Grade</option>
+                                                <option>Premium</option>
+                                                <option>Diesel</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="w-full bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg">
+                                    Save Preferences
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center text-sm text-gray-500 max-w-2xl mx-auto">
+                    💡 <strong>设计说明</strong>：提供快速预设和自定义调节两种方式，满足不同用户的控制需求。实时反馈（百分比）增强操作感知。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design Rationale Section -->
+    <div id="design" class="content-section">
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-black mb-4">设计理念</h1>
+                <p class="text-xl text-gray-400">Design Rationale & Innovation</p>
+            </div>
+
+            <!-- Product Positioning -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-bullseye text-green-400 mr-3"></i>
+                    产品定位 (Product Positioning)
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-300 mb-3">产品愿景</h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            SafeFuel 致力于重新定义美国驾驶者的加油体验，不仅帮助用户省钱，更让每一次加油都充满安心与智慧。
+                            我们相信，安全不应该是奢侈品，而是每个人应享有的基本权利。
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-300 mb-3">核心理念</h3>
+                        <ul class="text-gray-300 space-y-2">
+                            <li>✓ <strong>透明化</strong>：所有数据源公开，用户知情决策</li>
+                            <li>✓ <strong>个性化</strong>：尊重不同偏好，无"一刀切"推荐</li>
+                            <li>✓ <strong>社区驱动</strong>：UGC 内容增强数据准确性</li>
+                            <li>✓ <strong>效率至上</strong>：减少决策时间，直达最佳选择</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Persona -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-users text-green-400 mr-3"></i>
+                    用户画像 (User Personas)
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gray-800 bg-opacity-50 p-6 rounded-xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-2xl">
+                                👨‍💼
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">Michael Chen</h3>
+                                <p class="text-sm text-gray-400">35岁，软件工程师</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3">
+                            每天从郊区通勤至旧金山上班，单程 45 分钟。对油价敏感但更在意时间效率，不愿意为省几美分绕路 15 分钟。
+                        </p>
+                        <div class="text-xs text-gray-400">
+                            <div><strong>痛点</strong>：GasBuddy 推荐的便宜加油站经常不顺路</div>
+                            <div><strong>需求</strong>：路线优化 + 价格平衡</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 bg-opacity-50 p-6 rounded-xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center text-2xl">
+                                👩
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">Sarah Johnson</h3>
+                                <p class="text-sm text-gray-400">28岁，Uber 司机</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3">
+                            全职 Rideshare 司机，每周加油 3-4 次。燃油成本直接影响收入，需要找到最便宜的加油站，同时避免犯罪高发区的夜间加油。
+                        </p>
+                        <div class="text-xs text-gray-400">
+                            <div><strong>痛点</strong>：夜间加油安全担忧，不知道哪些区域危险</div>
+                            <div><strong>需求</strong>：安全评分 + 极致省钱</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pain Points Analysis -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-exclamation-circle text-green-400 mr-3"></i>
+                    核心痛点分析 (Core Pain Points)
+                </h2>
+                <div class="space-y-4">
+                    <div class="bg-red-900 bg-opacity-20 border-l-4 border-red-500 p-5 rounded-r-xl">
+                        <h3 class="font-bold text-white mb-2">❌ 痛点 1：信息过载，决策困难</h3>
+                        <p class="text-sm text-gray-300 mb-3">
+                            用户需要在多个 App 之间切换（GasBuddy 查价格、Google Maps 看路线、Citizen 查犯罪），信息碎片化导致决策效率低下。
+                        </p>
+                        <div class="bg-green-900 bg-opacity-30 p-3 rounded-lg">
+                            <div class="text-sm font-semibold text-green-400 mb-1">✅ SafeFuel 解决方案</div>
+                            <p class="text-xs text-gray-300">
+                                一站式整合所有关键信息（价格、安全、路线）+ AI 智能排序，用户只需看第一张卡片即可做决策。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-900 bg-opacity-20 border-l-4 border-red-500 p-5 rounded-r-xl">
+                        <h3 class="font-bold text-white mb-2">❌ 痛点 2：安全信息缺失</h3>
+                        <p class="text-sm text-gray-300 mb-3">
+                            现有应用完全忽略安全因素。用户可能因为价格便宜而前往高犯罪率区域，特别是夜间加油存在人身安全风险。
+                        </p>
+                        <div class="bg-green-900 bg-opacity-30 p-3 rounded-lg">
+                            <div class="text-sm font-semibold text-green-400 mb-1">✅ SafeFuel 解决方案</div>
+                            <p class="text-xs text-gray-300">
+                                整合 FBI Crime Data + 本地警局数据，生成 A-F 安全评级。地图标注使用红黄绿颜色编码，一目了然。详情页展示具体犯罪类型和最近事件。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-900 bg-opacity-20 border-l-4 border-red-500 p-5 rounded-r-xl">
+                        <h3 class="font-bold text-white mb-2">❌ 痛点 3：绕路成本被忽视</h3>
+                        <p class="text-sm text-gray-300 mb-3">
+                            GasBuddy 只显示价格和距离，不考虑用户的实际行驶路线。为省 $0.10/加仑绕路 5 英里，实际消耗的燃油可能抵消节省。
+                        </p>
+                        <div class="bg-green-900 bg-opacity-30 p-3 rounded-lg">
+                            <div class="text-sm font-semibold text-green-400 mb-1">✅ SafeFuel 解决方案</div>
+                            <p class="text-xs text-gray-300">
+                                用户可输入目的地，系统计算每个加油站相对当前路线的偏离里程数（Detour Miles）。优先推荐"顺路"的高性价比选项。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Flow Diagram -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-project-diagram text-green-400 mr-3"></i>
+                    用户流程图 (User Flow)
+                </h2>
+                <div class="bg-gray-900 p-6 rounded-xl">
+                    <pre class="mermaid">
+flowchart TD
+    A[打开 App] --> B{首次使用?}
+    B -->|是| C[Onboarding<br/>3 步引导]
+    B -->|否| D[主界面]
+    C --> E[SSO 登录<br/>Google/Apple]
+    E --> F[位置权限请求]
+    F --> D
+    D --> G{选择视图}
+    G -->|地图| H[Map View<br/>可视化标注]
+    G -->|列表| I[List View<br/>智能排序]
+    H --> J[点击加油站]
+    I --> J
+    J --> K[详情页<br/>价格+安全+评价]
+    K --> L{用户决策}
+    L -->|满意| M[点击 Navigate]
+    L -->|不满意| N[返回列表]
+    M --> O[选择导航 App<br/>Google Maps/Waze]
+    O --> P[前往加油]
+    P --> Q[加油后提示<br/>更新价格/评价]
+    Q --> R{参与 UGC?}
+    R -->|是| S[上传价格/照片<br/>获得积分]
+    R -->|否| T[结束]
+    S --> T
+    N --> I
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Feature Map -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-sitemap text-green-400 mr-3"></i>
+                    功能架构图 (Feature Map)
+                </h2>
+                <div class="bg-gray-900 p-6 rounded-xl">
+                    <pre class="mermaid">
+graph TB
+    A[SafeFuel App] --> B[Discovery]
+    A --> C[Navigation]
+    A --> D[Community]
+    A --> E[Profile]
+    
+    B --> B1[Map View]
+    B --> B2[List View]
+    B --> B3[Filters]
+    B --> B4[Search]
+    
+    C --> C1[Station Detail]
+    C --> C2[Price History]
+    C --> C3[Safety Score]
+    C --> C4[Reviews]
+    C --> C5[Navigate CTA]
+    
+    D --> D1[Update Price]
+    D --> D2[Upload Photo]
+    D --> D3[Write Review]
+    D --> D4[Share Station]
+    
+    E --> E1[Preferences]
+    E --> E2[Saved Stations]
+    E --> E3[Rewards Points]
+    E --> E4[Settings]
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Design Innovation -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-lightbulb text-green-400 mr-3"></i>
+                    设计创新点 (Innovation Highlights)
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-purple-900 to-purple-800 bg-opacity-50 p-6 rounded-xl border border-purple-500 border-opacity-30">
+                        <div class="text-3xl mb-3">🎯</div>
+                        <h3 class="font-bold text-white text-lg mb-2">多目标优化推荐引擎</h3>
+                        <p class="text-sm text-gray-300">
+                            业界首创将价格、安全、路线三维度整合的 AI 推荐算法，支持用户自定义权重，真正做到"千人千面"。
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-900 to-blue-800 bg-opacity-50 p-6 rounded-xl border border-blue-500 border-opacity-30">
+                        <div class="text-3xl mb-3">🛡️</div>
+                        <h3 class="font-bold text-white text-lg mb-2">实时安全情报系统</h3>
+                        <p class="text-sm text-gray-300">
+                            整合联邦和地方犯罪数据库，结合社区反馈，生成动态安全评分。并提供时间维度分析（白天 vs 夜间安全性）。
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-orange-900 to-orange-800 bg-opacity-50 p-6 rounded-xl border border-orange-500 border-opacity-30">
+                        <div class="text-3xl mb-3">🗺️</div>
+                        <h3 class="font-bold text-white text-lg mb-2">智能路线感知</h3>
+                        <p class="text-sm text-gray-300">
+                            不仅显示"最近的"，而是显示"最顺路的"。计算用户当前导航路径的偏离度，避免无意义绕行。
+                        </p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-900 to-green-800 bg-opacity-50 p-6 rounded-xl border border-green-500 border-opacity-30">
+                        <div class="text-3xl mb-3">📊</div>
+                        <h3 class="font-bold text-white text-lg mb-2">预测性价格分析</h3>
+                        <p class="text-sm text-gray-300">
+                            基于历史数据的价格趋势预测，告知用户"现在加油"还是"明天可能更便宜"，最大化节省效益。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Design Principles -->
+            <div class="prd-section rounded-2xl p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-palette text-green-400 mr-3"></i>
+                    视觉设计原则 (Visual Design Principles)
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-eye text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white mb-1">清晰的视觉层级 (Clear Hierarchy)</h3>
+                            <p class="text-sm text-gray-400">
+                                使用字重、尺寸、颜色建立信息优先级。最重要的信息（价格、安全评分）使用最大字号和高对比度。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-paint-brush text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white mb-1">色彩语义化 (Semantic Colors)</h3>
+                            <p class="text-sm text-gray-400">
+                                绿色=安全/省钱，红色=危险/价格高，黄色=中等。符合用户心智模型，降低认知负担。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-mobile-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white mb-1">拇指友好设计 (Thumb-Friendly)</h3>
+                            <p class="text-sm text-gray-400">
+                                主要 CTA 按钮位于屏幕底部 1/3 区域，单手操作舒适。最小触摸目标 44×44pt（iOS标准）。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-universal-access text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white mb-1">无障碍优先 (Accessibility First)</h3>
+                            <p class="text-sm text-gray-400">
+                                所有颜色对比度 ≥ 4.5:1 (WCAG AA)，支持动态字体，完整的 VoiceOver 标注。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Competitive Advantage -->
+            <div class="prd-section rounded-2xl p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-trophy text-green-400 mr-3"></i>
+                    竞争优势总结 (Competitive Advantage)
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="table-custom w-full">
+                        <thead>
+                            <tr>
+                                <th>功能/特性</th>
+                                <th>GasBuddy</th>
+                                <th>Waze</th>
+                                <th class="bg-green-500 bg-opacity-30">SafeFuel</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr>
+                                <td class="font-semibold">价格数据</td>
+                                <td class="text-center">✅ 详细</td>
+                                <td class="text-center">⚠️ 基础</td>
+                                <td class="text-center text-green-400">✅ 详细 + 预测</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">安全评分</td>
+                                <td class="text-center text-red-400">❌ 无</td>
+                                <td class="text-center text-red-400">❌ 无</td>
+                                <td class="text-center text-green-400">✅ A-F 评级</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">路线优化</td>
+                                <td class="text-center text-red-400">❌ 无</td>
+                                <td class="text-center">✅ 有</td>
+                                <td class="text-center text-green-400">✅ 偏离度计算</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">个性化推荐</td>
+                                <td class="text-center text-red-400">❌ 无</td>
+                                <td class="text-center text-red-400">❌ 无</td>
+                                <td class="text-center text-green-400">✅ AI 多目标优化</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">UGC 社区</td>
+                                <td class="text-center">✅ 活跃</td>
+                                <td class="text-center">⚠️ 有限</td>
+                                <td class="text-center text-green-400">✅ 奖励机制</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold">用户体验</td>
+                                <td class="text-center">⚠️ 老旧</td>
+                                <td class="text-center">✅ 现代</td>
+                                <td class="text-center text-green-400">✅ 极致精简</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 bg-green-900 bg-opacity-20 border-2 border-green-500 border-opacity-30 rounded-xl p-5">
+                    <p class="text-green-300 font-semibold mb-2">🚀 核心差异化价值</p>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        SafeFuel 不是"又一个 GasBuddy"，而是重新定义加油决策的全新品类。
+                        我们不仅回答"哪里便宜"，更回答"哪里安全""哪里不绕路"以及"最适合你的是哪个"。
+                        通过 AI 驱动的个性化推荐，让每位用户都能获得量身定制的最优解。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-gas-pump text-white"></i>
+                </div>
+                <span class="text-xl font-bold">SafeFuel</span>
+            </div>
+            <p class="text-gray-400 text-sm mb-2">Smart Fuel Finder with Safety Intelligence</p>
+            <p class="text-gray-500 text-xs">
+                Created with ❤️ for the US Market | PRD Version 1.0 | December 2025
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#10B981',
+                primaryTextColor: '#F1F5F9',
+                primaryBorderColor: '#059669',
+                lineColor: '#6EE7B7',
+                secondaryColor: '#1E293B',
+                tertiaryColor: '#334155',
+                background: '#0F172A',
+                mainBkg: '#1E293B',
+                secondBkg: '#334155',
+                textColor: '#F1F5F9',
+                border1: '#475569',
+                border2: '#64748B'
+            }
+        });
+
+        // Tab switching
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('bg-gray-800', 'hover:bg-gray-700');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Highlight active tab
+            event.target.classList.add('active');
+            event.target.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('.prd-section, .phone-frame').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+
+        console.log('🚀 SafeFuel PRD & Prototype loaded successfully!');
+    </script>
+</body>
+</html>
