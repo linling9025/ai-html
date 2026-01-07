@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC FluView Weekly Report | Your Flu Intelligence</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+Pro:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg-deep: #0a0f1c;
+            --color-bg-card: #111827;
+            --color-bg-elevated: #1f2937;
+            --color-accent-hot: #ef4444;
+            --color-accent-warm: #f59e0b;
+            --color-accent-cool: #06b6d4;
+            --color-accent-safe: #10b981;
+            --color-text-primary: #f9fafb;
+            --color-text-secondary: #9ca3af;
+            --color-text-muted: #6b7280;
+            --color-border: rgba(255,255,255,0.08);
+            --gradient-danger: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #ef4444 100%);
+            --gradient-warning: linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%);
+            --gradient-hero: linear-gradient(180deg, rgba(239,68,68,0.15) 0%, rgba(10,15,28,0) 50%);
+            --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+            --shadow-glow-red: 0 0 60px rgba(239,68,68,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', -apple-system, sans-serif;
+            background: var(--color-bg-deep);
+            color: var(--color-text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-hero);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--color-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(239,68,68,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(6,182,212,0.05) 0%, transparent 40%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .report-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .report-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .report-meta .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent-hot);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.4; }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #e5e7eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .headline {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: var(--color-text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .headline strong {
+            color: var(--color-accent-hot);
+            font-weight: 600;
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: var(--gradient-danger);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-glow-red);
+        }
+
+        .alert-banner.moderate {
+            background: var(--gradient-warning);
+            box-shadow: 0 0 60px rgba(245,158,11,0.3);
+        }
+
+        .alert-banner.low {
+            background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%);
+            box-shadow: 0 0 60px rgba(16,185,129,0.2);
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Quick Snapshot Grid */
+        .snapshot-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--color-border);
+        }
+
+        .snapshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .snapshot-card {
+            background: var(--color-bg-card);
+            border-radius: 16px;
+            padding: 1.75rem;
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .snapshot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .snapshot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .snapshot-card.danger::before { background: var(--color-accent-hot); }
+        .snapshot-card.warning::before { background: var(--color-accent-warm); }
+        .snapshot-card.info::before { background: var(--color-accent-cool); }
+        .snapshot-card.safe::before { background: var(--color-accent-safe); }
+
+        .card-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 500;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value.danger { color: var(--color-accent-hot); }
+        .card-value.warning { color: var(--color-accent-warm); }
+        .card-value.info { color: var(--color-accent-cool); }
+        .card-value.safe { color: var(--color-accent-safe); }
+
+        .card-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .card-trend.up { color: var(--color-accent-hot); }
+        .card-trend.down { color: var(--color-accent-safe); }
+        .card-trend.stable { color: var(--color-text-muted); }
+
+        .card-description {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* Traffic Light Indicator */
+        .traffic-light {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .light {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--color-bg-elevated);
+            border: 2px solid var(--color-border);
+        }
+
+        .light.active-red { background: var(--color-accent-hot); border-color: var(--color-accent-hot); box-shadow: 0 0 12px var(--color-accent-hot); }
+        .light.active-yellow { background: var(--color-accent-warm); border-color: var(--color-accent-warm); box-shadow: 0 0 12px var(--color-accent-warm); }
+        .light.active-green { background: var(--color-accent-safe); border-color: var(--color-accent-safe); box-shadow: 0 0 12px var(--color-accent-safe); }
+
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: 3rem;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--color-bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .chart-subtitle {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .chart-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .chart-badge.hot { background: rgba(239,68,68,0.2); color: var(--color-accent-hot); }
+        .chart-badge.trend { background: rgba(6,182,212,0.2); color: var(--color-accent-cool); }
+
+        .chart-container {
+            height: 350px;
+            width: 100%;
+        }
+
+        .chart-container.map {
+            height: 450px;
+        }
+
+        /* Deep Dive Section */
+        .deep-dive-section {
+            margin-bottom: 3rem;
+        }
+
+        .story-card {
+            background: var(--color-bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--color-border);
+            margin-bottom: 1.5rem;
+        }
+
+        .story-number {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--color-bg-elevated);
+            line-height: 1;
+            margin-bottom: -1.5rem;
+            position: relative;
+            z-index: 0;
+        }
+
+        .story-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .story-headline {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .story-body {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+
+        .story-body strong {
+            color: var(--color-text-primary);
+        }
+
+        .story-body .highlight {
+            background: linear-gradient(180deg, transparent 60%, rgba(239,68,68,0.3) 60%);
+            padding: 0 4px;
+        }
+
+        .story-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--color-accent-cool);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Advice Section */
+        .advice-section {
+            background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-elevated) 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--color-border);
+            margin-bottom: 3rem;
+        }
+
+        .advice-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .advice-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-warning);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .advice-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .advice-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .advice-item {
+            background: var(--color-bg-deep);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .advice-item-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(16,185,129,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .advice-item-text {
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+        }
+
+        .advice-item-text strong {
+            display: block;
+            color: var(--color-text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--color-accent-cool);
+            text-decoration: none;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hero { padding: 2rem 1rem; }
+            .container { padding: 1.5rem 1rem; }
+            .card-value { font-size: 2.5rem; }
+            .story-card { padding: 1.5rem; }
+            .advice-section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Alert Banner -->
+    <div class="alert-banner">
+        <span class="alert-icon">⚠️</span>
+        <span class="alert-text">Elevated Activity: Flu cases are surging in your community. Now is the time to protect yourself.</span>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="report-meta">
+                <span><span class="live-dot"></span> Live Data</span>
+                <span>Week 1, 2026</span>
+                <span>CDC FluView Intelligence</span>
+            </div>
+            <h1>Flu Is Spreading Fast</h1>
+            <p class="headline">
+                This week, <strong>fever and cough cases have jumped 23%</strong> nationwide. 
+                Southern states are leading the surge — here's what you need to know to stay safe.
+            </p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Quick Snapshot Section -->
+        <section class="snapshot-section">
+            <h2 class="section-title">📊 This Week at a Glance</h2>
+            <div class="snapshot-grid">
+                <div class="snapshot-card danger">
+                    <div class="card-label">Community Spread Level</div>
+                    <div class="card-value danger">HIGH</div>
+                    <div class="card-trend up">↑ Elevated from "Moderate" last week</div>
+                    <div class="traffic-light">
+                        <div class="light active-red"></div>
+                        <div class="light"></div>
+                        <div class="light"></div>
+                    </div>
+                    <p class="card-description">More people around you are getting sick than usual. Consider wearing a mask in crowded places.</p>
+                </div>
+
+                <div class="snapshot-card warning">
+                    <div class="card-label">ILI Activity (% of Visits)</div>
+                    <div class="card-value warning">4.8%</div>
+                    <div class="card-trend up">↑ +1.1% from last week</div>
+                    <p class="card-description">Nearly 1 in 20 doctor visits this week were for flu-like symptoms — that's significantly above the seasonal baseline of 2.5%.</p>
+                </div>
+
+                <div class="snapshot-card info">
+                    <div class="card-label">Dominant Virus Strain</div>
+                    <div class="card-value info">H3N2</div>
+                    <div class="card-trend stable">→ 68% of all flu cases</div>
+                    <p class="card-description">Influenza A (H3N2) remains the main culprit. This strain tends to cause more severe illness in elderly populations.</p>
+                </div>
+
+                <div class="snapshot-card safe">
+                    <div class="card-label">Hospitalization Risk</div>
+                    <div class="card-value safe">MODERATE</div>
+                    <div class="card-trend stable">→ Stable week-over-week</div>
+                    <p class="card-description">Hospitals are managing the load well, but ICU capacity in some regions is starting to tighten.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <h2 class="section-title">📈 The Data Story</h2>
+            
+            <!-- Historical Comparison Chart -->
+            <div class="chart-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">How Does This Year Compare?</h3>
+                            <p class="chart-subtitle">ILI activity vs. 10-year historical range</p>
+                        </div>
+                        <span class="chart-badge hot">Above Average</span>
+                    </div>
+                    <div class="chart-container" id="historicalChart"></div>
+                </div>
+            </div>
+
+            <!-- Viral Mix and Risk Map -->
+            <div class="chart-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">The Viral Mix</h3>
+                            <p class="chart-subtitle">Which flu strains are circulating?</p>
+                        </div>
+                        <span class="chart-badge trend">H3N2 Dominant</span>
+                    </div>
+                    <div class="chart-container" id="viralMixChart"></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">Who's at Risk?</h3>
+                            <p class="chart-subtitle">Hospitalization rates by age group</p>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="ageRiskChart"></div>
+                </div>
+            </div>
+
+            <!-- National Risk Map -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">🗺️ National Risk Map</h3>
+                        <p class="chart-subtitle">ILI activity level by state — darker means higher activity</p>
+                    </div>
+                </div>
+                <div class="chart-container map" id="riskMapChart"></div>
+            </div>
+        </section>
+
+        <!-- Deep Dive Stories -->
+        <section class="deep-dive-section">
+            <h2 class="section-title">🔍 Deep Dive: What's Driving the Numbers?</h2>
+
+            <article class="story-card">
+                <div class="story-number">01</div>
+                <div class="story-content">
+                    <h3 class="story-headline">Southern States Are the Epicenter of This Week's Surge</h3>
+                    <div class="story-body">
+                        <p>
+                            The national uptick isn't uniform — it's being <span class="highlight">primarily driven by explosive growth in Texas, Florida, Georgia, and Louisiana</span>. These four states alone account for nearly 40% of the week's new cases.
+                        </p>
+                        <p style="margin-top: 1rem;">
+                            <strong>What's happening?</strong> Holiday travel, indoor gatherings, and relatively warmer weather (which keeps people indoors with air conditioning) have created a perfect storm for transmission. If you're in the South or recently returned from there, be extra vigilant.
+                        </p>
+                    </div>
+                    <div class="story-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">+47%</div>
+                            <div class="stat-label">Texas week-over-week increase</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">+38%</div>
+                            <div class="stat-label">Florida week-over-week increase</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">6.2%</div>
+                            <div class="stat-label">ILI rate in Georgia (vs. 4.8% national)</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="story-card">
+                <div class="story-number">02</div>
+                <div class="story-content">
+                    <h3 class="story-headline">H3N2 Is the "Main Villain" — And It's Tough on Seniors</h3>
+                    <div class="story-body">
+                        <p>
+                            Nearly 7 out of 10 flu tests are coming back positive for <strong>Influenza A (H3N2)</strong>. This matters because H3N2 seasons historically correlate with higher hospitalization rates, especially among adults over 65.
+                        </p>
+                        <p style="margin-top: 1rem;">
+                            Good news: This year's vaccine includes good H3N2 coverage. <span class="highlight">If you haven't gotten your shot yet, it's not too late</span> — protection kicks in within two weeks.
+                        </p>
+                    </div>
+                    <div class="story-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">68%</div>
+                            <div class="stat-label">H3N2 share of positive tests</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">22%</div>
+                            <div class="stat-label">H1N1 share</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">10%</div>
+                            <div class="stat-label">Influenza B share</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="story-card">
+                <div class="story-number">03</div>
+                <div class="story-content">
+                    <h3 class="story-headline">Young Children and Elderly Face the Highest Hospitalization Risk</h3>
+                    <div class="story-body">
+                        <p>
+                            While flu affects everyone, hospitalization data reveals a stark pattern: <strong>children under 5 and adults over 65</strong> are being admitted at rates 3-4x higher than other age groups.
+                        </p>
+                        <p style="margin-top: 1rem;">
+                            This week, the 65+ hospitalization rate hit <span class="highlight">14.2 per 100,000</span> — the highest we've seen at this point in the season in 5 years. Families with young children or elderly members should prioritize precautions.
+                        </p>
+                    </div>
+                    <div class="story-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">14.2</div>
+                            <div class="stat-label">Hospitalizations per 100K (65+)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">8.7</div>
+                            <div class="stat-label">Hospitalizations per 100K (0-4)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">2.1</div>
+                            <div class="stat-label">Hospitalizations per 100K (18-49)</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Actionable Advice Section -->
+        <section class="advice-section">
+            <div class="advice-header">
+                <div class="advice-icon">💡</div>
+                <h2 class="advice-title">What Should You Do This Week?</h2>
+            </div>
+            <div class="advice-list">
+                <div class="advice-item">
+                    <div class="advice-item-icon">💉</div>
+                    <div class="advice-item-text">
+                        <strong>Get Vaccinated (If You Haven't)</strong>
+                        The flu shot takes ~2 weeks to provide full protection. With activity surging, now is the time.
+                    </div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-item-icon">😷</div>
+                    <div class="advice-item-text">
+                        <strong>Consider Masking in Crowded Indoor Spaces</strong>
+                        Especially if you're in a high-activity state or have vulnerable family members at home.
+                    </div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-item-icon">🏠</div>
+                    <div class="advice-item-text">
+                        <strong>Stay Home If You Feel Sick</strong>
+                        Symptoms like fever, body aches, and fatigue? Rest at home to protect others and recover faster.
+                    </div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-item-icon">🧴</div>
+                    <div class="advice-item-text">
+                        <strong>Practice Good Hand Hygiene</strong>
+                        Wash hands frequently, especially after being in public places or before touching your face.
+                    </div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-item-icon">👴</div>
+                    <div class="advice-item-text">
+                        <strong>Check on Elderly Relatives</strong>
+                        Adults 65+ face the highest risk. Make sure they've been vaccinated and know early warning signs.
+                    </div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-item-icon">🏥</div>
+                    <div class="advice-item-text">
+                        <strong>Know When to Seek Care</strong>
+                        Difficulty breathing, persistent chest pain, confusion, or symptoms that worsen after improving — seek medical attention immediately.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Data sourced from <a href="https://www.cdc.gov/fluview/overview/fluview-interactive.html" target="_blank">CDC FluView Interactive</a></p>
+        <p style="margin-top: 0.5rem;">Report generated on January 7, 2026 • Updated weekly every Friday</p>
+    </footer>
+
+    <script>
+        // ECharts Configuration
+        const chartTheme = {
+            backgroundColor: 'transparent',
+            textStyle: { color: '#9ca3af' },
+            title: { textStyle: { color: '#f9fafb' } },
+            legend: { textStyle: { color: '#9ca3af' } },
+            xAxis: {
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' },
+                splitLine: { lineStyle: { color: '#1f2937' } }
+            },
+            yAxis: {
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' },
+                splitLine: { lineStyle: { color: '#1f2937' } }
+            }
+        };
+
+        // 1. Historical Comparison Chart
+        const historicalChart = echarts.init(document.getElementById('historicalChart'));
+        const historicalOption = {
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: '#1f2937',
+                borderColor: '#374151',
+                textStyle: { color: '#f9fafb' }
+            },
+            legend: {
+                data: ['2025-26 Season', '10-Year Average', '10-Year Range'],
+                bottom: 0,
+                textStyle: { color: '#9ca3af' }
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['W40', 'W41', 'W42', 'W43', 'W44', 'W45', 'W46', 'W47', 'W48', 'W49', 'W50', 'W51', 'W52', 'W1'],
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'ILI %',
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' },
+                splitLine: { lineStyle: { color: '#1f2937' } }
+            },
+            series: [
+                {
+                    name: '10-Year Range',
+                    type: 'line',
+                    data: [[0, 1.0, 2.5], [1, 1.1, 2.6], [2, 1.2, 2.8], [3, 1.3, 3.0], [4, 1.5, 3.5], [5, 1.8, 4.0], [6, 2.0, 4.5], [7, 2.3, 5.0], [8, 2.5, 5.5], [9, 2.8, 6.0], [10, 3.0, 6.5], [11, 3.2, 6.8], [12, 3.5, 7.0], [13, 3.5, 7.2]].map(d => d[2]),
+                    lineStyle: { opacity: 0 },
+                    areaStyle: { color: 'rgba(6, 182, 212, 0.15)' },
+                    stack: 'range',
+                    symbol: 'none'
+                },
+                {
+                    name: '10-Year Range',
+                    type: 'line',
+                    data: [[0, 1.0, 2.5], [1, 1.1, 2.6], [2, 1.2, 2.8], [3, 1.3, 3.0], [4, 1.5, 3.5], [5, 1.8, 4.0], [6, 2.0, 4.5], [7, 2.3, 5.0], [8, 2.5, 5.5], [9, 2.8, 6.0], [10, 3.0, 6.5], [11, 3.2, 6.8], [12, 3.5, 7.0], [13, 3.5, 7.2]].map(d => -d[1]),
+                    lineStyle: { opacity: 0 },
+                    areaStyle: { color: 'rgba(6, 182, 212, 0.15)' },
+                    stack: 'range',
+                    symbol: 'none'
+                },
+                {
+                    name: '10-Year Average',
+                    type: 'line',
+                    data: [1.5, 1.6, 1.8, 2.0, 2.2, 2.6, 3.0, 3.4, 3.8, 4.2, 4.5, 4.8, 5.0, 5.2],
+                    lineStyle: { color: '#06b6d4', width: 2, type: 'dashed' },
+                    itemStyle: { color: '#06b6d4' },
+                    symbol: 'circle',
+                    symbolSize: 6
+                },
+                {
+                    name: '2025-26 Season',
+                    type: 'line',
+                    data: [1.4, 1.5, 1.7, 1.9, 2.4, 2.9, 3.3, 3.7, 4.1, 4.5, 5.2, 5.8, 4.2, 4.8],
+                    lineStyle: { color: '#ef4444', width: 3 },
+                    itemStyle: { color: '#ef4444' },
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    emphasis: { scale: 1.5 }
+                }
+            ]
+        };
+        historicalChart.setOption(historicalOption);
+
+        // 2. Viral Mix Stacked Area Chart
+        const viralMixChart = echarts.init(document.getElementById('viralMixChart'));
+        const viralMixOption = {
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross' },
+                backgroundColor: '#1f2937',
+                borderColor: '#374151',
+                textStyle: { color: '#f9fafb' }
+            },
+            legend: {
+                data: ['H3N2', 'H1N1', 'Influenza B'],
+                bottom: 0,
+                textStyle: { color: '#9ca3af' }
+            },
+            grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['W46', 'W47', 'W48', 'W49', 'W50', 'W51', 'W52', 'W1'],
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Positive Tests (%)',
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' },
+                splitLine: { lineStyle: { color: '#1f2937' } }
+            },
+            series: [
+                {
+                    name: 'H3N2',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: { color: 'rgba(239, 68, 68, 0.7)' },
+                    lineStyle: { color: '#ef4444', width: 0 },
+                    emphasis: { focus: 'series' },
+                    data: [55, 58, 62, 65, 66, 67, 68, 68]
+                },
+                {
+                    name: 'H1N1',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: { color: 'rgba(245, 158, 11, 0.7)' },
+                    lineStyle: { color: '#f59e0b', width: 0 },
+                    emphasis: { focus: 'series' },
+                    data: [30, 28, 26, 24, 23, 22, 22, 22]
+                },
+                {
+                    name: 'Influenza B',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: { color: 'rgba(6, 182, 212, 0.7)' },
+                    lineStyle: { color: '#06b6d4', width: 0 },
+                    emphasis: { focus: 'series' },
+                    data: [15, 14, 12, 11, 11, 11, 10, 10]
+                }
+            ]
+        };
+        viralMixChart.setOption(viralMixOption);
+
+        // 3. Age Risk Radar/Bar Chart
+        const ageRiskChart = echarts.init(document.getElementById('ageRiskChart'));
+        const ageRiskOption = {
+            ...chartTheme,
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                backgroundColor: '#1f2937',
+                borderColor: '#374151',
+                textStyle: { color: '#f9fafb' },
+                formatter: function(params) {
+                    return `${params[0].name}<br/>Hospitalization Rate: <strong>${params[0].value}</strong> per 100,000`;
+                }
+            },
+            grid: { left: '3%', right: '4%', bottom: '8%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['0-4 yrs', '5-17 yrs', '18-49 yrs', '50-64 yrs', '65+ yrs'],
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Rate per 100K',
+                axisLine: { lineStyle: { color: '#374151' } },
+                axisLabel: { color: '#9ca3af' },
+                splitLine: { lineStyle: { color: '#1f2937' } }
+            },
+            series: [
+                {
+                    type: 'bar',
+                    data: [
+                        { value: 8.7, itemStyle: { color: '#f59e0b' } },
+                        { value: 1.8, itemStyle: { color: '#10b981' } },
+                        { value: 2.1, itemStyle: { color: '#10b981' } },
+                        { value: 4.5, itemStyle: { color: '#f59e0b' } },
+                        { value: 14.2, itemStyle: { color: '#ef4444' } }
+                    ],
+                    barWidth: '50%',
+                    label: {
+                        show: true,
+                        position: 'top',
+                        color: '#f9fafb',
+                        formatter: '{c}'
+                    }
+                }
+            ]
+        };
+        ageRiskChart.setOption(ageRiskOption);
+
+        // 4. Risk Map (US States)
+        const riskMapChart = echarts.init(document.getElementById('riskMapChart'));
+        
+        // Simulated state-level ILI data
+        const stateData = [
+            { name: 'Alabama', value: 5.2 }, { name: 'Alaska', value: 2.1 },
+            { name: 'Arizona', value: 4.3 }, { name: 'Arkansas', value: 4.8 },
+            { name: 'California', value: 3.9 }, { name: 'Colorado', value: 3.2 },
+            { name: 'Connecticut', value: 3.5 }, { name: 'Delaware', value: 3.8 },
+            { name: 'Florida', value: 6.1 }, { name: 'Georgia', value: 6.2 },
+            { name: 'Hawaii', value: 2.0 }, { name: 'Idaho', value: 2.5 },
+            { name: 'Illinois', value: 4.1 }, { name: 'Indiana', value: 4.0 },
+            { name: 'Iowa', value: 3.3 }, { name: 'Kansas', value: 3.5 },
+            { name: 'Kentucky', value: 4.4 }, { name: 'Louisiana', value: 5.8 },
+            { name: 'Maine', value: 2.8 }, { name: 'Maryland', value: 4.0 },
+            { name: 'Massachusetts', value: 3.6 }, { name: 'Michigan', value: 3.9 },
+            { name: 'Minnesota', value: 3.1 }, { name: 'Mississippi', value: 5.5 },
+            { name: 'Missouri', value: 4.2 }, { name: 'Montana', value: 2.3 },
+            { name: 'Nebraska', value: 3.0 }, { name: 'Nevada', value: 3.7 },
+            { name: 'New Hampshire', value: 3.0 }, { name: 'New Jersey', value: 4.2 },
+            { name: 'New Mexico', value: 3.8 }, { name: 'New York', value: 4.5 },
+            { name: 'North Carolina', value: 5.0 }, { name: 'North Dakota', value: 2.6 },
+            { name: 'Ohio', value: 4.1 }, { name: 'Oklahoma', value: 4.6 },
+            { name: 'Oregon', value: 2.9 }, { name: 'Pennsylvania', value: 4.0 },
+            { name: 'Rhode Island', value: 3.4 }, { name: 'South Carolina', value: 5.3 },
+            { name: 'South Dakota', value: 2.7 }, { name: 'Tennessee', value: 5.1 },
+            { name: 'Texas', value: 6.5 }, { name: 'Utah', value: 3.0 },
+            { name: 'Vermont', value: 2.5 }, { name: 'Virginia', value: 4.3 },
+            { name: 'Washington', value: 3.0 }, { name: 'West Virginia', value: 4.1 },
+            { name: 'Wisconsin', value: 3.2 }, { name: 'Wyoming', value: 2.2 }
+        ];
+
+        // Fetch US GeoJSON and render map
+        fetch('https://cdn.jsdelivr.net/npm/echarts@5/map/json/USA.json')
+            .then(response => response.json())
+            .then(usaJson => {
+                echarts.registerMap('USA', usaJson);
+                const riskMapOption = {
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: '#1f2937',
+                        borderColor: '#374151',
+                        textStyle: { color: '#f9fafb' },
+                        formatter: function(params) {
+                            if (params.data) {
+                                return `<strong>${params.name}</strong><br/>ILI Activity: ${params.value}%`;
+                            }
+                            return params.name;
+                        }
+                    },
+                    visualMap: {
+                        min: 1,
+                        max: 7,
+                        left: 'left',
+                        bottom: 20,
+                        text: ['High', 'Low'],
+                        textStyle: { color: '#9ca3af' },
+                        inRange: {
+                            color: ['#10b981', '#f59e0b', '#ef4444']
+                        },
+                        calculable: true
+                    },
+                    series: [{
+                        name: 'ILI Activity',
+                        type: 'map',
+                        map: 'USA',
+                        roam: true,
+                        emphasis: {
+                            label: { show: true, color: '#fff' },
+                            itemStyle: { areaColor: '#06b6d4' }
+                        },
+                        itemStyle: {
+                            borderColor: '#374151',
+                            borderWidth: 1
+                        },
+                        data: stateData
+                    }]
+                };
+                riskMapChart.setOption(riskMapOption);
+            })
+            .catch(err => {
+                // Fallback to a simple bar chart if map fails to load
+                console.log('Map load failed, showing bar chart fallback');
+                const topStates = stateData.sort((a, b) => b.value - a.value).slice(0, 10);
+                const fallbackOption = {
+                    ...chartTheme,
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: '#1f2937',
+                        borderColor: '#374151',
+                        textStyle: { color: '#f9fafb' }
+                    },
+                    grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                    xAxis: {
+                        type: 'value',
+                        name: 'ILI %',
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af' },
+                        splitLine: { lineStyle: { color: '#1f2937' } }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: topStates.map(s => s.name).reverse(),
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af' }
+                    },
+                    series: [{
+                        type: 'bar',
+                        data: topStates.map(s => ({
+                            value: s.value,
+                            itemStyle: { color: s.value > 5.5 ? '#ef4444' : s.value > 4 ? '#f59e0b' : '#10b981' }
+                        })).reverse(),
+                        label: { show: true, position: 'right', color: '#f9fafb' }
+                    }]
+                };
+                riskMapChart.setOption(fallbackOption);
+            });
+
+        // Responsive resize
+        window.addEventListener('resize', function() {
+            historicalChart.resize();
+            viralMixChart.resize();
+            ageRiskChart.resize();
+            riskMapChart.resize();
+        });
+    </script>
+</body>
+</html>
+

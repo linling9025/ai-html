@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Spotlight | Comprehensive Flu Intelligence</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0c0f14;
+            --bg-secondary: #14181f;
+            --bg-card: #1a1f28;
+            --bg-elevated: #232a36;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+            --accent-yellow: #eab308;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
+            --text-bright: #f8fafc;
+            --text-normal: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --border-subtle: rgba(148, 163, 184, 0.1);
+            --border-light: rgba(148, 163, 184, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-primary); color: var(--text-normal); line-height: 1.6; }
+        
+        /* Navigation */
+        .nav-header { background: var(--bg-secondary); border-bottom: 1px solid var(--border-subtle); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .nav-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-logo { width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .nav-title { font-weight: 700; font-size: 1.1rem; color: var(--text-bright); }
+        .nav-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--text-dim); }
+
+        /* State Tabs */
+        .state-tabs { display: flex; justify-content: center; gap: 0.5rem; padding: 1.5rem 1rem; flex-wrap: wrap; background: var(--bg-primary); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 60px; z-index: 99; }
+        .state-tab { padding: 0.75rem 1.5rem; border-radius: 100px; border: 1px solid var(--border-light); background: transparent; color: var(--text-muted); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem; }
+        .state-tab:hover { border-color: var(--text-dim); color: var(--text-normal); }
+        .state-tab.active { background: var(--text-bright); color: var(--bg-primary); border-color: var(--text-bright); }
+        .state-tab .rank { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 0.15rem 0.4rem; border-radius: 4px; }
+        .state-tab.active .rank { background: rgba(0,0,0,0.15); }
+
+        /* Main Layout */
+        .main-content { max-width: 1600px; margin: 0 auto; padding: 2rem; }
+        .state-report { display: none; }
+        .state-report.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Hero Banner */
+        .state-hero { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%); border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; border: 1px solid var(--border-subtle); position: relative; overflow: hidden; }
+        .state-hero::before { content: ''; position: absolute; right: -100px; top: -100px; width: 400px; height: 400px; border-radius: 50%; opacity: 0.1; }
+        .state-hero.texas::before { background: radial-gradient(circle, var(--accent-red) 0%, transparent 70%); }
+        .state-hero.florida::before { background: radial-gradient(circle, var(--accent-orange) 0%, transparent 70%); }
+        .state-hero.georgia::before { background: radial-gradient(circle, var(--accent-yellow) 0%, transparent 70%); }
+        .state-hero.louisiana::before { background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%); }
+        .state-hero.california::before { background: radial-gradient(circle, var(--accent-blue) 0%, transparent 70%); }
+        
+        .hero-content { position: relative; z-index: 1; }
+        .state-name { font-family: 'Crimson Pro', Georgia, serif; font-size: 3rem; font-weight: 700; color: var(--text-bright); display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+        .state-tagline { font-size: 1.2rem; color: var(--text-muted); font-style: italic; margin-bottom: 1.5rem; }
+        .hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+        .hero-stat { background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-subtle); }
+        .hero-stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 0.25rem; }
+        .hero-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 1.75rem; font-weight: 500; }
+        .hero-stat-value.danger { color: var(--accent-red); }
+        .hero-stat-value.warning { color: var(--accent-orange); }
+        .hero-stat-value.info { color: var(--accent-blue); }
+        .hero-stat-value.good { color: var(--accent-green); }
+        .hero-stat-sub { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) { .grid-2, .grid-3, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; } }
+
+        /* Cards */
+        .card { background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-subtle); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .card-title { font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 0.5rem; }
+        .card-badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px; text-transform: uppercase; }
+        .card-badge.hot { background: rgba(239,68,68,0.2); color: var(--accent-red); }
+        .card-badge.rising { background: rgba(249,115,22,0.2); color: var(--accent-orange); }
+        .card-badge.stable { background: rgba(16,185,129,0.2); color: var(--accent-green); }
+
+        /* Story Card */
+        .story-card { background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-subtle); margin-bottom: 1.5rem; }
+        .story-title { font-family: 'Crimson Pro', Georgia, serif; font-size: 1.5rem; font-weight: 700; color: var(--text-bright); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+        .story-content { font-size: 1.05rem; color: var(--text-normal); line-height: 1.8; }
+        .story-content p { margin-bottom: 1rem; }
+        .story-content strong { color: var(--text-bright); }
+        .callout { background: var(--bg-elevated); border-left: 3px solid; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
+        .callout.danger { border-color: var(--accent-red); }
+        .callout.warning { border-color: var(--accent-orange); }
+        .callout.info { border-color: var(--accent-blue); }
+
+        /* Chart Container */
+        .chart-container { height: 280px; }
+        .chart-container.tall { height: 350px; }
+        .chart-container.short { height: 200px; }
+
+        /* Data Table */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th { text-align: left; padding: 0.75rem; color: var(--text-dim); font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-light); }
+        .data-table td { padding: 0.75rem; border-bottom: 1px solid var(--border-subtle); }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+        .trend-up { color: var(--accent-red); }
+        .trend-down { color: var(--accent-green); }
+
+        /* Metric Row */
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-subtle); }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-label { color: var(--text-muted); }
+        .metric-value { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+
+        /* Progress Bar */
+        .progress-container { margin-top: 0.5rem; }
+        .progress-bar { height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+        /* Hot Spots List */
+        .hotspot-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-subtle); }
+        .hotspot-item:last-child { border-bottom: none; }
+        .hotspot-rank { width: 28px; height: 28px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 500; }
+        .hotspot-info { flex: 1; }
+        .hotspot-name { font-weight: 500; color: var(--text-bright); }
+        .hotspot-sub { font-size: 0.8rem; color: var(--text-dim); }
+        .hotspot-value { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+
+        /* Comparison Widget */
+        .comparison-widget { text-align: center; padding: 1.5rem; }
+        .comparison-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .comparison-value { font-family: 'Crimson Pro', Georgia, serif; font-size: 3rem; font-weight: 700; line-height: 1; }
+        .comparison-value.above { color: var(--accent-red); }
+        .comparison-value.below { color: var(--accent-green); }
+        .comparison-sub { font-size: 0.9rem; color: var(--text-dim); margin-top: 0.5rem; }
+
+        /* Advice Section */
+        .advice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+        .advice-item { background: var(--bg-elevated); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1rem; align-items: flex-start; }
+        .advice-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.2rem; }
+        .advice-icon.vaccine { background: rgba(16,185,129,0.2); }
+        .advice-icon.mask { background: rgba(59,130,246,0.2); }
+        .advice-icon.home { background: rgba(168,85,247,0.2); }
+        .advice-icon.alert { background: rgba(239,68,68,0.2); }
+        .advice-text strong { display: block; color: var(--text-bright); margin-bottom: 0.25rem; }
+        .advice-text { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Footer */
+        footer { text-align: center; padding: 3rem 2rem; color: var(--text-dim); font-size: 0.85rem; border-top: 1px solid var(--border-subtle); margin-top: 2rem; }
+        footer a { color: var(--accent-blue); text-decoration: none; }
+
+        /* Section Headers */
+        .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); }
+        .section-header h2 { font-family: 'Crimson Pro', Georgia, serif; font-size: 1.75rem; font-weight: 700; color: var(--text-bright); }
+        .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
+    </style>
+</head>
+<body>
+    <nav class="nav-header">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <div class="nav-logo">🦠</div>
+                <span class="nav-title">CDC FluView Intelligence</span>
+            </div>
+            <div class="nav-meta">Week 1, 2026 • Comprehensive State Reports</div>
+        </div>
+    </nav>
+
+    <div class="state-tabs">
+        <button class="state-tab active" onclick="showState('texas')">🤠 Texas <span class="rank">#1</span></button>
+        <button class="state-tab" onclick="showState('florida')">🌴 Florida <span class="rank">#2</span></button>
+        <button class="state-tab" onclick="showState('georgia')">🍑 Georgia <span class="rank">#3</span></button>
+        <button class="state-tab" onclick="showState('louisiana')">⚜️ Louisiana <span class="rank">#4</span></button>
+        <button class="state-tab" onclick="showState('california')">☀️ California <span class="rank">Watch</span></button>
+    </div>
+
+    <main class="main-content">
+        <!-- ==================== TEXAS REPORT ==================== -->
+        <section class="state-report active" id="texas">
+            <!-- Hero Banner -->
+            <div class="state-hero texas">
+                <div class="hero-content">
+                    <h1 class="state-name">🤠 Texas</h1>
+                    <p class="state-tagline">"The Lone Star State is seeing flu activity that's anything but lonely."</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">ILI Activity Rate</div>
+                            <div class="hero-stat-value danger">6.5%</div>
+                            <div class="hero-stat-sub">vs 2.5% baseline</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">Week-over-Week</div>
+                            <div class="hero-stat-value danger">+47%</div>
+                            <div class="hero-stat-sub">Fastest in nation</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">vs National Avg</div>
+                            <div class="hero-stat-value danger">+35%</div>
+                            <div class="hero-stat-sub">4.8% national</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">Hospitalization Rate</div>
+                            <div class="hero-stat-value warning">12.4</div>
+                            <div class="hero-stat-sub">per 100,000</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">Positivity Rate</div>
+                            <div class="hero-stat-value danger">28.3%</div>
+                            <div class="hero-stat-sub">of tests positive</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-label">Dominant Strain</div>
+                            <div class="hero-stat-value info">H3N2</div>
+                            <div class="hero-stat-sub">72% of samples</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Story -->
+            <div class="story-card">
+                <h3 class="story-title">📍 The Big Picture: Why Texas is Ground Zero</h3>
+                <div class="story-content">
+                    <p>Texas is currently the <strong>epicenter of flu activity</strong> in the United States. With an ILI rate of 6.5% — nearly <strong>triple the seasonal baseline</strong> — the Lone Star State is experiencing what epidemiologists call an "aggressive early-season surge."</p>
+                    <div class="callout danger">
+                        <strong>🚨 Critical Finding:</strong> Houston and Dallas metro areas are seeing emergency department flu visits up 30% from this time last year. Some pediatric hospitals are approaching capacity limits.
+                    </div>
+                    <p>Several factors are converging: <strong>holiday travel patterns</strong>, an H3N2 strain that spreads efficiently indoors, and vaccination rates that lag behind northeastern states. Texas's interconnected metro areas and large population make containment particularly challenging.</p>
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Trends -->
+            <div class="section-header"><h2>📈 Trend Analysis</h2></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📊 Texas vs National (8 Weeks)</span>
+                        <span class="card-badge hot">Outpacing</span>
+                    </div>
+                    <div class="chart-container" id="texas-trend-chart"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📅 Historical Comparison (5 Years)</span>
+                        <span class="card-badge hot">Highest in 3 Years</span>
+                    </div>
+                    <div class="chart-container" id="texas-historical-chart"></div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2: Breakdown -->
+            <div class="section-header"><h2>🦠 Viral & Demographic Breakdown</h2></div>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Virus Strain Mix</span>
+                    </div>
+                    <div class="chart-container" id="texas-strain-chart"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Age Distribution</span>
+                    </div>
+                    <div class="chart-container" id="texas-age-chart"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Hospitalization by Age</span>
+                    </div>
+                    <div class="chart-container" id="texas-hosp-age-chart"></div>
+                </div>
+            </div>
+
+            <!-- Regional Hotspots + Comparison -->
+            <div class="section-header"><h2>🔥 Regional Hotspots & Comparisons</h2></div>
+            <div class="grid-2-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🗺️ Metro Area Breakdown</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Metro Area</th><th>ILI %</th><th>Change</th><th>Hospital Load</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Houston</strong></td><td>7.8%</td><td class="trend-up">+52%</td><td>High</td><td>🔴 Critical</td></tr>
+                            <tr><td><strong>Dallas-Fort Worth</strong></td><td>7.2%</td><td class="trend-up">+48%</td><td>High</td><td>🔴 Critical</td></tr>
+                            <tr><td><strong>San Antonio</strong></td><td>6.1%</td><td class="trend-up">+41%</td><td>Elevated</td><td>🟠 Warning</td></tr>
+                            <tr><td><strong>Austin</strong></td><td>5.4%</td><td class="trend-up">+38%</td><td>Moderate</td><td>🟠 Warning</td></tr>
+                            <tr><td><strong>El Paso</strong></td><td>4.8%</td><td class="trend-up">+29%</td><td>Moderate</td><td>🟡 Watch</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🆚 Neighbor Comparison</span>
+                    </div>
+                    <div class="hotspot-item">
+                        <div class="hotspot-rank" style="background: var(--accent-red);">TX</div>
+                        <div class="hotspot-info"><div class="hotspot-name">Texas</div><div class="hotspot-sub">This state</div></div>
+                        <div class="hotspot-value" style="color: var(--accent-red);">6.5%</div>
+                    </div>
+                    <div class="hotspot-item">
+                        <div class="hotspot-rank">LA</div>
+                        <div class="hotspot-info"><div class="hotspot-name">Louisiana</div><div class="hotspot-sub">+11% vs TX</div></div>
+                        <div class="hotspot-value">5.8%</div>
+                    </div>
+                    <div class="hotspot-item">
+                        <div class="hotspot-rank">OK</div>
+                        <div class="hotspot-info"><div class="hotspot-name">Oklahoma</div><div class="hotspot-sub">-29% vs TX</div></div>
+                        <div class="hotspot-value">4.6%</div>
+                    </div>
+                    <div class="hotspot-item">
+                        <div class="hotspot-rank">NM</div>
+                        <div class="hotspot-info"><div class="hotspot-name">New Mexico</div><div class="hotspot-sub">-42% vs TX</div></div>
+                        <div class="hotspot-value">3.8%</div>
+                    </div>
+                    <div class="hotspot-item">
+                        <div class="hotspot-rank">AR</div>
+                        <div class="hotspot-info"><div class="hotspot-name">Arkansas</div><div class="hotspot-sub">-26% vs TX</div></div>
+                        <div class="hotspot-value">4.8%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Healthcare System Status -->
+            <div class="section-header"><h2>🏥 Healthcare System Status</h2></div>
+            <div class="grid-4">
+                <div class="card">
+                    <div class="card-title" style="margin-bottom: 1rem;">ER Wait Times</div>
+                    <div class="comparison-value above" style="font-size: 2.5rem;">+45min</div>
+                    <div class="comparison-sub">Above normal average</div>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 78%; background: var(--accent-orange);"></div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title" style="margin-bottom: 1rem;">ICU Capacity</div>
+                    <div class="comparison-value" style="font-size: 2.5rem; color: var(--accent-orange);">82%</div>
+                    <div class="comparison-sub">Statewide utilization</div>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 82%; background: var(--accent-orange);"></div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title" style="margin-bottom: 1rem;">Flu Hospitalizations</div>
+                    <div class="comparison-value" style="font-size: 2.5rem; color: var(--accent-red);">2,847</div>
+                    <div class="comparison-sub">This week (+32%)</div>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 89%; background: var(--accent-red);"></div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title" style="margin-bottom: 1rem;">Antiviral Supply</div>
+                    <div class="comparison-value" style="font-size: 2.5rem; color: var(--accent-green);">OK</div>
+                    <div class="comparison-sub">Adequate stock levels</div>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 65%; background: var(--accent-green);"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vaccination & Forecast -->
+            <div class="section-header"><h2>💉 Vaccination & Forecast</h2></div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Vaccination Coverage</span>
+                        <span class="card-badge rising">Below Average</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Overall Population</span>
+                        <span class="metric-value" style="color: var(--accent-orange);">38.2%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Adults 65+</span>
+                        <span class="metric-value" style="color: var(--accent-yellow);">52.1%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Children 6mo-17yr</span>
+                        <span class="metric-value" style="color: var(--accent-red);">29.4%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Healthcare Workers</span>
+                        <span class="metric-value" style="color: var(--accent-green);">71.8%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">National Average</span>
+                        <span class="metric-value">44.7%</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🔮 2-Week Forecast</span>
+                    </div>
+                    <div class="chart-container short" id="texas-forecast-chart"></div>
+                    <div class="callout info" style="margin-top: 1rem;">
+                        <strong>Projection:</strong> Activity expected to peak in 2-3 weeks at ~7.5-8.0% ILI before beginning to decline.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Recommendations -->
+            <div class="section-header"><h2>💡 What Texans Should Do This Week</h2></div>
+            <div class="advice-grid">
+                <div class="advice-item">
+                    <div class="advice-icon vaccine">💉</div>
+                    <div class="advice-text"><strong>Get Vaccinated Now</strong>Even late vaccination provides protection. Find shots at pharmacies, clinics, or vaccines.gov</div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-icon mask">😷</div>
+                    <div class="advice-text"><strong>Mask Up in Crowded Spaces</strong>Especially in Houston and Dallas metros where transmission is highest</div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-icon alert">🏥</div>
+                    <div class="advice-text"><strong>Know Warning Signs</strong>Difficulty breathing, persistent chest pain, confusion — seek care immediately</div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-icon home">🏠</div>
+                    <div class="advice-text"><strong>Stay Home If Sick</strong>24 hours fever-free before returning to work/school. Call ahead before ER visits</div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-icon" style="background: rgba(234,179,8,0.2);">👴</div>
+                    <div class="advice-text"><strong>Protect Vulnerable Family</strong>Elderly and young children face highest hospitalization risk</div>
+                </div>
+                <div class="advice-item">
+                    <div class="advice-icon" style="background: rgba(6,182,212,0.2);">📞</div>
+                    <div class="advice-text"><strong>Use Telehealth First</strong>For mild symptoms, avoid ER strain with virtual doctor visits</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== OTHER STATE TEMPLATES (Abbreviated) ==================== -->
+        <!-- FLORIDA -->
+        <section class="state-report" id="florida">
+            <div class="state-hero florida">
+                <div class="hero-content">
+                    <h1 class="state-name">🌴 Florida</h1>
+                    <p class="state-tagline">"The Sunshine State is under a cloud of flu this winter."</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat"><div class="hero-stat-label">ILI Activity Rate</div><div class="hero-stat-value danger">6.1%</div><div class="hero-stat-sub">vs 2.5% baseline</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Week-over-Week</div><div class="hero-stat-value danger">+38%</div><div class="hero-stat-sub">#2 fastest growth</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">vs National Avg</div><div class="hero-stat-value danger">+27%</div><div class="hero-stat-sub">4.8% national</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Hospitalization Rate</div><div class="hero-stat-value danger">15.8</div><div class="hero-stat-sub">per 100K (65+: 42.3)</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Positivity Rate</div><div class="hero-stat-value warning">24.7%</div><div class="hero-stat-sub">of tests positive</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Dominant Strain</div><div class="hero-stat-value info">H3N2</div><div class="hero-stat-sub">65% of samples</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="story-card">
+                <h3 class="story-title">📍 Florida's Unique Challenge: The Senior Factor</h3>
+                <div class="story-content">
+                    <p>Florida's demographics make it uniquely vulnerable. With the <strong>highest percentage of residents aged 65+</strong> in the nation, flu hits harder here. H3N2 seasons historically correlate with higher elderly hospitalization — and Florida is feeling that now.</p>
+                    <div class="callout danger"><strong>🚨 Senior Alert:</strong> Adults 65+ in Florida are being hospitalized at a rate of 42.3 per 100,000 — nearly 3x the overall state rate. Retirement communities and assisted living facilities should be on high alert.</div>
+                    <p>The combination of <strong>tourism, snowbird migration, and indoor air conditioning</strong> creates ideal conditions for respiratory virus spread. Theme parks, cruise ports, and retirement communities are all potential transmission nodes.</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card"><div class="card-header"><span class="card-title">📊 Florida vs National Trend</span></div><div class="chart-container" id="florida-trend-chart"></div></div>
+                <div class="card"><div class="card-header"><span class="card-title">👥 Age-Specific Hospitalization</span></div><div class="chart-container" id="florida-age-hosp-chart"></div></div>
+            </div>
+            <div class="grid-2-1">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🗺️ Regional Hotspots</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>Region</th><th>ILI %</th><th>Change</th><th>Senior Rate</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Miami-Dade</strong></td><td>7.2%</td><td class="trend-up">+44%</td><td>48.2</td><td>🔴 Critical</td></tr>
+                            <tr><td><strong>Broward</strong></td><td>6.8%</td><td class="trend-up">+41%</td><td>45.1</td><td>🔴 Critical</td></tr>
+                            <tr><td><strong>Palm Beach</strong></td><td>6.4%</td><td class="trend-up">+39%</td><td>51.3</td><td>🔴 Critical</td></tr>
+                            <tr><td><strong>Orlando (Orange)</strong></td><td>5.8%</td><td class="trend-up">+35%</td><td>38.7</td><td>🟠 Warning</td></tr>
+                            <tr><td><strong>Tampa Bay</strong></td><td>5.5%</td><td class="trend-up">+32%</td><td>40.2</td><td>🟠 Warning</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🦠 Strain Distribution</span></div>
+                    <div class="chart-container short" id="florida-strain-chart"></div>
+                </div>
+            </div>
+            <div class="section-header"><h2>💡 Florida-Specific Recommendations</h2></div>
+            <div class="advice-grid">
+                <div class="advice-item"><div class="advice-icon vaccine">💉</div><div class="advice-text"><strong>High-Dose Vaccines for 65+</strong>Seniors should request the high-dose or adjuvanted flu vaccine for better protection</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(168,85,247,0.2);">🏠</div><div class="advice-text"><strong>Limit Nursing Home Visits</strong>If unwell, postpone visits to protect vulnerable residents</div></div>
+                <div class="advice-item"><div class="advice-icon mask">🎢</div><div class="advice-text"><strong>Theme Park Vigilance</strong>Frequent handwashing; consider masks in queues and indoor attractions</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(6,182,212,0.2);">🚢</div><div class="advice-text"><strong>Cruise Travelers</strong>Get tested before boarding; ships can become transmission hotspots</div></div>
+            </div>
+        </section>
+
+        <!-- GEORGIA -->
+        <section class="state-report" id="georgia">
+            <div class="state-hero georgia">
+                <div class="hero-content">
+                    <h1 class="state-name">🍑 Georgia</h1>
+                    <p class="state-tagline">"The Peach State sits at the crossroads — literally."</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat"><div class="hero-stat-label">ILI Activity Rate</div><div class="hero-stat-value danger">6.2%</div><div class="hero-stat-sub">vs 2.5% baseline</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Week-over-Week</div><div class="hero-stat-value warning">+29%</div><div class="hero-stat-sub">#3 fastest growth</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">vs National Avg</div><div class="hero-stat-value danger">+29%</div><div class="hero-stat-sub">4.8% national</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">School Absenteeism</div><div class="hero-stat-value danger">+25%</div><div class="hero-stat-sub">vs baseline</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Positivity Rate</div><div class="hero-stat-value warning">26.1%</div><div class="hero-stat-sub">of tests positive</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Dominant Strain</div><div class="hero-stat-value info">H3N2</div><div class="hero-stat-sub">70% of samples</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="story-card">
+                <h3 class="story-title">📍 Atlanta's Airport Effect</h3>
+                <div class="story-content">
+                    <p>Georgia sits at a <strong>critical transportation crossroads</strong>. Hartsfield-Jackson Atlanta is the world's busiest airport, processing 90+ million passengers annually. This connectivity is great for commerce — but challenging for disease containment.</p>
+                    <div class="callout warning"><strong>🎒 School Surge:</strong> Fulton and DeKalb counties are reporting 25% higher absenteeism than baseline. Children 5-17 are driving much of Georgia's case growth, likely due to post-holiday school mixing.</div>
+                    <p>The metro Atlanta area is seeing ILI rates <strong>40% higher than rural Georgia</strong>, suggesting urban density and transit patterns are significant factors. Schools remain a key amplifier.</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card"><div class="card-header"><span class="card-title">📊 Georgia vs National Trend</span></div><div class="chart-container" id="georgia-trend-chart"></div></div>
+                <div class="card"><div class="card-header"><span class="card-title">🎒 Age Group Cases</span></div><div class="chart-container" id="georgia-age-chart"></div></div>
+            </div>
+            <div class="section-header"><h2>💡 Georgia-Specific Recommendations</h2></div>
+            <div class="advice-grid">
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(234,179,8,0.2);">🎒</div><div class="advice-text"><strong>Keep Sick Kids Home</strong>At least 24 hours fever-free. Schools are major transmission sites right now</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(59,130,246,0.2);">✈️</div><div class="advice-text"><strong>Airport Travelers</strong>ATL is a hub — mask up, use hand sanitizer, avoid touching your face</div></div>
+                <div class="advice-item"><div class="advice-icon vaccine">💉</div><div class="advice-text"><strong>School Vaccination</strong>Check if your child's school requires flu shots; get kids vaccinated ASAP</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(168,85,247,0.2);">👶</div><div class="advice-text"><strong>Protect Newborns</strong>Don't visit newborns if you have any symptoms — RSV and flu can be deadly</div></div>
+            </div>
+        </section>
+
+        <!-- LOUISIANA -->
+        <section class="state-report" id="louisiana">
+            <div class="state-hero louisiana">
+                <div class="hero-content">
+                    <h1 class="state-name">⚜️ Louisiana</h1>
+                    <p class="state-tagline">"Flu season meets festival season in the Pelican State."</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat"><div class="hero-stat-label">ILI Activity Rate</div><div class="hero-stat-value warning">5.8%</div><div class="hero-stat-sub">vs 2.5% baseline</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Week-over-Week</div><div class="hero-stat-value warning">+32%</div><div class="hero-stat-sub">#4 fastest growth</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">vs National Avg</div><div class="hero-stat-value warning">+21%</div><div class="hero-stat-sub">4.8% national</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Comorbidity Factor</div><div class="hero-stat-value danger">HIGH</div><div class="hero-stat-sub">Diabetes, heart disease</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Rural Hospital Strain</div><div class="hero-stat-value warning">ELEVATED</div><div class="hero-stat-sub">Limited capacity</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Dominant Strain</div><div class="hero-stat-value info">H3N2</div><div class="hero-stat-sub">66% of samples</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="story-card">
+                <h3 class="story-title">📍 Louisiana's Double Challenge: Health Conditions + Festival Season</h3>
+                <div class="story-content">
+                    <p>Louisiana faces unique flu season challenges. The state has <strong>higher rates of underlying health conditions</strong> — diabetes, heart disease, obesity — that increase flu severity. Combined with lower vaccination coverage in rural parishes, this creates a concerning picture.</p>
+                    <div class="callout warning"><strong>🎭 Mardi Gras Warning:</strong> Pre-carnival gatherings (king cake parties, parades, family events) are already increasing social mixing. The big celebrations are weeks away, but transmission patterns are shifting now.</div>
+                    <p>Rural parishes are seeing <strong>faster growth rates</strong> than New Orleans and Baton Rouge — likely due to fewer healthcare resources and delayed care-seeking behavior.</p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card"><div class="card-header"><span class="card-title">📊 Louisiana vs National Trend</span></div><div class="chart-container" id="louisiana-trend-chart"></div></div>
+                <div class="card"><div class="card-header"><span class="card-title">🏥 Risk Factor Distribution</span></div><div class="chart-container" id="louisiana-risk-chart"></div></div>
+            </div>
+            <div class="section-header"><h2>💡 Louisiana-Specific Recommendations</h2></div>
+            <div class="advice-grid">
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(239,68,68,0.2);">💊</div><div class="advice-text"><strong>Diabetics: Extra Vigilance</strong>Monitor blood sugar closely — flu can cause dangerous spikes. Seek antivirals early</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(168,85,247,0.2);">🎭</div><div class="advice-text"><strong>Pre-Mardi Gras Precautions</strong>King cake parties? Ensure good ventilation. Outdoor events safer than indoor</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(6,182,212,0.2);">📱</div><div class="advice-text"><strong>Rural Residents: Use Telehealth</strong>Know your virtual care options — avoid long drives when sick</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(16,185,129,0.2);">💊</div><div class="advice-text"><strong>Stock Up Now</strong>OTC fever reducers, electrolytes, thermometer — prepare before you need them</div></div>
+            </div>
+        </section>
+
+        <!-- CALIFORNIA -->
+        <section class="state-report" id="california">
+            <div class="state-hero california">
+                <div class="hero-content">
+                    <h1 class="state-name">☀️ California</h1>
+                    <p class="state-tagline">"The Golden State has a window of opportunity — use it wisely."</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat"><div class="hero-stat-label">ILI Activity Rate</div><div class="hero-stat-value good">3.9%</div><div class="hero-stat-sub">vs 2.5% baseline</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Week-over-Week</div><div class="hero-stat-value warning">+18%</div><div class="hero-stat-sub">Rising steadily</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">vs National Avg</div><div class="hero-stat-value good">-19%</div><div class="hero-stat-sub">Below average</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Peak Timing</div><div class="hero-stat-value info">2-4 wks</div><div class="hero-stat-sub">Expected delay</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Positivity Rate</div><div class="hero-stat-value good">16.2%</div><div class="hero-stat-sub">of tests positive</div></div>
+                        <div class="hero-stat"><div class="hero-stat-label">Dominant Strain</div><div class="hero-stat-value warning">H1N1</div><div class="hero-stat-sub">48% (H3N2 rising)</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="story-card">
+                <h3 class="story-title">📍 California's Silver Lining: Time to Prepare</h3>
+                <div class="story-content">
+                    <p>California is currently <strong>below the national average</strong> — but don't be fooled. The state typically lags the South by 2-4 weeks in flu season timing. What's hitting Texas today could be California's reality by late January.</p>
+                    <div class="callout info"><strong>🔄 Strain Shift Alert:</strong> Unlike the South where H3N2 dominates (68%), California is seeing a more balanced mix with H1N1 actually leading (48%). This could indicate a "second wave" when H3N2 becomes established.</div>
+                    <p>Southern California (LA, San Diego) is already seeing higher activity than NorCal. The Bay Area remains relatively quiet — for now. <strong>This is your window to vaccinate.</strong></p>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card"><div class="card-header"><span class="card-title">📊 California vs National Trend</span></div><div class="chart-container" id="california-trend-chart"></div></div>
+                <div class="card"><div class="card-header"><span class="card-title">🦠 Strain Comparison: CA vs Nation</span></div><div class="chart-container" id="california-strain-chart"></div></div>
+            </div>
+            <div class="grid-2-1">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🗺️ Regional Breakdown</span></div>
+                    <table class="data-table">
+                        <thead><tr><th>Region</th><th>ILI %</th><th>Change</th><th>vs State Avg</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Los Angeles</strong></td><td>4.5%</td><td class="trend-up">+22%</td><td>+15%</td><td>🟡 Watch</td></tr>
+                            <tr><td><strong>San Diego</strong></td><td>4.2%</td><td class="trend-up">+19%</td><td>+8%</td><td>🟡 Watch</td></tr>
+                            <tr><td><strong>Bay Area</strong></td><td>3.4%</td><td class="trend-up">+14%</td><td>-13%</td><td>🟢 Moderate</td></tr>
+                            <tr><td><strong>Central Valley</strong></td><td>3.8%</td><td class="trend-up">+16%</td><td>-3%</td><td>🟢 Moderate</td></tr>
+                            <tr><td><strong>Sacramento</strong></td><td>3.6%</td><td class="trend-up">+15%</td><td>-8%</td><td>🟢 Moderate</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card comparison-widget">
+                    <div class="comparison-label">Vaccination Window</div>
+                    <div class="comparison-value below">OPEN</div>
+                    <div class="comparison-sub">2-4 weeks until expected peak</div>
+                    <div class="callout info" style="margin-top: 1rem; text-align: left;"><strong>Act Now:</strong> Vaccines take ~2 weeks for full protection. If you vaccinate today, you'll be protected before the surge.</div>
+                </div>
+            </div>
+            <div class="section-header"><h2>💡 California-Specific Recommendations</h2></div>
+            <div class="advice-grid">
+                <div class="advice-item"><div class="advice-icon vaccine">💉</div><div class="advice-text"><strong>Vaccinate NOW — Don't Wait</strong>You have a 2-4 week window. Protection kicks in after 2 weeks. Act today</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(249,115,22,0.2);">🌴</div><div class="advice-text"><strong>SoCal: Be More Vigilant</strong>LA and San Diego are ahead of the curve — activity rising faster there</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(6,182,212,0.2);">✈️</div><div class="advice-text"><strong>Travelers from South</strong>If returning from Texas/Florida, monitor for symptoms. Self-isolate if sick</div></div>
+                <div class="advice-item"><div class="advice-icon" style="background: rgba(16,185,129,0.2);">🌳</div><div class="advice-text"><strong>Outdoor Gatherings</strong>California weather is your ally — outdoor activities are safer than indoor</div></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Data sourced from <a href="https://www.cdc.gov/fluview/overview/fluview-interactive.html" target="_blank">CDC FluView Interactive</a></p>
+        <p style="margin-top: 0.5rem;">State reports generated on January 7, 2026 • Updated weekly</p>
+    </footer>
+
+    <script>
+        // Tab switching
+        function showState(stateId) {
+            document.querySelectorAll('.state-report').forEach(r => r.classList.remove('active'));
+            document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(stateId).classList.add('active');
+            event.target.closest('.state-tab').classList.add('active');
+            initCharts(stateId);
+        }
+
+        // Chart configurations
+        const weeks = ['W46', 'W47', 'W48', 'W49', 'W50', 'W51', 'W52', 'W1'];
+        const nationalData = [2.6, 3.0, 3.4, 3.8, 4.2, 4.5, 4.8, 4.8];
+        const stateConfigs = {
+            texas: { trend: [3.2, 3.8, 4.5, 5.0, 5.5, 6.0, 6.2, 6.5], color: '#ef4444', strains: [72, 20, 8], ages: [18, 35, 25, 15, 7], hospAge: [8.2, 1.5, 2.8, 5.1, 15.8] },
+            florida: { trend: [3.0, 3.5, 4.2, 4.6, 5.0, 5.5, 5.8, 6.1], color: '#f97316', strains: [65, 25, 10], ages: [12, 22, 28, 22, 16], hospAge: [6.8, 1.2, 2.4, 4.8, 42.3] },
+            georgia: { trend: [3.1, 3.6, 4.3, 4.8, 5.2, 5.7, 6.0, 6.2], color: '#eab308', strains: [70, 18, 12], ages: [22, 38, 22, 12, 6], hospAge: [9.1, 2.1, 2.6, 4.2, 12.4] },
+            louisiana: { trend: [2.8, 3.3, 3.9, 4.3, 4.8, 5.2, 5.5, 5.8], color: '#a855f7', strains: [66, 24, 10], ages: [15, 28, 30, 18, 9], hospAge: [7.4, 1.8, 3.2, 5.8, 14.2] },
+            california: { trend: [2.0, 2.2, 2.5, 2.8, 3.1, 3.4, 3.7, 3.9], color: '#3b82f6', strains: [38, 48, 14], ages: [14, 32, 32, 16, 6], hospAge: [5.2, 1.1, 1.8, 3.2, 9.8] }
+        };
+
+        const chartInstances = {};
+        function initCharts(state) {
+            const cfg = stateConfigs[state];
+            
+            // Trend chart
+            initLineChart(`${state}-trend-chart`, cfg.trend, cfg.color);
+            
+            // Other charts based on state
+            if (state === 'texas') {
+                initHistoricalChart('texas-historical-chart');
+                initPieChart('texas-strain-chart', cfg.strains);
+                initBarChart('texas-age-chart', cfg.ages, ['0-4', '5-17', '18-49', '50-64', '65+']);
+                initBarChart('texas-hosp-age-chart', cfg.hospAge, ['0-4', '5-17', '18-49', '50-64', '65+'], true);
+                initForecastChart('texas-forecast-chart');
+            } else if (state === 'florida') {
+                initLineChart('florida-trend-chart', cfg.trend, cfg.color);
+                initBarChart('florida-age-hosp-chart', cfg.hospAge, ['0-4', '5-17', '18-49', '50-64', '65+'], true);
+                initPieChart('florida-strain-chart', cfg.strains);
+            } else if (state === 'georgia') {
+                initLineChart('georgia-trend-chart', cfg.trend, cfg.color);
+                initBarChart('georgia-age-chart', cfg.ages, ['0-4', '5-17', '18-49', '50-64', '65+']);
+            } else if (state === 'louisiana') {
+                initLineChart('louisiana-trend-chart', cfg.trend, cfg.color);
+                initRiskChart('louisiana-risk-chart');
+            } else if (state === 'california') {
+                initLineChart('california-trend-chart', cfg.trend, cfg.color);
+                initStrainCompareChart('california-strain-chart');
+            }
+        }
+
+        function initLineChart(id, data, color) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                legend: { data: ['State', 'National'], bottom: 0, textStyle: { color: '#94a3b8' } },
+                grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: weeks, axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', min: 0, max: 8, axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#1f2937' } } },
+                series: [
+                    { name: 'State', type: 'line', data: data, lineStyle: { color: color, width: 3 }, itemStyle: { color: color }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: color + '40' }, { offset: 1, color: color + '05' }]) } },
+                    { name: 'National', type: 'line', data: nationalData, lineStyle: { color: '#64748b', width: 2, type: 'dashed' }, itemStyle: { color: '#64748b' } }
+                ]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initHistoricalChart(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                legend: { data: ['2025-26', '2024-25', '2023-24', '2022-23', '2021-22'], bottom: 0, textStyle: { color: '#94a3b8' } },
+                grid: { left: '3%', right: '4%', bottom: '18%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: weeks, axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#1f2937' } } },
+                series: [
+                    { name: '2025-26', type: 'line', data: [3.2, 3.8, 4.5, 5.0, 5.5, 6.0, 6.2, 6.5], lineStyle: { color: '#ef4444', width: 3 }, itemStyle: { color: '#ef4444' } },
+                    { name: '2024-25', type: 'line', data: [2.8, 3.2, 3.8, 4.2, 4.8, 5.2, 5.5, 5.8], lineStyle: { color: '#f59e0b', width: 2 }, itemStyle: { color: '#f59e0b' } },
+                    { name: '2023-24', type: 'line', data: [2.5, 2.9, 3.4, 3.8, 4.5, 5.0, 5.8, 6.2], lineStyle: { color: '#10b981', width: 2 }, itemStyle: { color: '#10b981' } },
+                    { name: '2022-23', type: 'line', data: [3.0, 3.5, 4.2, 5.5, 6.8, 7.2, 6.5, 5.8], lineStyle: { color: '#3b82f6', width: 2 }, itemStyle: { color: '#3b82f6' } },
+                    { name: '2021-22', type: 'line', data: [1.8, 2.0, 2.3, 2.6, 3.0, 3.5, 4.0, 4.5], lineStyle: { color: '#8b5cf6', width: 2 }, itemStyle: { color: '#8b5cf6' } }
+                ]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initPieChart(id, data) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'item', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                legend: { bottom: 0, textStyle: { color: '#94a3b8' } },
+                series: [{
+                    type: 'pie', radius: ['40%', '70%'], center: ['50%', '45%'],
+                    data: [
+                        { value: data[0], name: 'H3N2', itemStyle: { color: '#ef4444' } },
+                        { value: data[1], name: 'H1N1', itemStyle: { color: '#f59e0b' } },
+                        { value: data[2], name: 'Flu B', itemStyle: { color: '#3b82f6' } }
+                    ],
+                    label: { color: '#f8fafc', formatter: '{b}: {d}%' }
+                }]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initBarChart(id, data, labels, isHosp = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            const colors = isHosp 
+                ? data.map(v => v > 10 ? '#ef4444' : v > 5 ? '#f59e0b' : '#10b981')
+                : ['#fbbf24', '#84cc16', '#22c55e', '#f97316', '#ef4444'];
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: labels, axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', name: isHosp ? 'per 100K' : '%', axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#1f2937' } } },
+                series: [{ type: 'bar', data: data.map((v, i) => ({ value: v, itemStyle: { color: colors[i] } })), barWidth: '50%', label: { show: true, position: 'top', color: '#f8fafc' } }]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initForecastChart(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: ['W1', 'W2', 'W3', 'W4'], axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', min: 5, max: 9, axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#1f2937' } } },
+                series: [
+                    { type: 'line', data: [6.5, null, null, null], lineStyle: { color: '#ef4444', width: 3 }, itemStyle: { color: '#ef4444' }, symbol: 'circle', symbolSize: 8 },
+                    { type: 'line', data: [6.5, 7.2, 7.8, 7.5], lineStyle: { color: '#ef4444', width: 2, type: 'dashed' }, itemStyle: { color: '#ef4444' }, areaStyle: { color: 'rgba(239,68,68,0.1)' } }
+                ]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initRiskChart(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                radar: { indicator: [{ name: 'Diabetes', max: 100 }, { name: 'Heart Disease', max: 100 }, { name: 'Obesity', max: 100 }, { name: 'Unvaccinated', max: 100 }, { name: 'Rural Access', max: 100 }], axisLine: { lineStyle: { color: '#374151' } }, splitLine: { lineStyle: { color: '#1f2937' } }, axisName: { color: '#94a3b8' } },
+                series: [{ type: 'radar', data: [{ value: [78, 72, 85, 68, 75], name: 'Louisiana', areaStyle: { color: 'rgba(168,85,247,0.3)' }, lineStyle: { color: '#a855f7' } }, { value: [45, 48, 52, 55, 35], name: 'National Avg', areaStyle: { color: 'rgba(100,116,139,0.2)' }, lineStyle: { color: '#64748b', type: 'dashed' } }] }]
+            });
+            chartInstances[id] = chart;
+        }
+
+        function initStrainCompareChart(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (chartInstances[id]) { chartInstances[id].resize(); return; }
+            const chart = echarts.init(el);
+            chart.setOption({
+                tooltip: { trigger: 'axis', backgroundColor: '#1a1f28', borderColor: '#374151', textStyle: { color: '#f8fafc' } },
+                legend: { bottom: 0, textStyle: { color: '#94a3b8' } },
+                grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: ['H3N2', 'H1N1', 'Flu B'], axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', name: '%', axisLine: { lineStyle: { color: '#374151' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#1f2937' } } },
+                series: [
+                    { name: 'California', type: 'bar', data: [38, 48, 14], itemStyle: { color: '#3b82f6' } },
+                    { name: 'National', type: 'bar', data: [68, 22, 10], itemStyle: { color: '#64748b' } }
+                ]
+            });
+            chartInstances[id] = chart;
+        }
+
+        // Initialize Texas charts on load
+        document.addEventListener('DOMContentLoaded', () => initCharts('texas'));
+        window.addEventListener('resize', () => Object.values(chartInstances).forEach(c => c.resize()));
+    </script>
+</body>
+</html>
