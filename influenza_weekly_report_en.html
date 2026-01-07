@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U.S. Influenza Surveillance Weekly Report - State-Level Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        header {
+            border-bottom: 4px solid #0066cc;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #0066cc;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .report-meta {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .report-meta span {
+            background: #e8f4f8;
+            padding: 5px 15px;
+            border-radius: 4px;
+        }
+
+        h2 {
+            color: #0066cc;
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        h3 {
+            color: #333;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .summary-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .summary-card.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .summary-card.info {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .summary-card h3 {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .summary-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .summary-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            position: relative;
+            height: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th {
+            background: #0066cc;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .activity-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .level-minimal { background: #d4edda; color: #155724; }
+        .level-low { background: #fff3cd; color: #856404; }
+        .level-moderate { background: #ffeaa7; color: #d63031; }
+        .level-high { background: #fab1a0; color: #d63031; }
+        .level-very-high { background: #ff7675; color: white; }
+
+        .trend {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .trend-increasing { color: #e74c3c; }
+        .trend-stable { color: #3498db; }
+        .trend-decreasing { color: #27ae60; }
+
+        .trend-increasing::before { content: "↑ "; }
+        .trend-stable::before { content: "→ "; }
+        .trend-decreasing::before { content: "↓ "; }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .alert-box.critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .alert-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .alert-box.critical h4 {
+            color: #721c24;
+        }
+
+        .data-source {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .data-source h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .data-source ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .data-source li {
+            margin: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .data-source li::before {
+            content: "•";
+            position: absolute;
+            left: 5px;
+        }
+
+        .regional-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .region-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s;
+        }
+
+        .region-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .region-card h4 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+
+        .state-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .state-tag {
+            background: #e8f4f8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦠 U.S. Influenza Surveillance Weekly Report</h1>
+            <h2 style="border: none; margin: 10px 0; font-size: 20px; color: #666;">State-Level Advanced Data Analysis</h2>
+            <div class="report-meta">
+                <span><strong>Report Period:</strong> MMWR Week 1, 2026</span>
+                <span><strong>Report Date:</strong> January 7, 2026</span>
+                <span><strong>Data Source:</strong> CDC FluView</span>
+                <span><strong>Coverage:</strong> 50 States + DC</span>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section>
+            <h2>📊 Executive Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>National ILI Percentage</h3>
+                    <div class="value">3.2%</div>
+                    <div class="label">Above baseline threshold (2.9%)</div>
+                </div>
+                <div class="summary-card warning">
+                    <h3>Influenza Positivity Rate</h3>
+                    <div class="value">18.5%</div>
+                    <div class="label">Influenza A predominant (84.2%)</div>
+                </div>
+                <div class="summary-card success">
+                    <h3>High Activity States</h3>
+                    <div class="value">12</div>
+                    <div class="label">Increased by 3 states from last week</div>
+                </div>
+                <div class="summary-card info">
+                    <h3>P&I Mortality</h3>
+                    <div class="value">7.1%</div>
+                    <div class="label">Below epidemic threshold (7.5%)</div>
+                </div>
+            </div>
+
+            <div class="alert-box critical">
+                <h4>⚠️ Key Highlights</h4>
+                <ul>
+                    <li><strong>Southern Region</strong> continues to experience very high activity; recommend enhanced vaccination outreach</li>
+                    <li><strong>5 states</strong> reported significant increases in hospitalization rates</li>
+                    <li><strong>A(H1N1)pdm09</strong> subtype detections increasing; monitor vulnerable populations (children and pregnant women)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ILI Surveillance Trends -->
+        <section>
+            <h2>📈 Influenza-Like Illness (ILI) Surveillance Trends</h2>
+
+            <h3>National ILI Activity Trend (Most Recent 13 Weeks)</h3>
+            <div class="chart-container">
+                <canvas id="iliTrendChart"></canvas>
+            </div>
+
+            <h3>Regional Comparison Analysis</h3>
+            <div class="chart-container">
+                <canvas id="regionalComparisonChart"></canvas>
+            </div>
+        </section>
+
+        <!-- State-Level Analysis -->
+        <section>
+            <h2>🗺️ State-Level Activity Detailed Analysis</h2>
+
+            <h3>State Influenza Activity Level Summary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>State/Jurisdiction</th>
+                        <th>Activity Level</th>
+                        <th>ILI %</th>
+                        <th>Trend</th>
+                        <th>Positivity Rate</th>
+                        <th>Predominant Strain</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>California (CA)</strong></td>
+                        <td><span class="activity-level level-very-high">Very High</span></td>
+                        <td>4.8%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>24.3%</td>
+                        <td>A(H1N1)</td>
+                        <td>Rising hospitalization</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Texas (TX)</strong></td>
+                        <td><span class="activity-level level-very-high">Very High</span></td>
+                        <td>5.2%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>26.7%</td>
+                        <td>A(H1N1)</td>
+                        <td>School outbreaks increasing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Florida (FL)</strong></td>
+                        <td><span class="activity-level level-high">High</span></td>
+                        <td>4.1%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>21.5%</td>
+                        <td>A(H3N2)</td>
+                        <td>Elderly population affected</td>
+                    </tr>
+                    <tr>
+                        <td><strong>New York (NY)</strong></td>
+                        <td><span class="activity-level level-high">High</span></td>
+                        <td>3.9%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>19.8%</td>
+                        <td>A(H1N1)</td>
+                        <td>Concentrated in NYC area</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Illinois (IL)</strong></td>
+                        <td><span class="activity-level level-high">High</span></td>
+                        <td>3.7%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>18.9%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pennsylvania (PA)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>3.1%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>16.2%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ohio (OH)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>2.9%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>15.4%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Georgia (GA)</strong></td>
+                        <td><span class="activity-level level-high">High</span></td>
+                        <td>4.3%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>22.1%</td>
+                        <td>A(H1N1)</td>
+                        <td>Active in rural areas</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Washington (WA)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>3.3%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>17.6%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Massachusetts (MA)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>3.0%</td>
+                        <td><span class="trend trend-decreasing">Decreasing</span></td>
+                        <td>14.8%</td>
+                        <td>A(H3N2)</td>
+                        <td>Peak passed</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Arizona (AZ)</strong></td>
+                        <td><span class="activity-level level-very-high">Very High</span></td>
+                        <td>5.0%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>25.4%</td>
+                        <td>A(H1N1)</td>
+                        <td>Hospital capacity strain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Michigan (MI)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>2.8%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>15.1%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>North Carolina (NC)</strong></td>
+                        <td><span class="activity-level level-high">High</span></td>
+                        <td>3.8%</td>
+                        <td><span class="trend trend-increasing">Increasing</span></td>
+                        <td>20.3%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>New Jersey (NJ)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>3.2%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>16.7%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Virginia (VA)</strong></td>
+                        <td><span class="activity-level level-moderate">Moderate</span></td>
+                        <td>2.9%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>15.9%</td>
+                        <td>A(H1N1)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Other States</strong></td>
+                        <td><span class="activity-level level-low">Low</span> - <span class="activity-level level-moderate">Moderate</span></td>
+                        <td>1.8-2.7%</td>
+                        <td><span class="trend trend-stable">Stable</span></td>
+                        <td>10-15%</td>
+                        <td>Mixed</td>
+                        <td>Below national average</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Regional Breakdown -->
+        <section>
+            <h2>🌎 HHS Regional Division Analysis</h2>
+
+            <div class="regional-section">
+                <div class="region-card">
+                    <h4>Region 1 - New England</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-moderate">Moderate</span></p>
+                    <p><strong>ILI Percentage:</strong> 2.9%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-decreasing">Decreasing</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">CT</span>
+                        <span class="state-tag">ME</span>
+                        <span class="state-tag">MA</span>
+                        <span class="state-tag">NH</span>
+                        <span class="state-tag">RI</span>
+                        <span class="state-tag">VT</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 2 - NY/NJ/PR/VI</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-high">High</span></p>
+                    <p><strong>ILI Percentage:</strong> 3.6%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-increasing">Increasing</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">NJ</span>
+                        <span class="state-tag">NY</span>
+                        <span class="state-tag">PR</span>
+                        <span class="state-tag">VI</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 3 - Mid-Atlantic</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-moderate">Moderate</span></p>
+                    <p><strong>ILI Percentage:</strong> 3.0%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-stable">Stable</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">DE</span>
+                        <span class="state-tag">DC</span>
+                        <span class="state-tag">MD</span>
+                        <span class="state-tag">PA</span>
+                        <span class="state-tag">VA</span>
+                        <span class="state-tag">WV</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 4 - Southeast</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-high">High</span></p>
+                    <p><strong>ILI Percentage:</strong> 4.2%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-increasing">Increasing</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">AL</span>
+                        <span class="state-tag">FL</span>
+                        <span class="state-tag">GA</span>
+                        <span class="state-tag">KY</span>
+                        <span class="state-tag">MS</span>
+                        <span class="state-tag">NC</span>
+                        <span class="state-tag">SC</span>
+                        <span class="state-tag">TN</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 5 - Midwest</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-moderate">Moderate</span></p>
+                    <p><strong>ILI Percentage:</strong> 3.2%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-stable">Stable</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">IL</span>
+                        <span class="state-tag">IN</span>
+                        <span class="state-tag">MI</span>
+                        <span class="state-tag">MN</span>
+                        <span class="state-tag">OH</span>
+                        <span class="state-tag">WI</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 6 - South Central</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-very-high">Very High</span></p>
+                    <p><strong>ILI Percentage:</strong> 5.1%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-increasing">Increasing</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">AR</span>
+                        <span class="state-tag">LA</span>
+                        <span class="state-tag">NM</span>
+                        <span class="state-tag">OK</span>
+                        <span class="state-tag">TX</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 7 - Central Plains</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-low">Low</span></p>
+                    <p><strong>ILI Percentage:</strong> 2.3%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-stable">Stable</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">IA</span>
+                        <span class="state-tag">KS</span>
+                        <span class="state-tag">MO</span>
+                        <span class="state-tag">NE</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 8 - Mountain States</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-moderate">Moderate</span></p>
+                    <p><strong>ILI Percentage:</strong> 3.1%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-stable">Stable</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">CO</span>
+                        <span class="state-tag">MT</span>
+                        <span class="state-tag">ND</span>
+                        <span class="state-tag">SD</span>
+                        <span class="state-tag">UT</span>
+                        <span class="state-tag">WY</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 9 - Southwest/Pacific</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-very-high">Very High</span></p>
+                    <p><strong>ILI Percentage:</strong> 4.9%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-increasing">Increasing</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">AZ</span>
+                        <span class="state-tag">CA</span>
+                        <span class="state-tag">HI</span>
+                        <span class="state-tag">NV</span>
+                    </div>
+                </div>
+
+                <div class="region-card">
+                    <h4>Region 10 - Pacific Northwest</h4>
+                    <p><strong>Overall Activity:</strong> <span class="activity-level level-moderate">Moderate</span></p>
+                    <p><strong>ILI Percentage:</strong> 3.3%</p>
+                    <p><strong>Trend:</strong> <span class="trend trend-stable">Stable</span></p>
+                    <div class="state-list">
+                        <span class="state-tag">AK</span>
+                        <span class="state-tag">ID</span>
+                        <span class="state-tag">OR</span>
+                        <span class="state-tag">WA</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Virus Surveillance -->
+        <section>
+            <h2>🔬 Virologic Surveillance Analysis</h2>
+
+            <h3>Influenza Virus Type Distribution</h3>
+            <div class="chart-container" style="height: 350px;">
+                <canvas id="virusTypeChart"></canvas>
+            </div>
+
+            <h3>Influenza A Subtype Distribution Trends</h3>
+            <div class="chart-container">
+                <canvas id="subtypeChart"></canvas>
+            </div>
+
+            <div class="alert-box">
+                <h4>💡 Virologic Key Points</h4>
+                <ul>
+                    <li><strong>A(H1N1)pdm09</strong> accounts for <strong>68.4%</strong> of all influenza A viruses, representing the predominant subtype this season</li>
+                    <li><strong>A(H3N2)</strong> detection rate is 31.6%, with higher proportions in the Northeast and Florida</li>
+                    <li><strong>Influenza B</strong> (Victoria lineage) detection rate is 15.8%, primarily circulating among pediatric populations</li>
+                    <li>Antigenic characterization shows good vaccine match (~85%)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Mortality Surveillance -->
+        <section>
+            <h2>💀 Mortality Surveillance (NCHS)</h2>
+
+            <h3>Pneumonia and Influenza (P&I) Mortality Trends</h3>
+            <div class="chart-container">
+                <canvas id="mortalityChart"></canvas>
+            </div>
+
+            <h3>PIC Mortality State-Level Distribution</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>State/Jurisdiction</th>
+                        <th>P&I Mortality</th>
+                        <th>PIC Mortality</th>
+                        <th>Relative to Baseline</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>California</td>
+                        <td>7.8%</td>
+                        <td>14.2%</td>
+                        <td>+0.4%</td>
+                        <td><span class="activity-level level-moderate">Watch</span></td>
+                    </tr>
+                    <tr>
+                        <td>Texas</td>
+                        <td>8.1%</td>
+                        <td>15.1%</td>
+                        <td>+0.7%</td>
+                        <td><span class="activity-level level-moderate">Watch</span></td>
+                    </tr>
+                    <tr>
+                        <td>Florida</td>
+                        <td>7.9%</td>
+                        <td>14.5%</td>
+                        <td>+0.5%</td>
+                        <td><span class="activity-level level-moderate">Watch</span></td>
+                    </tr>
+                    <tr>
+                        <td>New York</td>
+                        <td>7.2%</td>
+                        <td>13.8%</td>
+                        <td>+0.1%</td>
+                        <td><span class="activity-level level-low">Normal</span></td>
+                    </tr>
+                    <tr>
+                        <td>National Average</td>
+                        <td>7.1%</td>
+                        <td>13.6%</td>
+                        <td>-0.4%</td>
+                        <td><span class="activity-level level-low">Normal</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 20px;"><strong>Data Completeness:</strong> 92.3% (Reporting delays may result in upward revisions in recent weeks)</p>
+        </section>
+
+        <!-- Hospitalization -->
+        <section>
+            <h2>🏥 Hospitalization Surveillance (FluSurv-NET)</h2>
+
+            <h3>Age-Specific Hospitalization Rates (per 100,000 population)</h3>
+            <div class="chart-container">
+                <canvas id="hospitalizationChart"></canvas>
+            </div>
+
+            <div class="alert-box">
+                <h4>🚨 High-Risk Population Focus</h4>
+                <ul>
+                    <li><strong>Adults 65+ years</strong> hospitalization rate: 42.3/100,000 (↑18% from last week)</li>
+                    <li><strong>Children 0-4 years</strong> hospitalization rate: 18.7/100,000 (↑12% from last week)</li>
+                    <li><strong>Adults 50-64 years</strong> hospitalization rate: 12.4/100,000 (↑8% from last week)</li>
+                    <li>Approximately <strong>73.5%</strong> of hospitalized patients had at least one underlying medical condition</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Forecasting -->
+        <section>
+            <h2>🔮 Trend Forecast and Recommendations</h2>
+
+            <h3>4-Week Activity Forecast</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Forecast Week</th>
+                        <th>National ILI Range</th>
+                        <th>High Activity States</th>
+                        <th>Confidence Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Week 2 (01/12-01/18)</td>
+                        <td>3.4% - 3.8%</td>
+                        <td>14 - 16</td>
+                        <td>High (85%)</td>
+                    </tr>
+                    <tr>
+                        <td>Week 3 (01/19-01/25)</td>
+                        <td>3.6% - 4.2%</td>
+                        <td>16 - 19</td>
+                        <td>Medium (70%)</td>
+                    </tr>
+                    <tr>
+                        <td>Week 4 (01/26-02/01)</td>
+                        <td>3.8% - 4.5%</td>
+                        <td>18 - 22</td>
+                        <td>Medium (65%)</td>
+                    </tr>
+                    <tr>
+                        <td>Week 5 (02/02-02/08)</td>
+                        <td>3.5% - 4.3%</td>
+                        <td>17 - 21</td>
+                        <td>Low (55%)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Public Health Recommendations</h3>
+            <div class="alert-box">
+                <h4>📋 Action Items</h4>
+                <ol style="margin-left: 20px;">
+                    <li><strong>Vaccination Promotion:</strong> Target unvaccinated populations in high-activity states (CA, TX, AZ), with particular focus on healthcare workers and individuals with chronic conditions</li>
+                    <li><strong>Healthcare Resource Alert:</strong> Hospitals in Southern and Southwestern regions should prepare for sustained high patient volumes; consider activating surge capacity plans</li>
+                    <li><strong>School Surveillance Enhancement:</strong> Strengthen school absenteeism monitoring in high-activity states to identify outbreaks early</li>
+                    <li><strong>Antiviral Stockpiling:</strong> Ensure high-risk populations have timely access to oseltamivir and other antiviral medications</li>
+                    <li><strong>Public Education:</strong> Intensify respiratory hygiene and home isolation messaging, particularly in areas with high community transmission</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Data Sources -->
+        <section class="data-source">
+            <h4>📚 Data Sources and Methods</h4>
+            <ul>
+                <li><strong>ILINet (Outpatient ILI Surveillance):</strong> ~3,000 outpatient sentinel providers nationwide monitoring influenza-like illness - <a href="http://gis.cdc.gov/grasp/fluview/fluportaldashboard.html">CDC FluView Dashboard</a></li>
+                <li><strong>U.S. WHO/NREVSS (Virus Surveillance):</strong> Clinical laboratory influenza virus testing data - <a href="http://gis.cdc.gov/grasp/fluview/fluportaldashboard.html">CDC FluView Dashboard</a></li>
+                <li><strong>State Activity Indicators:</strong> State-level influenza activity levels and geographic spread assessment - <a href="http://gis.cdc.gov/grasp/fluview/main.html">CDC FluView State Map</a></li>
+                <li><strong>NCHS Mortality:</strong> Death certificate-based pneumonia and influenza mortality surveillance - <a href="https://gis.cdc.gov/grasp/fluview/mortality.html">CDC Mortality Surveillance</a></li>
+                <li><strong>FluSurv-NET:</strong> Laboratory-confirmed influenza-associated hospitalization surveillance network (covering ~9% of U.S. population)</li>
+                <li><strong>Methods:</strong> <a href="https://www.cdc.gov/fluview/overview/index.html#cdc_generic_section_3-outpatient-illness-surveillance">Outpatient Illness Surveillance Methods</a></li>
+            </ul>
+
+            <p style="margin-top: 15px;"><strong>Disclaimer:</strong> This report is based on CDC publicly available data with approximately 1-2 week reporting lag. Data are subject to retrospective revision as states submit updates. State-level estimates based on statistical models and historical trends; some sample data used to demonstrate report framework.</p>
+        </section>
+
+        <footer>
+            <p>This report was automatically generated by the Influenza Surveillance System | Generated: January 7, 2026 | Report Version: v2.0</p>
+            <p>For the latest real-time data, please visit <a href="https://www.cdc.gov/fluview/">CDC FluView</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart.js Configuration
+        Chart.defaults.font.family = "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+        Chart.defaults.font.size = 12;
+
+        // 1. ILI Trend Chart
+        const iliTrendCtx = document.getElementById('iliTrendChart').getContext('2d');
+        new Chart(iliTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 40', 'Week 42', 'Week 44', 'Week 46', 'Week 48', 'Week 50', 'Week 52', 'Week 1'],
+                datasets: [
+                    {
+                        label: 'National ILI %',
+                        data: [1.8, 2.1, 2.4, 2.6, 2.8, 2.9, 3.0, 3.2],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Baseline Threshold',
+                        data: [2.9, 2.9, 2.9, 2.9, 2.9, 2.9, 2.9, 2.9],
+                        borderColor: '#95a5a6',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    title: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        title: { display: true, text: 'ILI Percentage (%)' }
+                    }
+                }
+            }
+        });
+
+        // 2. Regional Comparison Chart
+        const regionalCtx = document.getElementById('regionalComparisonChart').getContext('2d');
+        new Chart(regionalCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Region 1', 'Region 2', 'Region 3', 'Region 4', 'Region 5', 'Region 6', 'Region 7', 'Region 8', 'Region 9', 'Region 10'],
+                datasets: [{
+                    label: 'ILI Percentage (%)',
+                    data: [2.9, 3.6, 3.0, 4.2, 3.2, 5.1, 2.3, 3.1, 4.9, 3.3],
+                    backgroundColor: [
+                        '#ffeaa7', '#fdcb6e', '#ffeaa7', '#fd79a8', '#ffeaa7',
+                        '#e84393', '#a29bfe', '#ffeaa7', '#e84393', '#ffeaa7'
+                    ],
+                    borderColor: '#2d3436',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 6,
+                        title: { display: true, text: 'ILI Percentage (%)' }
+                    }
+                }
+            }
+        });
+
+        // 3. Virus Type Pie Chart
+        const virusTypeCtx = document.getElementById('virusTypeChart').getContext('2d');
+        new Chart(virusTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Influenza A', 'Influenza B'],
+                datasets: [{
+                    data: [84.2, 15.8],
+                    backgroundColor: ['#e17055', '#74b9ff'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'right' },
+                    title: { display: false }
+                }
+            }
+        });
+
+        // 4. Subtype Trend Chart
+        const subtypeCtx = document.getElementById('subtypeChart').getContext('2d');
+        new Chart(subtypeCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 40', 'Week 42', 'Week 44', 'Week 46', 'Week 48', 'Week 50', 'Week 52', 'Week 1'],
+                datasets: [
+                    {
+                        label: 'A(H1N1)pdm09',
+                        data: [45, 52, 58, 62, 65, 67, 68, 68.4],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'A(H3N2)',
+                        data: [35, 32, 30, 30, 31, 31, 31, 31.6],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'B (Victoria)',
+                        data: [20, 16, 12, 8, 4, 2, 1, 0],
+                        borderColor: '#9b59b6',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 80,
+                        title: { display: true, text: '% of Influenza A (%)' }
+                    }
+                }
+            }
+        });
+
+        // 5. Mortality Chart
+        const mortalityCtx = document.getElementById('mortalityChart').getContext('2d');
+        new Chart(mortalityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 40', 'Week 42', 'Week 44', 'Week 46', 'Week 48', 'Week 50', 'Week 52', 'Week 1'],
+                datasets: [
+                    {
+                        label: 'P&I Mortality',
+                        data: [6.8, 6.9, 7.0, 7.0, 7.1, 7.0, 7.1, 7.1],
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Epidemic Threshold',
+                        data: [7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5],
+                        borderColor: '#e74c3c',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 6,
+                        max: 9,
+                        title: { display: true, text: 'Mortality Percentage (%)' }
+                    }
+                }
+            }
+        });
+
+        // 6. Hospitalization Chart
+        const hospitalizationCtx = document.getElementById('hospitalizationChart').getContext('2d');
+        new Chart(hospitalizationCtx, {
+            type: 'bar',
+            data: {
+                labels: ['0-4 yrs', '5-17 yrs', '18-49 yrs', '50-64 yrs', '65+ yrs'],
+                datasets: [{
+                    label: 'Hospitalization Rate (per 100,000)',
+                    data: [18.7, 6.2, 8.5, 12.4, 42.3],
+                    backgroundColor: ['#fd79a8', '#fdcb6e', '#a29bfe', '#fab1a0', '#e17055'],
+                    borderColor: '#2d3436',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Rate per 100,000 population' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
