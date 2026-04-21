@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Seasonal Activities — Data Sources</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3d;
+    --text: #e2e8f0; --muted: #8892a4; --accent: #6366f1;
+    --green: #22c55e; --yellow: #eab308; --red: #ef4444; --blue: #3b82f6;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; }
+  .surface { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .tab-btn { padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border: none; transition: all .15s; white-space: nowrap; color: var(--muted); background: transparent; }
+  .tab-btn:hover { background: rgba(99,102,241,.15); color: var(--text); }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px;
+    font-size: 11px; font-weight: 600; }
+  .badge-verified { background: rgba(34,197,94,.15); color: #4ade80; }
+  .badge-partial { background: rgba(234,179,8,.15); color: #facc15; }
+  .badge-landing { background: rgba(59,130,246,.15); color: #60a5fa; }
+  .badge-outdated { background: rgba(249,115,22,.15); color: #fb923c; }
+  .badge-inaccessible { background: rgba(239,68,68,.15); color: #f87171; }
+  .badge-api { background: rgba(99,102,241,.2); color: #a5b4fc; }
+  .badge-public { background: rgba(34,197,94,.1); color: #86efac; }
+  .badge-noprofit { background: rgba(168,85,247,.1); color: #d8b4fe; }
+  .badge-state { background: rgba(20,184,166,.1); color: #5eead4; }
+  .badge-comm { background: rgba(148,163,184,.1); color: #94a3b8; }
+  tr.hidden-row { display: none; }
+  .source-row:hover td { background: rgba(99,102,241,.06); }
+  .copy-btn { opacity: 0; transition: opacity .15s; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; color: var(--muted); background: var(--border); border: none; }
+  .source-row:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { color: var(--text); }
+  .season-chip { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: 11px;
+    background: rgba(99,102,241,.15); color: #a5b4fc; margin: 1px; }
+  input[type=search]::-webkit-search-cancel-button { cursor: pointer; }
+  .filter-active { background: rgba(99,102,241,.25) !important; color: #a5b4fc !important; border-color: var(--accent) !important; }
+  #toast { position: fixed; bottom: 24px; right: 24px; background: #1e2433; border: 1px solid var(--border);
+    padding: 10px 18px; border-radius: 8px; font-size: 13px; color: var(--text); z-index: 1000;
+    opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .section-header { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  th { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+    padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid rgba(42,45,61,.6); font-size: 13px; vertical-align: top; }
+  td:first-child { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header style="background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;">
+  <div style="max-width:1400px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <span style="font-size:22px;">🌿</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;line-height:1.2;">US Seasonal Activities</div>
+        <div style="font-size:11px;color:var(--muted);">Data Sources · 10 Categories · 80+ Sources Verified</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:200px;max-width:360px;position:relative;">
+      <input type="search" id="searchInput" placeholder="Search sources, URLs, regions…"
+        style="width:100%;background:#0f1117;border:1px solid var(--border);border-radius:8px;
+               padding:8px 12px 8px 34px;color:var(--text);font-size:13px;outline:none;"
+        oninput="filterSources()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;">🔍</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button id="apiFilterBtn" onclick="toggleApiFilter()"
+        style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);
+               background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;">
+        ⚡ Has API
+      </button>
+      <button onclick="clearFilters()"
+        style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid var(--border);
+               background:transparent;color:var(--muted);cursor:pointer;">
+        Clear
+      </button>
+    </div>
+    <div id="countBadge" style="font-size:12px;color:var(--muted);flex-shrink:0;"></div>
+  </div>
+</header>
+
+<!-- Category Tabs -->
+<div style="border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;">
+  <div style="max-width:1400px;margin:0 auto;padding:8px 24px;display:flex;gap:4px;" id="tabBar"></div>
+</div>
+
+<!-- In-Season Banner -->
+<div style="max-width:1400px;margin:16px auto 0;padding:0 24px;" id="inSeasonBanner"></div>
+
+<!-- Main Content -->
+<main style="max-width:1400px;margin:16px auto 40px;padding:0 24px;">
+  <div id="tabContent"></div>
+  <div id="searchResults" style="display:none;">
+    <div class="surface overflow-hidden">
+      <div class="section-header">Search Results</div>
+      <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;" id="searchTable">
+        <thead><tr>
+          <th>Source</th><th>Category</th><th>Coverage</th><th>URL</th><th>Compliance</th><th>Status</th>
+        </tr></thead>
+        <tbody id="searchTableBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div id="toast">Copied!</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CATEGORIES = [
+  { id:'all',      name:'All',          emoji:'📋', peak:[] },
+  { id:'bloom',    name:'花卉观赏',      emoji:'🌸', peak:[3,4,5,9,10,11], desc:'Cherry blossoms, wildflowers, tulips, fall foliage' },
+  { id:'birding',  name:'观鸟',          emoji:'🐦', peak:[3,4,5,9,10],    desc:'Migration, hotspots, rare species, birding trails' },
+  { id:'shellfish',name:'贝类采集',      emoji:'🦪', peak:[3,4,5,7,8,9,10],desc:'Clamming, crabbing, oysters, scalloping, lobster' },
+  { id:'picking',  name:'农场采摘',      emoji:'🍎', peak:[5,6,7,8,9,10],  desc:'Strawberries, blueberries, apples, cranberries' },
+  { id:'wildlife', name:'野生动物',      emoji:'🦌', peak:[3,4,5,6,9,10],  desc:'Crane migration, monarchs, salmon, elk rut, fireflies' },
+  { id:'mushroom', name:'蘑菇采集',      emoji:'🍄', peak:[3,4,5,9,10],    desc:'Morels, chanterelles, ramps, fiddlehead ferns' },
+  { id:'farm',     name:'农场节日',      emoji:'🎃', peak:[2,3,9,10,11,12],desc:'Pumpkin patches, corn mazes, maple sugaring, Christmas trees' },
+  { id:'winter',   name:'冬季活动',      emoji:'❄️', peak:[1,2,3,12],      desc:'Ice fishing, ice caves, snowshoeing, cross-country skiing' },
+  { id:'astronomy',name:'天文观测',      emoji:'🔭', peak:[1,6,7,8,11,12], desc:'Meteor showers, aurora, eclipses, dark sky parks' },
+  { id:'tidepool', name:'潮间带探索',    emoji:'🌊', peak:[3,4,5,6,7,8],   desc:'Tide pooling, shelling, minus tide windows' },
+];
+
+const COMPLIANCE_BADGES = {
+  '公共领域':  { cls:'badge-public',  label:'公共领域' },
+  'CC BY':     { cls:'badge-public',  label:'CC BY' },
+  'CC BY-NC':  { cls:'badge-comm',    label:'CC BY-NC' },
+  '联邦政府':  { cls:'badge-public',  label:'联邦政府' },
+  '州政府':    { cls:'badge-state',   label:'州政府' },
+  '非营利':    { cls:'badge-noprofit',label:'非营利' },
+  '大学推广':  { cls:'badge-noprofit',label:'大学' },
+  '社区':      { cls:'badge-comm',    label:'社区' },
+  '行业协会':  { cls:'badge-comm',    label:'行业协会' },
+  '旅游局':    { cls:'badge-comm',    label:'旅游局' },
+  '第三方':    { cls:'badge-comm',    label:'第三方' },
+  '商业免费':  { cls:'badge-comm',    label:'商业免费' },
+};
+
+const STATUS_BADGES = {
+  'verified':     { cls:'badge-verified',     icon:'✅', label:'Verified' },
+  'partial':      { cls:'badge-partial',      icon:'⚠️', label:'Partial' },
+  'landing':      { cls:'badge-landing',      icon:'🔗', label:'Landing Page' },
+  'outdated':     { cls:'badge-outdated',     icon:'⚠️', label:'Outdated' },
+  'inaccessible': { cls:'badge-inaccessible', icon:'❌', label:'Inaccessible' },
+};
+
+const SOURCES = [
+  // ── BLOOM ──────────────────────────────────────────────────────────────────
+  { cat:'bloom', name:'NPS Cherry Blossom Bloom Watch', coverage:'DC 潮汐盆地 + 全美国家公园', url:'https://www.nps.gov/subjects/cherryblossom/bloom-watch.htm', compliance:'联邦政府', status:'verified', api:false, peak:[3,4] },
+  { cat:'bloom', name:'NPS 野花主题页', coverage:'全美国家公园', url:'https://www.nps.gov/subjects/wildflowers/index.htm', compliance:'联邦政府', status:'verified', api:false, peak:[3,4,5,6] },
+  { cat:'bloom', name:'National Cherry Blossom Festival Bloom Watch', coverage:'DC 潮汐盆地', url:'https://nationalcherryblossomfestival.org/bloom-watch/', compliance:'非营利', status:'verified', api:false, peak:[3,4] },
+  { cat:'bloom', name:'Brooklyn Botanic Garden CherryWatch', coverage:'纽约布鲁克林（150+棵樱树）', url:'https://www.bbg.org/collections/cherries', compliance:'非营利', status:'verified', api:false, peak:[4] },
+  { cat:'bloom', name:'California State Parks Flower Bloom Map', coverage:'加州全州立公园（安扎博雷戈、克里佐平原等）', url:'https://www.parks.ca.gov/?page_id=30080', compliance:'州政府', status:'verified', api:false, peak:[2,3,4,5] },
+  { cat:'bloom', name:'Theodore Payne Foundation Wildflower Hotline', coverage:'南加州 / 中加州', url:'https://theodorepayne.org/learn/wildflower-hotline/', compliance:'非营利', status:'verified', api:false, peak:[3,4,5] },
+  { cat:'bloom', name:'Anza-Borrego Wildflowers Bloom Report', coverage:'安扎博雷戈沙漠地区', url:'https://borregowildflowers.org/pages/blooming.html', compliance:'社区', status:'verified', api:false, peak:[2,3,4] },
+  { cat:'bloom', name:'USA National Phenology Network', coverage:'全美（植物/动物物候）', url:'https://www.usanpn.org/data', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'bloom', name:'Skagit Valley Tulip Festival Bloom Map', coverage:'华盛顿州斯卡吉特谷', url:'https://tulipfestival.org/', compliance:'非营利', status:'verified', api:false, peak:[4] },
+  { cat:'bloom', name:'Holland Tulip Time Festival', coverage:'密歇根州荷兰市', url:'https://www.tuliptime.com/', compliance:'非营利', status:'verified', api:false, peak:[5] },
+  { cat:'bloom', name:'Sequim Lavender Trail', coverage:'华盛顿州赛基姆（20+农场）', url:'https://sequimlavender.org/visit/', compliance:'非营利', status:'verified', api:false, peak:[7] },
+  { cat:'bloom', name:'Explore Fall Foliage Interactive Map', coverage:'全美各州（每日更新）', url:'https://www.explorefall.com/fall-foliage-map', compliance:'商业免费', status:'verified', api:false, peak:[9,10,11] },
+  { cat:'bloom', name:"Old Farmer's Almanac Foliage Map", coverage:'全美各地区（历史预测）', url:'https://www.almanac.com/fall-foliage-color-map-when-peak-foliage', compliance:'商业免费', status:'verified', api:false, peak:[9,10,11] },
+  { cat:'bloom', name:'Visit NH Foliage Tracker', coverage:'新罕布什尔 / 新英格兰', url:'https://www.visitnh.gov/plan-your-trip/fall/foliage-tracker', compliance:'旅游局', status:'verified', api:false, peak:[9,10] },
+  { cat:'bloom', name:'Antelope Valley Poppy Reserve Live Camera', coverage:'加州兰开斯特', url:'https://www.parks.ca.gov/?page_id=31189', compliance:'州政府', status:'verified', api:false, peak:[3,4] },
+  { cat:'bloom', name:'Iowa DNR Woodland Wildflowers Reports', coverage:'爱荷华州立公园（4个分区）', url:'https://www.iowadnr.gov/programs-services/forestry-resources/woodland-wildflowers-reports', compliance:'州政府', status:'verified', api:false, peak:[4,5] },
+
+  // ── BIRDING ─────────────────────────────────────────────────────────────────
+  { cat:'birding', name:'eBird Hotspots', coverage:'全美 + 全球（数百万条观测）', url:'https://ebird.org/hotspots', compliance:'CC BY', status:'verified', api:true, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'eBird Explore', coverage:'全球实时众包观测', url:'https://ebird.org/home', compliance:'CC BY', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'BirdCast Live Migration Maps', coverage:'美国本土（实时雷达数据）', url:'https://birdcast.org/migration-tools/live-migration-maps/', compliance:'非营利', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'BirdCast Migration Dashboard', coverage:'美国本土（县/州级统计）', url:'https://birdcast.org/migration-tools/migration-dashboard/', compliance:'非营利', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'National Audubon IBA Hub', coverage:'全美 2758 个重要鸟类区域', url:'https://www.audubon.org/important-bird-areas', compliance:'非营利', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'Audubon IBA Explorer (GIS)', coverage:'全美 IBA 空间数据', url:'https://gis.audubon.org/portal/apps/dashboards/1742bc47f980490da9c23e23dc4d5e86', compliance:'非营利', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'Audubon Open Data Library', coverage:'全美 IBA polygon 数据集', url:'https://data-library-audubon.hub.arcgis.com/', compliance:'非营利', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'USFWS Open Data Portal', coverage:'全美及领地（570+保护区）', url:'https://gis-fws.opendata.arcgis.com/', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'USFWS IPaC Location API', coverage:'全美（坐标→候鸟物种+栖息地）', url:'https://ipac.ecosphere.fws.gov/location/api', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'birding', name:'USFWS Migratory Bird Apps', coverage:'全美候鸟管理数据', url:'https://migbirdapps.fws.gov/', compliance:'联邦政府', status:'partial', api:false, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'Great Texas Coastal Birding Trail', coverage:'得克萨斯海岸（43条步道，332地点）', url:'https://tpwd.texas.gov/huntwild/wildlife/wildlife-trails/', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'Texas Parks & Wildlife Birding Maps', coverage:'得克萨斯全州（9张互动区域图）', url:'https://tpwd.texas.gov/huntwild/wild/birding/birding_maps/', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'birding', name:'Great Florida Birding Trail', coverage:'佛罗里达全州（500+地点，4个区域）', url:'https://floridabirdingtrail.com/', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,10,11,12] },
+  { cat:'birding', name:'Project SNOWstorm — Owl Tracking', coverage:'北美冬季（雪鸮入侵年追踪）', url:'https://www.projectsnowstorm.org/', compliance:'非营利', status:'verified', api:false, peak:[1,2,12] },
+
+  // ── SHELLFISH ───────────────────────────────────────────────────────────────
+  { cat:'shellfish', name:'Washington WDFW Shellfish Beaches', coverage:'华盛顿州各贝类海滩（精确到海滩）', url:'https://wdfw.wa.gov/places-to-go/shellfish-beaches', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,6,7,8,9,10] },
+  { cat:'shellfish', name:'WA Dept of Health Shellfish Growing Areas', coverage:'华盛顿州（水质分类+互动地图）', url:'https://doh.wa.gov/community-and-environment/shellfish/growing-areas', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,6,7,8,9,10] },
+  { cat:'shellfish', name:'Oregon ODFW Shellfish Regulations', coverage:'俄勒冈海岸（各海湾+剃刀蛤）', url:'https://myodfw.com/articles/oregon-shellfish-regulations', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,6,10,11] },
+  { cat:'shellfish', name:'Oregon ODFW Crabbing & Clamming Portal', coverage:'俄勒冈（每周报告+生物毒素关闭通知）', url:'https://myodfw.com/crabbing-clamming', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,6,10,11] },
+  { cat:'shellfish', name:'California CDFW Ocean Shellfish', coverage:'加州（6个海岸区域）', url:'https://wildlife.ca.gov/fishing/ocean/shellfish', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'shellfish', name:'Maryland DNR Blue Crab', coverage:'马里兰州切萨皮克湾（4月1日-12月15日）', url:'https://dnr.maryland.gov/fisheries/pages/regulations/blue-crab.aspx', compliance:'州政府', status:'verified', api:false, peak:[4,5,6,7,8,9,10,11,12] },
+  { cat:'shellfish', name:'Virginia MRC Recreational Crabbing Rules', coverage:'弗吉尼亚切萨皮克湾', url:'https://mrc.virginia.gov/regulations/VA-recreational-crabbing-rules.shtm', compliance:'州政府', status:'verified', api:false, peak:[4,5,6,7,8,9,10,11,12] },
+  { cat:'shellfish', name:'Maine DMR Lobster Fishery', coverage:'缅因州（8个管理区）', url:'https://www.maine.gov/dmr/fisheries/commercial/fisheries-by-species/lobsters', compliance:'州政府', status:'verified', api:false, peak:[6,7,8,9,10] },
+  { cat:'shellfish', name:'Florida FWC Bay Scallops', coverage:'佛罗里达湾区（6个分区不同开放期）', url:'https://myfwc.com/fishing/saltwater/recreational/bay-scallops/', compliance:'州政府', status:'verified', api:false, peak:[6,7,8,9] },
+  { cat:'shellfish', name:'Florida FWC Bay Scallop FAQ (6-zone details)', coverage:'佛罗里达各区扇贝详细季节', url:'https://myfwc.com/research/saltwater/mollusc/bay-scallops/faq/', compliance:'州政府', status:'verified', api:false, peak:[6,7,8,9] },
+  { cat:'shellfish', name:'FDA National Shellfish Sanitation Program', coverage:'全美商业贝类水质分类（4级分类）', url:'https://www.fda.gov/food/federal-state-local-tribal-and-territorial-cooperative-human-food-programs/national-shellfish-sanitation-program-nssp', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'shellfish', name:'WA Biotoxin / Shellfish Closures (Real-time)', coverage:'华盛顿州实时贝类关闭通知', url:'https://wdfw.wa.gov/fishing/shellfish/biotoxins', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+
+  // ── PICKING ─────────────────────────────────────────────────────────────────
+  { cat:'picking', name:'PickYourOwn.org — State Farm List', coverage:'全美50州采摘农场目录', url:'https://pickyourown.org/statelist.htm', compliance:'社区', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'PickYourOwn.org — Crop Harvest Calendars', coverage:'全美各州作物上市时间表', url:'https://pickyourown.org/US_crop_harvest_calendars.php', compliance:'社区', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'LocalHarvest.org', coverage:'全美农场目录（可按位置搜索）', url:'https://www.localharvest.org/', compliance:'社区', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'USDA Local Food Portal', coverage:'全美 USDA 官方农场/市集目录', url:'https://www.usdalocalfoodportal.com/', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'picking', name:'USDA AMS Food Directories', coverage:'全美农贸市场、CSA、农场销售', url:'https://www.ams.usda.gov/services/local-regional/food-directories', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'picking', name:'USDA Crop Progress Weekly Reports', coverage:'全美主要农业州（每周更新，4-11月）', url:'https://www.nass.usda.gov/Publications/National_Crop_Progress/', compliance:'联邦政府', status:'verified', api:false, peak:[4,5,6,7,8,9,10,11] },
+  { cat:'picking', name:'New York State Farm Directory', coverage:'纽约州全州农场地图', url:'https://farmdirectory.agriculture.ny.gov/', compliance:'州政府', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'Massachusetts Pick-Your-Own Farms', coverage:'马萨诸塞官方采摘指南', url:'https://www.mass.gov/guides/pick-your-own-farms', compliance:'州政府', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'New Hampshire Harvest-Your-Own Directory', coverage:'新罕布什尔官方采摘目录', url:'https://www.agriculture.nh.gov/farms-businesses/agricultural-development/find-nh-agriculture/harvest-your-own-directory', compliance:'州政府', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'Washington Food & Farm Finder', coverage:'华盛顿州（1600+条，37个县）', url:'https://eatlocalfirst.org/wa-food-farm-finder/', compliance:'非营利', status:'verified', api:false, peak:[6,7,8,9] },
+  { cat:'picking', name:'Michigan Grown Directory', coverage:'密歇根州农场+采摘', url:'https://michigangrown.org/find-michigan-ag/', compliance:'非营利', status:'verified', api:false, peak:[6,7,8,9,10] },
+  { cat:'picking', name:'Wisconsin Local Foods Database', coverage:'威斯康星州本地农产品生产者', url:'https://sites.google.com/dpi.wi.gov/wilfd/find-farmers', compliance:'州政府', status:'verified', api:false, peak:[6,7,8,9,10] },
+  { cat:'picking', name:'Pennsylvania Extension Harvest Calendar', coverage:'宾夕法尼亚州作物上市日历', url:'https://extension.psu.edu/harvest-calendar', compliance:'大学推广', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'picking', name:'Wisconsin Cranberry Growers Tours', coverage:'威斯康星州蔓越莓沼泽参观', url:'https://www.wiscran.org/Tours', compliance:'非营利', status:'verified', api:false, peak:[9,10] },
+  { cat:'picking', name:'Massachusetts Cranberries — Farm Visits', coverage:'马萨诸塞州蔓越莓收获参观', url:'https://www.cranberries.org/visit', compliance:'非营利', status:'verified', api:false, peak:[9,10] },
+  { cat:'picking', name:'National Christmas Tree Association — Tree Locator', coverage:'全美 U-cut 圣诞树农场', url:'https://realchristmastrees.org/all-about-trees/tree-locator/', compliance:'行业协会', status:'verified', api:false, peak:[11,12] },
+
+  // ── WILDLIFE ────────────────────────────────────────────────────────────────
+  { cat:'wildlife', name:'Crane Trust — Sandhill Crane Visitor Center', coverage:'内布拉斯加普拉特河（全球最大集聚，50万只）', url:'https://www.cranetrust.org/visit/', compliance:'非营利', status:'verified', api:false, peak:[2,3,4] },
+  { cat:'wildlife', name:'Delaware Bay Horseshoe Crab Survey', coverage:'特拉华湾（特拉华+新泽西，18个监测海滩）', url:'https://www.delawarebayhscsurvey.org/', compliance:'非营利', status:'verified', api:false, peak:[5,6] },
+  { cat:'wildlife', name:'Journey North — Monarch Butterflies', coverage:'北美（东部+西部种群，全年目击记录）', url:'https://journeynorth.org/monarchs', compliance:'非营利', status:'verified', api:false, peak:[3,4,5,8,9,10] },
+  { cat:'wildlife', name:'Journey North — Gray Whales', coverage:'太平洋海岸众包目击', url:'https://journeynorth.org/gwhale/', compliance:'非营利', status:'verified', api:false, peak:[1,2,3,4,12] },
+  { cat:'wildlife', name:'WWF Monarch Butterfly — Population Data', coverage:'全北美/墨西哥越冬地，年度种群统计', url:'https://www.worldwildlife.org/species/monarch-butterfly/', compliance:'非营利', status:'verified', api:false, peak:[10,11,12,1,2] },
+  { cat:'wildlife', name:'Florida FWC Sea Turtle Program', coverage:'佛罗里达全州海滩（228个监测点，1979年至今）', url:'https://myfwc.com/wildlifehabitats/wildlife/sea-turtle/', compliance:'州政府', status:'verified', api:false, peak:[5,6,7,8,9,10] },
+  { cat:'wildlife', name:'NOAA Pacific Gray Whale Tracking Map', coverage:'太平洋海岸（卫星追踪个体）', url:'https://www.fisheries.noaa.gov/resource/map/pacific-coast-feeding-group-gray-whale-movements-map', compliance:'联邦政府', status:'verified', api:false, peak:[12,1,2,3,4] },
+  { cat:'wildlife', name:'Washington WDFW — Salmon Viewing Sites', coverage:'华盛顿州全州（100+观看地点）', url:'https://wdfw.wa.gov/places-to-go/salmon-viewing', compliance:'州政府', status:'verified', api:false, peak:[7,8,9,10,11] },
+  { cat:'wildlife', name:'Oregon ODFW — See Salmon Spawn', coverage:'俄勒冈州各河流系统', url:'https://myodfw.com/articles/see-salmon-spawn', compliance:'州政府', status:'verified', api:false, peak:[9,10,11,12] },
+  { cat:'wildlife', name:'NPS Great Smoky Mountains — Synchronous Fireflies', coverage:'大烟山国家公园（田纳西/北卡）', url:'https://www.nps.gov/grsm/learn/nature/fireflies.htm', compliance:'联邦政府', status:'verified', api:false, peak:[5,6] },
+  { cat:'wildlife', name:'NPS Rocky Mountain — Elk Rut', coverage:'落基山国家公园（科罗拉多）', url:'https://www.nps.gov/romo/elk_bugles.htm', compliance:'联邦政府', status:'verified', api:false, peak:[9,10] },
+  { cat:'wildlife', name:'Yellowstone Forever — Elk Rut Guide', coverage:'黄石国家公园（怀俄明）', url:'https://www.yellowstone.org/sound-the-bugle-yellowstones-fall-elk-rut/', compliance:'非营利', status:'verified', api:false, peak:[9,10] },
+  { cat:'wildlife', name:'USFWS National Wildlife Refuges — Visit Portal', coverage:'全美570+野生动物保护区', url:'https://www.fws.gov/visit-us', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'wildlife', name:'Virginia DWR — Watchable Wildlife', coverage:'弗吉尼亚州野生动物观察指南', url:'https://dwr.virginia.gov/wildlife/watchable-wildlife/', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,9,10] },
+
+  // ── MUSHROOM ────────────────────────────────────────────────────────────────
+  { cat:'mushroom', name:'USDA Forest Service — Forest Products Permits', coverage:'全美154个国家森林（43个州）', url:'https://www.fs.usda.gov/managing-land/national-forests-and-grasslands/permits/forest-products', compliance:'联邦政府', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'mushroom', name:'AFDO Wild Mushroom Regulations by State', coverage:'25+个州法规汇总', url:'https://www.afdo.org/resources/wild-mushrooms-laws-and-guidance/', compliance:'非营利', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'mushroom', name:'Mushroom Tracker — State Regulations', coverage:'全美50州采集规定', url:'https://www.mushroomtracker.ca/blog/mushroom-foraging-regulations-by-state.html', compliance:'社区', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'mushroom', name:'The Great Morel — Sighting Maps', coverage:'中西部+东部（众包目击地图）', url:'https://www.thegreatmorel.com/morel-sightings/', compliance:'社区', status:'verified', api:false, peak:[3,4,5] },
+  { cat:'mushroom', name:'GeoForager — Burn Morel Maps', coverage:'西部11个州（火烧地+卫星叠加）', url:'https://geoforager.com/burn-morel-maps/', compliance:'社区', status:'partial', api:false, peak:[3,4,5,6] },
+  { cat:'mushroom', name:'Salish Mushrooms — Morel Maps 2026', coverage:'太平洋西北（华盛顿/俄勒冈）', url:'https://salishmushrooms.com/2026-morel-maps/', compliance:'社区', status:'verified', api:false, peak:[3,4,5] },
+  { cat:'mushroom', name:'MyCoMap Network', coverage:'北美（DNA验证标本，CA/MI/BC重点）', url:'https://mycomap.org/mycomap-ac', compliance:'非营利', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'mushroom', name:'iNaturalist — Fungi Observations', coverage:'全美（可按州/物种筛选）', url:'https://www.inaturalist.org/observations?taxon_id=47169&place_id=1', compliance:'CC BY-NC', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'mushroom', name:'Mushroom Observer', coverage:'全球英文菌类观测数据库', url:'https://mushroomobserver.org/', compliance:'社区', status:'partial', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'mushroom', name:'UMN Extension — Forest Goods Guide', coverage:'明尼苏达/上中西部', url:'https://extension.umn.edu/natural-resources/goods-your-woods', compliance:'大学推广', status:'verified', api:false, peak:[3,4,5,9,10] },
+  { cat:'mushroom', name:'NC State Extension — Ramps (Wild Leeks)', coverage:'阿巴拉契亚地区', url:'https://content.ces.ncsu.edu/cultivation-of-ramps-allium-tricoccum-and-a-burdickii', compliance:'大学推广', status:'verified', api:false, peak:[3,4,5] },
+  { cat:'mushroom', name:'United Plant Savers — Ramps Profile', coverage:'东部美国（受保护植物说明）', url:'https://unitedplantsavers.org/ramps/', compliance:'非营利', status:'verified', api:false, peak:[3,4,5] },
+  { cat:'mushroom', name:'University of Maine Extension — Fiddlehead Ferns', coverage:'东北部', url:'https://extension.umaine.edu/publications/2540e/', compliance:'大学推广', status:'verified', api:false, peak:[4,5] },
+  { cat:'mushroom', name:'Vermont Agriculture — Fiddlehead Food Safety', coverage:'新英格兰（4月下旬-5月中旬）', url:'https://agriculture.vermont.gov/food-safety-fiddleheads', compliance:'州政府', status:'verified', api:false, peak:[4,5] },
+  { cat:'mushroom', name:'Wisconsin Horticulture Extension — Ramps', coverage:'上中西部/大湖区', url:'https://hort.extension.wisc.edu/articles/ramps-allium-tricoccum/', compliance:'大学推广', status:'verified', api:false, peak:[4,5] },
+
+  // ── FARM FESTIVALS ──────────────────────────────────────────────────────────
+  { cat:'farm', name:'PumpkinPatchesAndMore.org', coverage:'全美50州（南瓜园目录，每日更新）', url:'https://www.pumpkinpatchesandmore.org/', compliance:'社区', status:'verified', api:false, peak:[9,10,11] },
+  { cat:'farm', name:"PickYourOwn.org — Apple Festivals", coverage:'全美、加拿大、英国', url:'https://www.pickyourown.org/applefestivals.php', compliance:'社区', status:'verified', api:false, peak:[9,10] },
+  { cat:'farm', name:'PickYourOwn.org — Corn Mazes', coverage:'全美', url:'https://www.pickyourown.org/cornmazes.php', compliance:'社区', status:'verified', api:false, peak:[9,10,11] },
+  { cat:'farm', name:'AgritourismWorld Directory', coverage:'全美5000+农场旅游目录', url:'https://agritourismworld.com/directory', compliance:'社区', status:'verified', api:false, peak:[3,4,5,6,7,8,9,10,11,12] },
+  { cat:'farm', name:'Vermont Maple Open House Weekend', coverage:'佛蒙特州（90+糖枫庄园，2026年3月21-22日）', url:'https://vermontmaple.org/visit/maple-open-house-weekend', compliance:'非营利', status:'verified', api:false, peak:[2,3,4] },
+  { cat:'farm', name:'New Hampshire Maple Directory', coverage:'新罕布什尔州', url:'https://nhmapleproducers.com/directory', compliance:'非营利', status:'verified', api:false, peak:[2,3,4] },
+  { cat:'farm', name:'Massachusetts Maple Association Directory', coverage:'马萨诸塞州（3月初开放）', url:'https://www.massmaple.org/buy-maple-syrup/directory/', compliance:'非营利', status:'verified', api:false, peak:[2,3] },
+  { cat:'farm', name:'USDA AMS Local Food Directories', coverage:'全美农贸市场、CSA、农场销售', url:'https://www.ams.usda.gov/services/local-regional/food-directories', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'farm', name:'USDA Local Food Portal', coverage:'全美官方农场目录', url:'https://www.usdalocalfoodportal.com/', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'farm', name:'County Fair Calendar — Countyfairgrounds.net', coverage:'全美县博览会', url:'https://www.countyfairgrounds.net/', compliance:'社区', status:'verified', api:false, peak:[7,8,9,10] },
+  { cat:'farm', name:'IAFE State Fair Associations', coverage:'各州博览会协会目录', url:'https://fairsandexpos.com/state-provincial-associations/', compliance:'行业协会', status:'verified', api:false, peak:[7,8,9,10] },
+  { cat:'farm', name:'NAFDMA — Agritourism Association', coverage:'北美农场旅游网络', url:'https://www.nafdma.com/', compliance:'行业协会', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'farm', name:'Sequim Lavender Festival', coverage:'华盛顿州赛基姆（7月第3周末）', url:'https://www.lavenderfestival.com/', compliance:'非营利', status:'verified', api:false, peak:[7] },
+  { cat:'farm', name:'Blanco Lavender Festival (Texas)', coverage:'得克萨斯州布兰科', url:'https://www.blancolavenderfest.com/', compliance:'旅游局', status:'verified', api:false, peak:[5,6] },
+  { cat:'farm', name:'Coshocton Sunflower Festival (Ohio)', coverage:'俄亥俄州', url:'https://www.coshoctonsunflowerfestival.com/', compliance:'旅游局', status:'verified', api:false, peak:[8,9] },
+  { cat:'farm', name:'Vermont / NY Maple Sugarhouses', coverage:'佛蒙特州+纽约州糖枫庄园目录', url:'https://www.nymaplegrowers.com/', compliance:'非营利', status:'verified', api:false, peak:[2,3] },
+
+  // ── WINTER ──────────────────────────────────────────────────────────────────
+  { cat:'winter', name:'Minnesota DNR — Ice Fishing Seasons', coverage:'明尼苏达州（全美最重要冰钓州）', url:'https://www.dnr.state.mn.us/fishing/seasons.html', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Wisconsin DNR — Fishing Seasons', coverage:'威斯康星州', url:'https://dnr.wisconsin.gov/topic/Fishing/seasons', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Michigan DNR — Fishing License Info', coverage:'密歇根州', url:'https://www.michigan.gov/dnr/things-to-do/fishing/license-info', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Vermont Fish & Wildlife — Fishing Regulations', coverage:'佛蒙特州（冰钓1月1日-3月15日）', url:'https://www.vtfishandwildlife.com/fish/fishing-regulations', compliance:'州政府', status:'verified', api:false, peak:[1,2,3] },
+  { cat:'winter', name:'NPS Apostle Islands — Ice Caves (Real-time Status)', coverage:'威斯康星州苏必利尔湖（极稀有开放，实时状态）', url:'https://www.nps.gov/apis/mainland-caves-winter.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2] },
+  { cat:'winter', name:'USFS Trail Finder — Snowshoeing / XC Skiing', coverage:'全美国家森林（164,000+英里小径）', url:'https://www.fs.usda.gov/managing-land/trails', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Cross Country Ski Areas Association', coverage:'全美300+认证越野滑雪场', url:'https://xcski.org/find-a-ski-area/', compliance:'行业协会', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'TrailLink — Cross-Country Skiing Trails', coverage:'全美（Rails-to-Trails维护）', url:'https://www.traillink.com/activity/cross-country-skiing-trails/', compliance:'非营利', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Skinnyski.com — XC Ski Reports', coverage:'全美越野滑雪（实时用户报告）', url:'https://www.skinnyski.com/', compliance:'社区', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Minnesota DNR — Cross-Country Skiing', coverage:'明尼苏达州立公园+国家森林', url:'https://www.dnr.state.mn.us/skiing/index.html', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Wisconsin State Parks — Skiing', coverage:'威斯康星州立公园', url:'https://dnr.wisconsin.gov/topic/parks/recreation/skiing', compliance:'州政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'NPS Winter Activities Calendar', coverage:'全美国家公园（实时事件搜索）', url:'https://www.nps.gov/planyourvisit/event-search.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'NPS Winter Season Celebration', coverage:'全美国家公园精选冬季活动', url:'https://www.nps.gov/subjects/npscelebrates/winter-season.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,12] },
+  { cat:'winter', name:'Project SNOWstorm — Snowy Owl Irruption Tracking', coverage:'北美（2013年至今个体追踪）', url:'https://www.projectsnowstorm.org/', compliance:'非营利', status:'verified', api:false, peak:[1,2,12] },
+  { cat:'winter', name:'Oceanic Society — California Gray Whale Migration', coverage:'加州海岸（12月-4月）', url:'https://www.oceanicsociety.org/resources/the-gray-whale-migration-in-california-and-beyond/', compliance:'非营利', status:'verified', api:false, peak:[12,1,2,3,4] },
+  { cat:'winter', name:'NPS Point Reyes — Whale Watching', coverage:'加州马林县（12月-4月灰鲸）', url:'https://www.nps.gov/pore/planyourvisit/wildlife_viewing_whales.htm', compliance:'联邦政府', status:'verified', api:false, peak:[12,1,2,3,4] },
+
+  // ── ASTRONOMY ───────────────────────────────────────────────────────────────
+  { cat:'astronomy', name:'NASA Future Eclipses', coverage:'全球（含美国可见性数据）', url:'https://science.nasa.gov/eclipses/future-eclipses/', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NASA Eclipse Maps & Search', coverage:'全球日食月食路径交互地图', url:'https://eclipse.gsfc.nasa.gov/SEsearch/SEsearchmap.php', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NASA SKYCAL — Sky Events Calendar 2026', coverage:'全球天文事件（年度）', url:'https://eclipse.gsfc.nasa.gov/SKYCAL/SKYCAL.html?cal=2026', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:"NASA What's Up — Monthly Skywatching Tips", coverage:'全球观星（月度更新）', url:'https://science.nasa.gov/solar-system/whats-up-april-2026-skywatching-tips-from-nasa/', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NOAA Aurora — 30-Minute Forecast', coverage:'北/南半球（30-90分钟更新）', url:'https://www.swpc.noaa.gov/products/aurora-30-minute-forecast', compliance:'联邦政府', status:'verified', api:true, peak:[9,10,11,12,1,2,3] },
+  { cat:'astronomy', name:'NOAA Space Weather Prediction Center', coverage:'全球极光及空间天气（实时）', url:'https://www.swpc.noaa.gov/', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'American Meteor Society — Shower Calendar', coverage:'全球（权威流星雨峰期，年度更新）', url:'https://www.amsmeteors.org/meteor-shower-calendar/', compliance:'非营利', status:'verified', api:false, peak:[1,6,7,8,11,12] },
+  { cat:'astronomy', name:'NPS Night Skies Program', coverage:'美国国家公园（暗空认证）', url:'https://www.nps.gov/subjects/nightskies/index.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NPS Stargazing Guide & Events', coverage:'美国国家公园观星活动', url:'https://www.nps.gov/subjects/nightskies/stargaze.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NPS Night Sky Events Calendar', coverage:'美国国家公园夜空活动', url:'https://www.nps.gov/subjects/nightskies/events.htm', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'IDA — Dark Sky Parks Directory', coverage:'全球200+/美国115+认证暗空公园', url:'https://darksky.org/dark-sky-place-type/international-dark-sky-park/', compliance:'非营利', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'astronomy', name:'NASA 2026 Notable Astronomical Events', coverage:'全球（2026年年度天象概览）', url:'https://www.nasa.gov/blogs/watch-the-skies/2026/01/16/most-notable-2026-astronomical-events-a-year-of-watching-the-skies/', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+
+  // ── TIDE POOLING ────────────────────────────────────────────────────────────
+  { cat:'tidepool', name:'NOAA Tides & Currents — Predictions', coverage:'全美海岸（100+参考港，3000+从属站）', url:'https://tidesandcurrents.noaa.gov/tide_predictions.html', compliance:'联邦政府', status:'verified', api:true, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'NOAA CO-OPS API Documentation', coverage:'全美海岸站（精确潮汐时间，含负潮）', url:'https://tidesandcurrents.noaa.gov/web_services_info.html', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'NOAA CO-OPS API Builder (Visual)', coverage:'全美（可视化查询构建器）', url:'https://tidesandcurrents.noaa.gov/api-helper/url-generator.html', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'NOAA Annual Tide Tables 2026', coverage:'全美+夏威夷+太平洋领地', url:'https://tidesandcurrents.noaa.gov/noaatideannual.html', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'Tides.net — Pacific Coast Minus Tides', coverage:'太平洋/大西洋海岸（负潮高亮，至2030+）', url:'https://tides.net/', compliance:'商业免费', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'California Tide Pools — Location Database', coverage:'加州全海岸（北至南各潮池地点）', url:'https://californiatidepools.com/locations/', compliance:'社区', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'Monterey Bay NMS — Tide Pool Visitor Guide', coverage:'加州蒙特雷湾', url:'https://montereybay.noaa.gov/visitor/TidePool/', compliance:'联邦政府', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'NPS Cabrillo — Tide Pools', coverage:'加州圣地亚哥', url:'https://www.nps.gov/cabr/learn/nature/tidepools.htm', compliance:'联邦政府', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'NPS Point Reyes — Tide Pooling', coverage:'加州马林县（Agate Beach）', url:'https://www.nps.gov/thingstodo/point-reyes-tidepooling.htm', compliance:'联邦政府', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'NPS Olympic — Tidepool Activities', coverage:'华盛顿州 Rialto Beach', url:'https://www.nps.gov/olym/planyourvisit/tidepool-activities.htm', compliance:'联邦政府', status:'verified', api:false, peak:[5,6,7,8] },
+  { cat:'tidepool', name:'NPS Acadia — Tide Pools', coverage:'缅因州湾区', url:'https://www.nps.gov/articles/acadia-tide-pool.htm', compliance:'联邦政府', status:'verified', api:false, peak:[4,5,6,7,8] },
+  { cat:'tidepool', name:'NPS Redwood — Enderts Beach Tide Pools', coverage:'加州洪堡', url:'https://www.nps.gov/thingstodo/tidepoolendert.htm', compliance:'联邦政府', status:'verified', api:false, peak:[4,5,6,7,8] },
+  { cat:'tidepool', name:'NOAA Office for Coastal Management', coverage:'全美海岸（3613+数据集）', url:'https://coast.noaa.gov/', compliance:'联邦政府', status:'verified', api:true, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'Digital Coast Data Portal', coverage:'全美（12类海岸数据）', url:'https://coast.noaa.gov/digitalcoast/data/home.html', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'Sanibel Island Shelling Guide', coverage:'佛罗里达 Sanibel & Captiva 岛', url:'https://sanibel-captiva.org/sanibel-island-shelling/', compliance:'旅游局', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'Outer Banks Shelling Guide', coverage:'北卡外滩（奥克拉科克、哈特拉斯）', url:'https://www.outerbanks.com/shelling.html', compliance:'旅游局', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+  { cat:'tidepool', name:'Oregon State Parks — Rocky Intertidal Guide', coverage:'俄勒冈海岸', url:'https://stateparks.oregon.gov/', compliance:'州政府', status:'verified', api:false, peak:[3,4,5,6,7,8] },
+  { cat:'tidepool', name:'NOAA National Marine Sanctuaries', coverage:'全美18个海洋保护区（62.9万平方英里）', url:'https://sanctuaries.noaa.gov/', compliance:'联邦政府', status:'verified', api:false, peak:[1,2,3,4,5,6,7,8,9,10,11,12] },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentCat = 'all';
+let apiFilter = false;
+let searchActive = false;
+const NOW = new Date();
+const CURR_MONTH = NOW.getMonth() + 1; // 1-12
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function complianceBadge(c) {
+  const b = COMPLIANCE_BADGES[c] || { cls:'badge-comm', label: c };
+  return `<span class="badge ${b.cls}">${b.label}</span>`;
+}
+function statusBadge(s) {
+  const b = STATUS_BADGES[s] || STATUS_BADGES.verified;
+  return `<span class="badge ${b.cls}">${b.icon} ${b.label}</span>`;
+}
+function apiBadge() {
+  return `<span class="badge badge-api">⚡ API</span>`;
+}
+function peakChips(months) {
+  return months.slice(0,4).map(m => `<span class="season-chip">${MONTHS[m-1]}</span>`).join('');
+}
+function inSeasonBadge(months) {
+  return months.includes(CURR_MONTH) ? `<span style="font-size:11px;padding:1px 7px;border-radius:99px;background:rgba(34,197,94,.15);color:#4ade80;margin-left:6px;">▶ In Season</span>` : '';
+}
+
+function buildRow(s, showCat = false) {
+  const short = s.url.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
+  const inSeason = s.peak.includes(CURR_MONTH);
+  return `<tr class="source-row" data-cat="${s.cat}" data-api="${s.api}" data-inseason="${inSeason}"
+      data-search="${(s.name + s.coverage + s.url).toLowerCase()}">
+    <td>
+      <div style="font-weight:600;line-height:1.4;">${s.name}</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:3px;">${s.coverage}</div>
+    </td>
+    ${showCat ? `<td><span class="badge badge-comm">${CATEGORIES.find(c=>c.id===s.cat)?.emoji} ${CATEGORIES.find(c=>c.id===s.cat)?.name}</span></td>` : ''}
+    <td>
+      <div style="display:flex;flex-wrap:wrap;gap:2px;">${peakChips(s.peak)}</div>
+    </td>
+    <td style="min-width:220px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <a href="${s.url}" target="_blank" rel="noopener"
+          style="color:#818cf8;font-size:12px;text-decoration:none;word-break:break-all;line-height:1.4;"
+          onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"
+        >${short}</a>
+        <button class="copy-btn" onclick="copyUrl('${s.url.replace(/'/g,"\\'")}',event)" title="Copy URL">⎘</button>
+      </div>
+    </td>
+    <td>${complianceBadge(s.compliance)}</td>
+    <td style="white-space:nowrap;">${statusBadge(s.status)}${s.api ? ' '+apiBadge() : ''}</td>
+  </tr>`;
+}
+
+function buildTable(sources, showCat = false) {
+  const rows = sources.map(s => buildRow(s, showCat)).join('');
+  return `<div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th>数据源</th>
+        ${showCat ? '<th>类别</th>' : ''}
+        <th>峰期</th>
+        <th>链接</th>
+        <th>合规</th>
+        <th>状态</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderTabs() {
+  const bar = document.getElementById('tabBar');
+  const counts = {};
+  SOURCES.forEach(s => { counts[s.cat] = (counts[s.cat]||0)+1; });
+  bar.innerHTML = CATEGORIES.map(c => {
+    const cnt = c.id === 'all' ? SOURCES.length : (counts[c.id]||0);
+    const inSeason = c.id !== 'all' && c.peak.includes(CURR_MONTH);
+    return `<button class="tab-btn ${c.id===currentCat?'active':''}" onclick="switchTab('${c.id}')">
+      ${c.emoji} ${c.name} <span style="opacity:.6;font-size:11px;">${cnt}</span>
+      ${inSeason ? '<span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;margin-left:2px;"></span>' : ''}
+    </button>`;
+  }).join('');
+}
+
+function renderBanner() {
+  const banner = document.getElementById('inSeasonBanner');
+  const inSeasonCats = CATEGORIES.filter(c => c.id !== 'all' && c.peak.includes(CURR_MONTH));
+  const inSeasonSources = SOURCES.filter(s => s.peak.includes(CURR_MONTH));
+  if (!inSeasonCats.length) { banner.innerHTML = ''; return; }
+  const monthName = MONTHS[CURR_MONTH-1];
+  banner.innerHTML = `<div class="surface" style="padding:14px 18px;margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">
+    <span style="font-size:13px;font-weight:600;color:#4ade80;flex-shrink:0;">🌱 ${monthName} 当季活动</span>
+    <span style="color:var(--muted);font-size:12px;flex-shrink:0;">${inSeasonSources.length} sources active now</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      ${inSeasonCats.map(c=>`<button onclick="switchTab('${c.id}')" style="padding:3px 10px;border-radius:99px;font-size:12px;background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25);cursor:pointer;">${c.emoji} ${c.name}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderContent() {
+  const content = document.getElementById('tabContent');
+  const cat = CATEGORIES.find(c => c.id === currentCat);
+  const sources = currentCat === 'all' ? SOURCES : SOURCES.filter(s => s.cat === currentCat);
+  const apiCount = sources.filter(s => s.api).length;
+  const verifiedCount = sources.filter(s => s.status === 'verified').length;
+
+  let headerExtra = '';
+  if (cat.id !== 'all' && cat.desc) {
+    headerExtra = `<div style="font-size:12px;color:var(--muted);margin-top:2px;">${cat.desc}</div>`;
+  }
+
+  content.innerHTML = `<div class="surface overflow-hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <span style="font-size:16px;font-weight:700;">${cat.emoji} ${cat.name}</span>
+        ${headerExtra}
+      </div>
+      <div style="display:flex;gap:8px;font-size:12px;color:var(--muted);">
+        <span>${sources.length} sources</span>
+        <span>·</span>
+        <span style="color:#4ade80;">${verifiedCount} verified</span>
+        ${apiCount ? `<span>·</span><span style="color:#a5b4fc;">⚡ ${apiCount} with API</span>` : ''}
+      </div>
+    </div>
+    ${buildTable(sources, currentCat === 'all')}
+  </div>`;
+
+  updateCount();
+  applyFilters();
+}
+
+function applyFilters() {
+  document.querySelectorAll('#tabContent .source-row, #searchResults .source-row').forEach(row => {
+    if (apiFilter && row.dataset.api !== 'true') {
+      row.classList.add('hidden-row');
+    } else {
+      row.classList.remove('hidden-row');
+    }
+  });
+  updateCount();
+}
+
+function updateCount() {
+  const visible = document.querySelectorAll('#tabContent .source-row:not(.hidden-row), #searchResults .source-row:not(.hidden-row)').length;
+  document.getElementById('countBadge').textContent = visible > 0 && (apiFilter || searchActive) ? `${visible} shown` : '';
+}
+
+function switchTab(catId) {
+  currentCat = catId;
+  searchActive = false;
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('tabContent').style.display = '';
+  renderTabs();
+  renderContent();
+}
+
+function filterSources() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) {
+    searchActive = false;
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('tabContent').style.display = '';
+    applyFilters();
+    return;
+  }
+  searchActive = true;
+  document.getElementById('tabContent').style.display = 'none';
+  document.getElementById('searchResults').style.display = '';
+
+  const results = SOURCES.filter(s => s.name.toLowerCase().includes(q) || s.coverage.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
+  const tbody = document.getElementById('searchTableBody');
+  tbody.innerHTML = results.map(s => buildRow(s, true)).join('');
+
+  if (!results.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">No results for "${q}"</td></tr>`;
+  }
+  applyFilters();
+}
+
+function toggleApiFilter() {
+  apiFilter = !apiFilter;
+  const btn = document.getElementById('apiFilterBtn');
+  btn.classList.toggle('filter-active', apiFilter);
+  applyFilters();
+}
+
+function clearFilters() {
+  apiFilter = false;
+  document.getElementById('apiFilterBtn').classList.remove('filter-active');
+  document.getElementById('searchInput').value = '';
+  searchActive = false;
+  document.getElementById('searchResults').style.display = 'none';
+  document.getElementById('tabContent').style.display = '';
+  applyFilters();
+}
+
+function copyUrl(url, e) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(url).then(() => {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1500);
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderTabs();
+renderBanner();
+renderContent();
+</script>
+</body>
+</html>

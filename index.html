@@ -17,6 +17,7 @@
             --accent-pink: #ff006e;
             --accent-orange: #fb5607;
             --accent-blue: #3a86ff;
+            --accent-green: #22c55e;
             --text-primary: #f8f9fa;
             --text-secondary: #6c757d;
         }
@@ -353,6 +354,20 @@
             color: var(--accent-blue);
         }
 
+        .card.spring {
+            --card-accent: var(--accent-green);
+        }
+
+        .card.spring .card-icon {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .card.spring .card-badge {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-green);
+        }
+
         /* Footer */
         .footer {
             position: relative;
@@ -429,6 +444,7 @@
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
 
         /* Influenza Report Links */
         .flu-links {
@@ -640,6 +656,34 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Spring Events Card -->
+            <a href="spring-events/index.html" class="card spring">
+                <div class="card-icon">
+                    🌿
+                </div>
+                <h2 class="card-title">
+                    Seasonal Activities
+                    <span class="card-badge">Data Sources</span>
+                </h2>
+                <p class="card-desc">
+                    US seasonal nature activities research — 10 categories, 80+ verified data sources covering bloom watching, birding, shellfish harvesting, foraging, wildlife migration, and more.
+                </p>
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-database"></i>
+                        80+ Sources
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-leaf"></i>
+                        Nature & Outdoors
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
         </div>
     </main>
 
