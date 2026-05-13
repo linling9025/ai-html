@@ -76,6 +76,12 @@
   .tag-past { background: rgba(154,167,154,.14); color: #c7d2c4; }
   .tag-verified { background: rgba(80,200,120,.13); color: #a7f3bd; }
   .tag-partial { background: rgba(245,184,75,.14); color: #ffd68a; }
+  .event-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #11160f;
+    padding: 12px;
+  }
   .card {
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -169,8 +175,8 @@
         <div id="liveActionCount" class="text-lg font-bold mt-1">3 Go now</div>
       </div>
       <div>
-        <div class="text-xs font-bold uppercase tracking-wider" style="color:var(--muted);">Source Mix</div>
-        <div class="text-lg font-bold mt-1">Federal · State · Garden · Festival</div>
+        <div class="text-xs font-bold uppercase tracking-wider" style="color:var(--muted);">Event Records</div>
+        <div id="eventRecordCount" class="text-lg font-bold mt-1">10 structured</div>
       </div>
     </div>
   </section>
@@ -230,14 +236,340 @@
   "timezone": "Asia/Shanghai",
   "snapshot_label": "Live-source snapshot from verified bloom data sources",
   "records": [
-    {"id":"iowa-woodland-wildflowers","title":"Iowa Woodland Wildflowers","place":"Northern, Central, Southern, and Western Iowa","state":"IA","category":"Woodland wildflowers","action":"Go now","confidence":86,"status":"Active spring bloom","status_detail":"Iowa DNR reports dated May 4-5, 2026 list current woodland wildflower activity across all four regions.","season_window":"Late April to mid-May","peak_window":"Early to mid-May","last_updated":"2026-05-05","source_name":"Iowa DNR Woodland Wildflowers Reports","source_url":"https://www.iowadnr.gov/programs-services/forestry-resources/woodland-wildflowers-reports","verified_status":"VERIFIED","entity_type":"Region / trail / woodland","event":"No unified event source on the report page","cta":"Send weekend bloom alert","evidence_note":"Sample records mention South Riverside Trail, Hartman Reserve, Martin's Access, Redtail Ridge, and species such as phlox, violets, Virginia bluebells, wild geranium, and Solomon's seals.","lat":42.03,"lon":-93.62},
-    {"id":"anza-borrego-mountain-wildflowers","title":"Anza-Borrego Area Wildflowers","place":"Anza-Borrego, Cuyamaca, Palomar, and Volcan Mountain area","state":"CA","category":"Desert and mountain wildflowers","action":"Go now","confidence":78,"status":"Late-season blooms shifting upslope","status_detail":"Official park update reports cactus and shrub bloom; community records from May 2026 show active mountain-route bloom reports.","season_window":"February to May","peak_window":"Desert peak usually March-April; higher routes can persist into May","last_updated":"2026-05-11","source_name":"California State Parks + BorregoWildflowers.org","source_url":"https://borregowildflowers.org/pages/blooming.html","verified_status":"VERIFIED","entity_type":"State park / trail / route","event":"No unified event source; official page includes hotline and map","cta":"Push high-elevation bloom route","evidence_note":"BorregoWildflowers.org exposes a 2025-2026 bloom report with dated records such as May 11 Volcan Mountain and May 9 Kwaaymii Point West, plus species notes and iNaturalist links.","lat":33.26,"lon":-116.40},
-    {"id":"theodore-payne-hotline","title":"Southern California Wild Flower Hotline","place":"Southern and Central California","state":"CA","category":"Native wildflowers","action":"Go now","confidence":82,"status":"Weekly wildflower report active","status_detail":"Theodore Payne Foundation publishes weekly illustrated reports during March-May; latest sampled report is dated May 8, 2026.","season_window":"March to May","peak_window":"Varies by elevation and rainfall","last_updated":"2026-05-08","source_name":"Theodore Payne Foundation Wild Flower Hotline","source_url":"https://theodorepayne.org/learn/wildflower-hotline/","verified_status":"VERIFIED","entity_type":"Region / park / trail","event":"PDF includes selected native plant and chapter events, not a complete event calendar","cta":"Send regional wildflower digest","evidence_note":"The latest PDF report includes region-level records, location names, species notes, bloom condition text, photos, and selected event listings.","lat":34.17,"lon":-118.29},
-    {"id":"sequim-lavender-trail","title":"Sequim Lavender Trail","place":"Sequim-Dungeness Valley","state":"WA","category":"Lavender farms","action":"Plan ahead","confidence":88,"status":"Summer bloom window published","status_detail":"Trail guidance says first purple tint often appears in late June, with full bloom around mid-July and harvest roughly one month later.","season_window":"Late June to August","peak_window":"Mid-July","last_updated":"2026 event calendar verified","source_name":"Sequim Lavender Trail","source_url":"https://sequimlavender.org/visit/","verified_status":"VERIFIED","entity_type":"Farm / trail / regional route","event":"Bloom Season Along the Lavender Trail, July 1-31, 2026; Sequim Lavender Weekend, July 18-20, 2026","cta":"Create July trip reminder","evidence_note":"Farm pages expose addresses, hours, activities, and event calendar records for the 2026 lavender season.","lat":48.08,"lon":-123.10},
-    {"id":"visit-nh-foliage","title":"New Hampshire Fall Foliage","place":"New Hampshire","state":"NH","category":"Fall foliage","action":"Watchlist","confidence":70,"status":"Official tracker available; fall reports not active yet","status_detail":"Visit NH provides a foliage tracker, text-only report link, and peak foliage map; report freshness needs fall-season recheck.","season_window":"September to October","peak_window":"Late September to mid-October by region","last_updated":"2026 site verified; fall report pending season","source_name":"Visit NH Foliage Tracker","source_url":"https://www.visitnh.gov/plan-your-trip/fall/foliage-tracker","verified_status":"PARTIAL","entity_type":"State / region","event":"Fall events require Visit NH events calendar","cta":"Start fall watchlist","evidence_note":"The tracker page exposes Launch Foliage Tracker, a text-only updated foliage reports link, and a peak foliage map link, but current report rows were not visible during off-season validation.","lat":43.79,"lon":-71.57},
-    {"id":"holland-tulip-time","title":"Holland Tulip Time","place":"Holland","state":"MI","category":"Tulips and festival","action":"Past peak","confidence":90,"status":"2026 festival window closed","status_detail":"Tulip Time 2026 ran May 1-10, 2026; data remains useful for post-season recap and 2027 subscription capture.","season_window":"Late April to early May","peak_window":"May 1-10, 2026 festival window","last_updated":"2026 events verified","source_name":"Tulip Time Festival","source_url":"https://www.tuliptime.com/events","verified_status":"VERIFIED","entity_type":"City / park / event venue","event":"Parades, Dutch Dance, Tulip Immersion Garden, photo walks, tours, concerts, and daily festival events","cta":"Offer next-year follow","evidence_note":"Events page exposes real 2026 schedule rows and destination pages list tulip locations such as Centennial Park and Tulip Lanes.","lat":42.79,"lon":-86.11},
-    {"id":"brooklyn-bbg-cherrywatch","title":"Brooklyn Botanic Garden CherryWatch","place":"Brooklyn Botanic Garden","state":"NY","category":"Cherry blossoms","action":"Past peak","confidence":84,"status":"Post-peak season","status_detail":"CherryWatch page was last updated May 1, 2026 and shows staged cherry collection guidance.","season_window":"April to early May","peak_window":"April","last_updated":"2026-05-01","source_name":"Brooklyn Botanic Garden CherryWatch","source_url":"https://www.bbg.org/collections/cherries","verified_status":"VERIFIED","entity_type":"Botanic garden / collection / cultivar","event":"Garden events available through BBG calendar","cta":"Show recap and follow for 2027","evidence_note":"CherryWatch exposes status legend, last update, special events, and cultivar/location pages for garden-level entity detail.","lat":40.67,"lon":-73.96},
-    {"id":"dc-cherry-blossoms","title":"DC Tidal Basin Cherry Blossoms","place":"Tidal Basin and National Mall","state":"DC","category":"Cherry blossoms","action":"Past peak","confidence":95,"status":"Peak bloom recorded","status_detail":"NPS recorded 2026 peak bloom on March 26; National Cherry Blossom Festival page lists peak bloom as March 26-April 2, 2026.","season_window":"March to early April","peak_window":"March 26-April 2, 2026","last_updated":"2026 peak bloom recorded","source_name":"NPS Cherry Blossom Bloom Watch","source_url":"https://www.nps.gov/subjects/cherryblossom/bloom-watch.htm","verified_status":"VERIFIED","entity_type":"National park / landmark / festival area","event":"NPS ranger programs and National Cherry Blossom Festival partner events","cta":"Convert to 2027 subscription","evidence_note":"NPS Bloom Watch contains bloom stage history, 2026 peak bloom date, and links to official ranger programs and related pages.","lat":38.88,"lon":-77.04}
+    {
+      "id": "iowa-woodland-wildflowers",
+      "title": "Iowa Woodland Wildflowers",
+      "place": "Northern, Central, Southern, and Western Iowa",
+      "state": "IA",
+      "category": "Woodland wildflowers",
+      "action": "Go now",
+      "confidence": 86,
+      "status": "Active spring bloom",
+      "status_detail": "Iowa DNR reports dated May 4-5, 2026 list current woodland wildflower activity across all four regions.",
+      "season_window": "Late April to mid-May",
+      "peak_window": "Early to mid-May",
+      "last_updated": "2026-05-05",
+      "source_name": "Iowa DNR Woodland Wildflowers Reports",
+      "source_url": "https://www.iowadnr.gov/programs-services/forestry-resources/woodland-wildflowers-reports",
+      "verified_status": "VERIFIED",
+      "entity_type": "Region / trail / woodland",
+      "event": "No unified event source on the report page",
+      "cta": "Send weekend bloom alert",
+      "evidence_note": "Sample records mention South Riverside Trail, Hartman Reserve, Martin's Access, Redtail Ridge, and species such as phlox, violets, Virginia bluebells, wild geranium, and Solomon's seals.",
+      "lat": 42.03,
+      "lon": -93.62,
+      "events": [],
+      "event_summary": "No unified event source on the report page"
+    },
+    {
+      "id": "anza-borrego-mountain-wildflowers",
+      "title": "Anza-Borrego Area Wildflowers",
+      "place": "Anza-Borrego, Cuyamaca, Palomar, and Volcan Mountain area",
+      "state": "CA",
+      "category": "Desert and mountain wildflowers",
+      "action": "Go now",
+      "confidence": 78,
+      "status": "Late-season blooms shifting upslope",
+      "status_detail": "Official park update reports cactus and shrub bloom; community records from May 2026 show active mountain-route bloom reports.",
+      "season_window": "February to May",
+      "peak_window": "Desert peak usually March-April; higher routes can persist into May",
+      "last_updated": "2026-05-11",
+      "source_name": "California State Parks + BorregoWildflowers.org",
+      "source_url": "https://borregowildflowers.org/pages/blooming.html",
+      "verified_status": "VERIFIED",
+      "entity_type": "State park / trail / route",
+      "event": "No unified event source; official page includes hotline and map",
+      "cta": "Push high-elevation bloom route",
+      "evidence_note": "BorregoWildflowers.org exposes a 2025-2026 bloom report with dated records such as May 11 Volcan Mountain and May 9 Kwaaymii Point West, plus species notes and iNaturalist links.",
+      "lat": 33.26,
+      "lon": -116.4,
+      "events": [],
+      "event_summary": "No unified event source; official page includes hotline and map"
+    },
+    {
+      "id": "theodore-payne-hotline",
+      "title": "Southern California Wild Flower Hotline",
+      "place": "Southern and Central California",
+      "state": "CA",
+      "category": "Native wildflowers",
+      "action": "Go now",
+      "confidence": 82,
+      "status": "Weekly wildflower report active",
+      "status_detail": "Theodore Payne Foundation publishes weekly illustrated reports during March-May; latest sampled report is dated May 8, 2026.",
+      "season_window": "March to May",
+      "peak_window": "Varies by elevation and rainfall",
+      "last_updated": "2026-05-08",
+      "source_name": "Theodore Payne Foundation Wild Flower Hotline",
+      "source_url": "https://theodorepayne.org/learn/wildflower-hotline/",
+      "verified_status": "VERIFIED",
+      "entity_type": "Region / park / trail",
+      "event": "PDF includes selected native plant and chapter events, not a complete event calendar",
+      "cta": "Send regional wildflower digest",
+      "evidence_note": "The latest PDF report includes region-level records, location names, species notes, bloom condition text, photos, and selected event listings.",
+      "lat": 34.17,
+      "lon": -118.29,
+      "events": [],
+      "event_summary": "Weekly report PDF can include selected native plant events, but records are not a complete calendar"
+    },
+    {
+      "id": "sequim-lavender-trail",
+      "title": "Sequim Lavender Trail",
+      "place": "Sequim-Dungeness Valley",
+      "state": "WA",
+      "category": "Lavender farms",
+      "action": "Plan ahead",
+      "confidence": 88,
+      "status": "Summer bloom window published",
+      "status_detail": "Trail guidance says first purple tint often appears in late June, with full bloom around mid-July and harvest roughly one month later.",
+      "season_window": "Late June to August",
+      "peak_window": "Mid-July",
+      "last_updated": "2026 event calendar verified",
+      "source_name": "Sequim Lavender Trail",
+      "source_url": "https://sequimlavender.org/visit/",
+      "verified_status": "VERIFIED",
+      "entity_type": "Farm / trail / regional route",
+      "event": "Bloom Season Along the Lavender Trail, July 1-31, 2026; Sequim Lavender Weekend, July 18-20, 2026",
+      "cta": "Create July trip reminder",
+      "evidence_note": "Farm pages expose addresses, hours, activities, and event calendar records for the 2026 lavender season.",
+      "lat": 48.08,
+      "lon": -123.1,
+      "events": [
+        {
+          "event_name": "Bloom Season Along the Lavender Trail!",
+          "event_start": "2026-07-01",
+          "event_end": "2026-07-31",
+          "event_time": "9:00 AM-6:00 PM",
+          "location_name": "Sequim Lavender Trail",
+          "organizer": "Sequim Lavender Trail",
+          "registration_url": "https://sequimlavender.org/events/",
+          "price": "Varies by farm/event",
+          "recurrence": "Annual bloom season",
+          "event_status": "Upcoming",
+          "source_url": "https://sequimlavender.org/events/"
+        },
+        {
+          "event_name": "Sequim Lavender Weekend 2026",
+          "event_start": "2026-07-18",
+          "event_end": "2026-07-20",
+          "event_time": "All-day farm weekend; individual farm schedules vary",
+          "location_name": "City of Sequim and Sequim Lavender Trail farms",
+          "organizer": "Sequim Lavender Trail",
+          "registration_url": "https://sequimlavender.org/events/",
+          "price": "Most farms free to visit; activities vary",
+          "recurrence": "Annual weekend event",
+          "event_status": "Upcoming",
+          "source_url": "https://sequimlavender.org/events/"
+        }
+      ],
+      "event_summary": "Two upcoming 2026 lavender events verified on the Sequim Lavender Trail calendar"
+    },
+    {
+      "id": "visit-nh-foliage",
+      "title": "New Hampshire Fall Foliage",
+      "place": "New Hampshire",
+      "state": "NH",
+      "category": "Fall foliage",
+      "action": "Watchlist",
+      "confidence": 70,
+      "status": "Official tracker available; fall reports not active yet",
+      "status_detail": "Visit NH provides a foliage tracker, text-only report link, and peak foliage map; report freshness needs fall-season recheck.",
+      "season_window": "September to October",
+      "peak_window": "Late September to mid-October by region",
+      "last_updated": "2026 site verified; fall report pending season",
+      "source_name": "Visit NH Foliage Tracker",
+      "source_url": "https://www.visitnh.gov/plan-your-trip/fall/foliage-tracker",
+      "verified_status": "PARTIAL",
+      "entity_type": "State / region",
+      "event": "Fall events require Visit NH events calendar",
+      "cta": "Start fall watchlist",
+      "evidence_note": "The tracker page exposes Launch Foliage Tracker, a text-only updated foliage reports link, and a peak foliage map link, but current report rows were not visible during off-season validation.",
+      "lat": 43.79,
+      "lon": -71.57,
+      "events": [],
+      "event_summary": "Fall events require Visit NH events calendar"
+    },
+    {
+      "id": "holland-tulip-time",
+      "title": "Holland Tulip Time",
+      "place": "Holland",
+      "state": "MI",
+      "category": "Tulips and festival",
+      "action": "Past peak",
+      "confidence": 90,
+      "status": "2026 festival window closed",
+      "status_detail": "Tulip Time 2026 ran May 1-10, 2026; data remains useful for post-season recap and 2027 subscription capture.",
+      "season_window": "Late April to early May",
+      "peak_window": "May 1-10, 2026 festival window",
+      "last_updated": "2026 events verified",
+      "source_name": "Tulip Time Festival",
+      "source_url": "https://www.tuliptime.com/events",
+      "verified_status": "VERIFIED",
+      "entity_type": "City / park / event venue",
+      "event": "Parades, Dutch Dance, Tulip Immersion Garden, photo walks, tours, concerts, and daily festival events",
+      "cta": "Offer next-year follow",
+      "evidence_note": "Events page exposes real 2026 schedule rows and destination pages list tulip locations such as Centennial Park and Tulip Lanes.",
+      "lat": 42.79,
+      "lon": -86.11,
+      "events": [
+        {
+          "event_name": "Tulip Immersion Garden",
+          "event_start": "2026-05-01",
+          "event_end": "2026-05-10",
+          "event_time": "Daily schedule varies; sample May 1 8:00 AM-5:00 PM",
+          "location_name": "Tulip Time venue within Holland festival area",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "Ticketed individually",
+          "recurrence": "Festival-season attraction",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        },
+        {
+          "event_name": "Photo Walk at Tulip Immersion Garden",
+          "event_start": "2026-05-04",
+          "event_end": "2026-05-07",
+          "event_time": "7:00 AM-8:00 AM on listed festival dates",
+          "location_name": "Tulip Immersion Garden",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "Ticketed individually",
+          "recurrence": "Selected festival mornings",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        },
+        {
+          "event_name": "Gentex Kinderparade",
+          "event_start": "2026-05-07",
+          "event_end": "2026-05-07",
+          "event_time": "2:00 PM-4:00 PM",
+          "location_name": "Holland, Michigan parade route",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "See event page",
+          "recurrence": "Annual parade",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        }
+      ],
+      "event_summary": "Daily 2026 festival schedule and ticketed events"
+    },
+    {
+      "id": "brooklyn-bbg-cherrywatch",
+      "title": "Brooklyn Botanic Garden CherryWatch",
+      "place": "Brooklyn Botanic Garden",
+      "state": "NY",
+      "category": "Cherry blossoms",
+      "action": "Past peak",
+      "confidence": 84,
+      "status": "Post-peak season",
+      "status_detail": "CherryWatch page was last updated May 1, 2026 and shows staged cherry collection guidance.",
+      "season_window": "April to early May",
+      "peak_window": "April",
+      "last_updated": "2026-05-01",
+      "source_name": "Brooklyn Botanic Garden CherryWatch",
+      "source_url": "https://www.bbg.org/collections/cherries",
+      "verified_status": "VERIFIED",
+      "entity_type": "Botanic garden / collection / cultivar",
+      "event": "Garden events available through BBG calendar",
+      "cta": "Show recap and follow for 2027",
+      "evidence_note": "CherryWatch exposes status legend, last update, special events, and cultivar/location pages for garden-level entity detail.",
+      "lat": 40.67,
+      "lon": -73.96,
+      "events": [
+        {
+          "event_name": "Seasonal Highlights Tour",
+          "event_start": "2026-03-17",
+          "event_end": "2026-05-24",
+          "event_time": "Tuesday-Sunday, 1:00 PM-2:00 PM",
+          "location_name": "Brooklyn Botanic Garden",
+          "organizer": "Brooklyn Botanic Garden",
+          "registration_url": "https://www.bbg.org/visit/calendar",
+          "price": "Free walk led by Garden Guides; admission may apply",
+          "recurrence": "Tuesday-Sunday during spring season",
+          "event_status": "Active",
+          "source_url": "https://www.bbg.org/visit/calendar"
+        },
+        {
+          "event_name": "Spring First Discoveries",
+          "event_start": "2026-03-18",
+          "event_end": "2026-06-12",
+          "event_time": "Wednesdays and Fridays, 10:30 AM-12:30 PM",
+          "location_name": "Brooklyn Botanic Garden",
+          "organizer": "Brooklyn Botanic Garden",
+          "registration_url": "https://www.bbg.org/visit/calendar",
+          "price": "Drop-in; admission may apply",
+          "recurrence": "Wednesdays and Fridays",
+          "event_status": "Active",
+          "source_url": "https://www.bbg.org/visit/calendar"
+        }
+      ],
+      "event_summary": "BBG calendar has current spring bloom-adjacent tours and family programs"
+    },
+    {
+      "id": "dc-cherry-blossoms",
+      "title": "DC Tidal Basin Cherry Blossoms",
+      "place": "Tidal Basin and National Mall",
+      "state": "DC",
+      "category": "Cherry blossoms",
+      "action": "Past peak",
+      "confidence": 95,
+      "status": "Peak bloom recorded",
+      "status_detail": "NPS recorded 2026 peak bloom on March 26; National Cherry Blossom Festival page lists peak bloom as March 26-April 2, 2026.",
+      "season_window": "March to early April",
+      "peak_window": "March 26-April 2, 2026",
+      "last_updated": "2026 peak bloom recorded",
+      "source_name": "NPS Cherry Blossom Bloom Watch",
+      "source_url": "https://www.nps.gov/subjects/cherryblossom/bloom-watch.htm",
+      "verified_status": "VERIFIED",
+      "entity_type": "National park / landmark / festival area",
+      "event": "NPS ranger programs and National Cherry Blossom Festival partner events",
+      "cta": "Convert to 2027 subscription",
+      "evidence_note": "NPS Bloom Watch contains bloom stage history, 2026 peak bloom date, and links to official ranger programs and related pages.",
+      "lat": 38.88,
+      "lon": -77.04,
+      "events": [
+        {
+          "event_name": "BloomFest at the Tidal Basin",
+          "event_start": "2026-03-27",
+          "event_end": "2026-04-11",
+          "event_time": "10:00 AM-6:00 PM daily",
+          "location_name": "Behind the Thomas Jefferson Memorial",
+          "organizer": "National Park Service",
+          "registration_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm",
+          "price": "Free",
+          "recurrence": "Daily during festival window",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        },
+        {
+          "event_name": "Jefferson Memorial Cherry Blossom Ranger Talk",
+          "event_start": "2026-03-27",
+          "event_end": "2026-04-11",
+          "event_time": "10:00 AM and 3:00 PM daily",
+          "location_name": "Thomas Jefferson Memorial plaza",
+          "organizer": "National Park Service",
+          "registration_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm",
+          "price": "Free",
+          "recurrence": "Daily during festival window",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        },
+        {
+          "event_name": "Petalpalooza",
+          "event_start": "2026-04-04",
+          "event_end": "2026-04-04",
+          "event_time": "1:00 PM-9:00 PM; fireworks 8:30 PM",
+          "location_name": "Capital Riverfront at the Yards, 1300 First Street SE",
+          "organizer": "National Cherry Blossom Festival",
+          "registration_url": "https://nationalcherryblossomfestival.org/events/",
+          "price": "See event page",
+          "recurrence": "Annual signature event",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        }
+      ],
+      "event_summary": "NPS ranger programs and National Cherry Blossom Festival partner events"
+    }
   ]
 }
 </script>
@@ -253,6 +585,12 @@ function actionClass(action) {
     'Watchlist': 'tag-watch',
     'Past peak': 'tag-past'
   }[action] || 'tag-verified';
+}
+
+function eventCountLabel(record) {
+  const count = (record.events || []).length;
+  if (!count) return 'No structured events';
+  return `${count} event${count === 1 ? '' : 's'}`;
 }
 
 function dotClass(action) {
@@ -291,6 +629,7 @@ function renderStats() {
   document.getElementById('snapshotDate').textContent = state.data.generated_at;
   document.getElementById('recordCount').textContent = `${records.length} records`;
   document.getElementById('liveActionCount').textContent = `${records.filter(r => r.action === 'Go now').length} Go now`;
+  document.getElementById('eventRecordCount').textContent = `${records.reduce((sum, r) => sum + (r.events || []).length, 0)} structured`;
 }
 
 function renderCards() {
@@ -302,6 +641,7 @@ function renderCards() {
           <div class="flex flex-wrap items-center gap-2">
             <span class="tag ${actionClass(record.action)}">${record.action}</span>
             <span class="tag ${record.verified_status === 'VERIFIED' ? 'tag-verified' : 'tag-partial'}">${record.verified_status}</span>
+            <span class="tag tag-plan">${eventCountLabel(record)}</span>
           </div>
           <h3 class="text-lg font-bold mt-3">${record.title}</h3>
           <p class="text-sm mt-1" style="color:var(--muted);">${record.place} · ${record.category}</p>
@@ -322,10 +662,11 @@ function renderCards() {
           <div class="text-sm font-semibold mt-1">${record.last_updated}</div>
         </div>
         <div>
-          <div class="text-xs font-bold uppercase tracking-wider" style="color:var(--muted);">CTA</div>
-          <div class="text-sm font-semibold mt-1" style="color:var(--green);">${record.cta}</div>
+          <div class="text-xs font-bold uppercase tracking-wider" style="color:var(--muted);">Events</div>
+          <div class="text-sm font-semibold mt-1" style="color:var(--green);">${eventCountLabel(record)}</div>
         </div>
       </div>
+      <div class="mt-4 text-sm font-semibold" style="color:var(--green);">${record.cta}</div>
       <div class="mt-4">
         <div class="flex items-center justify-between text-xs font-semibold mb-2" style="color:var(--muted);">
           <span>Source confidence</span>
@@ -387,7 +728,13 @@ function openDrawer(id) {
           ${detailRow('Season Window', record.season_window)}
           ${detailRow('Peak Window', record.peak_window)}
           ${detailRow('Current Status', record.status)}
-          ${detailRow('Event Layer', record.event)}
+          ${detailRow('Event Summary', record.event_summary || record.event || 'No event summary available')}
+        </div>
+      </section>
+      <section>
+        <h3 class="text-sm font-bold uppercase tracking-wider" style="color:var(--muted);">Structured Events</h3>
+        <div class="mt-3 space-y-3">
+          ${renderEvents(record)}
         </div>
       </section>
       <section>
@@ -405,6 +752,34 @@ function openDrawer(id) {
   document.getElementById('drawer').classList.add('open');
   document.getElementById('scrim').classList.add('open');
   document.getElementById('drawer').setAttribute('aria-hidden', 'false');
+}
+
+function renderEvents(record) {
+  const events = record.events || [];
+  if (!events.length) {
+    return `<div class="event-card text-sm leading-6" style="color:var(--muted);">
+      No structured event records are available for this source yet. This card still has entity and season/status data, but should not be used to demonstrate the official activity layer.
+    </div>`;
+  }
+  return events.map(event => `
+    <article class="event-card">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div class="text-base font-bold">${event.event_name}</div>
+          <div class="text-sm mt-1" style="color:var(--muted);">${event.location_name}</div>
+        </div>
+        <span class="tag ${event.event_status === 'Upcoming' || event.event_status === 'Active' ? 'tag-go' : 'tag-past'}">${event.event_status}</span>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2 mt-3">
+        ${detailRow('Date', event.event_start === event.event_end ? event.event_start : `${event.event_start} to ${event.event_end}`)}
+        ${detailRow('Time', event.event_time)}
+        ${detailRow('Organizer', event.organizer)}
+        ${detailRow('Price', event.price)}
+        ${detailRow('Recurrence', event.recurrence)}
+        ${detailRow('Registration', `<a href="${event.registration_url}" target="_blank" rel="noopener" style="color:var(--green);text-decoration:underline;">Open event source</a>`)}
+      </div>
+    </article>
+  `).join('');
 }
 
 function detailRow(label, value) {

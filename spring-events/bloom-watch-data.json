@@ -24,7 +24,9 @@
       "cta": "Send weekend bloom alert",
       "evidence_note": "Sample records mention South Riverside Trail, Hartman Reserve, Martin's Access, Redtail Ridge, and species such as phlox, violets, Virginia bluebells, wild geranium, and Solomon's seals.",
       "lat": 42.03,
-      "lon": -93.62
+      "lon": -93.62,
+      "events": [],
+      "event_summary": "No unified event source on the report page"
     },
     {
       "id": "anza-borrego-mountain-wildflowers",
@@ -47,7 +49,9 @@
       "cta": "Push high-elevation bloom route",
       "evidence_note": "BorregoWildflowers.org exposes a 2025-2026 bloom report with dated records such as May 11 Volcan Mountain and May 9 Kwaaymii Point West, plus species notes and iNaturalist links.",
       "lat": 33.26,
-      "lon": -116.40
+      "lon": -116.4,
+      "events": [],
+      "event_summary": "No unified event source; official page includes hotline and map"
     },
     {
       "id": "theodore-payne-hotline",
@@ -70,7 +74,9 @@
       "cta": "Send regional wildflower digest",
       "evidence_note": "The latest PDF report includes region-level records, location names, species notes, bloom condition text, photos, and selected event listings.",
       "lat": 34.17,
-      "lon": -118.29
+      "lon": -118.29,
+      "events": [],
+      "event_summary": "Weekly report PDF can include selected native plant events, but records are not a complete calendar"
     },
     {
       "id": "sequim-lavender-trail",
@@ -93,7 +99,36 @@
       "cta": "Create July trip reminder",
       "evidence_note": "Farm pages expose addresses, hours, activities, and event calendar records for the 2026 lavender season.",
       "lat": 48.08,
-      "lon": -123.10
+      "lon": -123.1,
+      "events": [
+        {
+          "event_name": "Bloom Season Along the Lavender Trail!",
+          "event_start": "2026-07-01",
+          "event_end": "2026-07-31",
+          "event_time": "9:00 AM-6:00 PM",
+          "location_name": "Sequim Lavender Trail",
+          "organizer": "Sequim Lavender Trail",
+          "registration_url": "https://sequimlavender.org/events/",
+          "price": "Varies by farm/event",
+          "recurrence": "Annual bloom season",
+          "event_status": "Upcoming",
+          "source_url": "https://sequimlavender.org/events/"
+        },
+        {
+          "event_name": "Sequim Lavender Weekend 2026",
+          "event_start": "2026-07-18",
+          "event_end": "2026-07-20",
+          "event_time": "All-day farm weekend; individual farm schedules vary",
+          "location_name": "City of Sequim and Sequim Lavender Trail farms",
+          "organizer": "Sequim Lavender Trail",
+          "registration_url": "https://sequimlavender.org/events/",
+          "price": "Most farms free to visit; activities vary",
+          "recurrence": "Annual weekend event",
+          "event_status": "Upcoming",
+          "source_url": "https://sequimlavender.org/events/"
+        }
+      ],
+      "event_summary": "Two upcoming 2026 lavender events verified on the Sequim Lavender Trail calendar"
     },
     {
       "id": "visit-nh-foliage",
@@ -116,7 +151,9 @@
       "cta": "Start fall watchlist",
       "evidence_note": "The tracker page exposes Launch Foliage Tracker, a text-only updated foliage reports link, and a peak foliage map link, but current report rows were not visible during off-season validation.",
       "lat": 43.79,
-      "lon": -71.57
+      "lon": -71.57,
+      "events": [],
+      "event_summary": "Fall events require Visit NH events calendar"
     },
     {
       "id": "holland-tulip-time",
@@ -139,7 +176,49 @@
       "cta": "Offer next-year follow",
       "evidence_note": "Events page exposes real 2026 schedule rows and destination pages list tulip locations such as Centennial Park and Tulip Lanes.",
       "lat": 42.79,
-      "lon": -86.11
+      "lon": -86.11,
+      "events": [
+        {
+          "event_name": "Tulip Immersion Garden",
+          "event_start": "2026-05-01",
+          "event_end": "2026-05-10",
+          "event_time": "Daily schedule varies; sample May 1 8:00 AM-5:00 PM",
+          "location_name": "Tulip Time venue within Holland festival area",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "Ticketed individually",
+          "recurrence": "Festival-season attraction",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        },
+        {
+          "event_name": "Photo Walk at Tulip Immersion Garden",
+          "event_start": "2026-05-04",
+          "event_end": "2026-05-07",
+          "event_time": "7:00 AM-8:00 AM on listed festival dates",
+          "location_name": "Tulip Immersion Garden",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "Ticketed individually",
+          "recurrence": "Selected festival mornings",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        },
+        {
+          "event_name": "Gentex Kinderparade",
+          "event_start": "2026-05-07",
+          "event_end": "2026-05-07",
+          "event_time": "2:00 PM-4:00 PM",
+          "location_name": "Holland, Michigan parade route",
+          "organizer": "Tulip Time Festival",
+          "registration_url": "https://www.tuliptime.com/events",
+          "price": "See event page",
+          "recurrence": "Annual parade",
+          "event_status": "Past",
+          "source_url": "https://www.tuliptime.com/events"
+        }
+      ],
+      "event_summary": "Daily 2026 festival schedule and ticketed events"
     },
     {
       "id": "brooklyn-bbg-cherrywatch",
@@ -162,7 +241,36 @@
       "cta": "Show recap and follow for 2027",
       "evidence_note": "CherryWatch exposes status legend, last update, special events, and cultivar/location pages for garden-level entity detail.",
       "lat": 40.67,
-      "lon": -73.96
+      "lon": -73.96,
+      "events": [
+        {
+          "event_name": "Seasonal Highlights Tour",
+          "event_start": "2026-03-17",
+          "event_end": "2026-05-24",
+          "event_time": "Tuesday-Sunday, 1:00 PM-2:00 PM",
+          "location_name": "Brooklyn Botanic Garden",
+          "organizer": "Brooklyn Botanic Garden",
+          "registration_url": "https://www.bbg.org/visit/calendar",
+          "price": "Free walk led by Garden Guides; admission may apply",
+          "recurrence": "Tuesday-Sunday during spring season",
+          "event_status": "Active",
+          "source_url": "https://www.bbg.org/visit/calendar"
+        },
+        {
+          "event_name": "Spring First Discoveries",
+          "event_start": "2026-03-18",
+          "event_end": "2026-06-12",
+          "event_time": "Wednesdays and Fridays, 10:30 AM-12:30 PM",
+          "location_name": "Brooklyn Botanic Garden",
+          "organizer": "Brooklyn Botanic Garden",
+          "registration_url": "https://www.bbg.org/visit/calendar",
+          "price": "Drop-in; admission may apply",
+          "recurrence": "Wednesdays and Fridays",
+          "event_status": "Active",
+          "source_url": "https://www.bbg.org/visit/calendar"
+        }
+      ],
+      "event_summary": "BBG calendar has current spring bloom-adjacent tours and family programs"
     },
     {
       "id": "dc-cherry-blossoms",
@@ -185,7 +293,49 @@
       "cta": "Convert to 2027 subscription",
       "evidence_note": "NPS Bloom Watch contains bloom stage history, 2026 peak bloom date, and links to official ranger programs and related pages.",
       "lat": 38.88,
-      "lon": -77.04
+      "lon": -77.04,
+      "events": [
+        {
+          "event_name": "BloomFest at the Tidal Basin",
+          "event_start": "2026-03-27",
+          "event_end": "2026-04-11",
+          "event_time": "10:00 AM-6:00 PM daily",
+          "location_name": "Behind the Thomas Jefferson Memorial",
+          "organizer": "National Park Service",
+          "registration_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm",
+          "price": "Free",
+          "recurrence": "Daily during festival window",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        },
+        {
+          "event_name": "Jefferson Memorial Cherry Blossom Ranger Talk",
+          "event_start": "2026-03-27",
+          "event_end": "2026-04-11",
+          "event_time": "10:00 AM and 3:00 PM daily",
+          "location_name": "Thomas Jefferson Memorial plaza",
+          "organizer": "National Park Service",
+          "registration_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm",
+          "price": "Free",
+          "recurrence": "Daily during festival window",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        },
+        {
+          "event_name": "Petalpalooza",
+          "event_start": "2026-04-04",
+          "event_end": "2026-04-04",
+          "event_time": "1:00 PM-9:00 PM; fireworks 8:30 PM",
+          "location_name": "Capital Riverfront at the Yards, 1300 First Street SE",
+          "organizer": "National Cherry Blossom Festival",
+          "registration_url": "https://nationalcherryblossomfestival.org/events/",
+          "price": "See event page",
+          "recurrence": "Annual signature event",
+          "event_status": "Past",
+          "source_url": "https://www.nps.gov/subjects/cherryblossom/events-and-activities.htm"
+        }
+      ],
+      "event_summary": "NPS ranger programs and National Cherry Blossom Festival partner events"
     }
   ]
 }
