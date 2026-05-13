@@ -447,7 +447,8 @@
         .card:nth-child(5) { animation-delay: 0.5s; }
 
         /* Influenza Report Links */
-        .flu-links {
+        .flu-links,
+        .spring-links {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -456,13 +457,15 @@
             border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        .flu-version-group {
+        .flu-version-group,
+        .spring-version-group {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .flu-version-header {
+        .flu-version-header,
+        .spring-version-header {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -478,13 +481,23 @@
             font-size: 0.75rem;
         }
 
-        .flu-version-links {
+        .spring-version-header {
+            color: var(--accent-green);
+        }
+
+        .spring-version-header i {
+            font-size: 0.75rem;
+        }
+
+        .flu-version-links,
+        .spring-version-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
         }
 
-        .flu-link {
+        .flu-link,
+        .spring-link {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -505,13 +518,27 @@
             transform: translateX(4px);
         }
 
+        .spring-link:hover {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: var(--accent-green);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
         .flu-link i {
             font-size: 0.85rem;
             color: var(--accent-blue);
             width: 20px;
         }
 
-        .flu-link .link-text {
+        .spring-link i {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            width: 20px;
+        }
+
+        .flu-link .link-text,
+        .spring-link .link-text {
             flex: 1;
         }
     </style>
@@ -657,32 +684,48 @@
                 </div>
             </div>
 
-            <!-- Spring Events Card -->
-            <a href="spring-events/index.html" class="card spring">
+            <!-- Spring Events Card (Aggregated) -->
+            <div class="card spring" style="cursor: default;">
                 <div class="card-icon">
                     🌿
                 </div>
                 <h2 class="card-title">
                     Seasonal Activities
-                    <span class="card-badge">Data Sources</span>
+                    <span class="card-badge">Spring Events</span>
                 </h2>
                 <p class="card-desc">
-                    US seasonal nature activities research — 10 categories, 80+ verified data sources covering bloom watching, birding, shellfish harvesting, foraging, wildlife migration, and more.
+                    US seasonal nature activities research and demos — verified data sources plus a real-data Bloom Watch product walkthrough for push-ready recommendations.
                 </p>
                 <div class="card-meta">
                     <div class="meta-item">
-                        <i class="fas fa-database"></i>
-                        80+ Sources
+                        <i class="fas fa-seedling"></i>
+                        Bloom Demo
                     </div>
                     <div class="meta-item">
-                        <i class="fas fa-leaf"></i>
-                        Nature & Outdoors
+                        <i class="fas fa-database"></i>
+                        Data Sources
                     </div>
                 </div>
-                <div class="card-arrow">
-                    <i class="fas fa-arrow-right"></i>
+
+                <div class="spring-links">
+                    <div class="spring-version-group">
+                        <div class="spring-version-header">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Spring Events</span>
+                        </div>
+                        <div class="spring-version-links">
+                            <a href="spring-events/bloom-watch-demo.html" class="spring-link">
+                                <i class="fas fa-seedling"></i>
+                                <span class="link-text">Bloom Watch Demo</span>
+                            </a>
+                            <a href="spring-events/index.html" class="spring-link">
+                                <i class="fas fa-table-list"></i>
+                                <span class="link-text">Data Sources Explorer</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </a>
+            </div>
 
         </div>
     </main>
@@ -698,4 +741,3 @@
     </footer>
 </body>
 </html>
-
