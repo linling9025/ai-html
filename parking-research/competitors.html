@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美国停车竞品 × 数据源地图 | Competitor Map</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #1f1f2c;
+            --accent-cyan: #06d6a0;
+            --accent-purple: #8338ec;
+            --accent-pink: #ff006e;
+            --accent-orange: #fb5607;
+            --accent-blue: #3a86ff;
+            --accent-green: #22c55e;
+            --accent-yellow: #fbbf24;
+            --text-primary: #f8f9fa;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6c757d;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(131, 56, 236, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(131, 56, 236, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.12;
+            z-index: 0;
+            animation: float 22s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .glow-1 { top: -250px; left: -200px; background: var(--accent-purple); }
+        .glow-2 { bottom: -250px; right: -200px; background: var(--accent-cyan); animation-delay: -10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.1); }
+        }
+
+        /* Top Nav */
+        .topbar {
+            position: relative;
+            z-index: 20;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .topbar-left { display: flex; align-items: center; gap: 24px; }
+
+        .topbar a.back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .topbar a.back:hover { color: var(--accent-cyan); }
+
+        .tab-nav { display: flex; gap: 8px; }
+
+        .tab-nav a {
+            padding: 8px 18px;
+            border-radius: 100px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+        }
+
+        .tab-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-nav a.current {
+            background: linear-gradient(135deg, rgba(6, 214, 160, 0.15), rgba(131, 56, 236, 0.15));
+            border-color: rgba(131, 56, 236, 0.3);
+            color: var(--text-primary);
+        }
+
+        .topbar .meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 10;
+            padding: 70px 40px 50px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(255, 0, 110, 0.12);
+            border: 1px solid rgba(255, 0, 110, 0.25);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-pink);
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span.grad {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 50%, var(--accent-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .summary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent-purple);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin: 32px auto 0;
+            max-width: 900px;
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .hero .summary strong { color: var(--text-primary); }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            max-width: 900px;
+            margin: 28px auto 0;
+        }
+
+        .stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .stat-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 100px;
+        }
+
+        .section { margin-top: 70px; }
+
+        .section-header { margin-bottom: 28px; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 4px;
+            height: 22px;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 2px;
+        }
+
+        .section-label span {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
+        }
+
+        .section-title {
+            font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin-bottom: 10px;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            max-width: 900px;
+        }
+
+        /* ============ 数据维度图例 ============ */
+        .dims-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .dim-def {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .dim-code {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            letter-spacing: 0.04em;
+        }
+
+        .dim-name { font-weight: 700; font-size: 0.92rem; color: var(--text-primary); }
+        .dim-desc { font-size: 0.8rem; color: var(--text-tertiary); margin-top: 2px; }
+
+        /* Dimension code colors */
+        .dim-INF-GAR { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); }
+        .dim-INF-CURB { background: rgba(131, 56, 236, 0.15); color: var(--accent-purple); }
+        .dim-RT-OCC { background: rgba(6, 214, 160, 0.15); color: var(--accent-cyan); }
+        .dim-PRICE { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); }
+        .dim-TIC { background: rgba(255, 0, 110, 0.15); color: var(--accent-pink); }
+        .dim-UX { background: rgba(251, 86, 7, 0.15); color: var(--accent-orange); }
+        .dim-PAY { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+        .dim-TRAF { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); }
+        .dim-CV { background: rgba(255, 0, 110, 0.15); color: var(--accent-pink); }
+
+        /* ============ Filters ============ */
+        .filter-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+
+        .filter-row { margin-bottom: 16px; }
+        .filter-row:last-child { margin-bottom: 0; }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .chip:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .chip .count {
+            background: rgba(255, 255, 255, 0.06);
+            font-size: 0.7rem;
+            padding: 1px 7px;
+            border-radius: 100px;
+            color: var(--text-tertiary);
+            font-weight: 700;
+        }
+
+        .chip.active {
+            background: rgba(131, 56, 236, 0.15);
+            border-color: rgba(131, 56, 236, 0.4);
+            color: var(--text-primary);
+        }
+
+        .chip.active .count {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .chip[data-dim].active {
+            border-color: currentColor;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .filter-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .filter-reset {
+            color: var(--accent-cyan);
+            cursor: pointer;
+            font-weight: 600;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .filter-reset:hover { text-decoration: underline; }
+
+        /* ============ Player Cards ============ */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 20px;
+        }
+
+        .player {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            position: relative;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--cat-accent);
+            border-radius: 18px 18px 0 0;
+            opacity: 0.7;
+        }
+
+        .player:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-card-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+        }
+
+        .player.dim {
+            opacity: 0.32;
+            filter: grayscale(40%);
+        }
+
+        .player.dim:hover {
+            opacity: 0.55;
+            transform: none;
+        }
+
+        .player.hidden { display: none; }
+
+        .player-cat-c-end { --cat-accent: var(--accent-cyan); }
+        .player-cat-map { --cat-accent: var(--accent-blue); }
+        .player-cat-data-vendor { --cat-accent: var(--accent-purple); }
+        .player-cat-enforcement { --cat-accent: var(--accent-pink); }
+        .player-cat-curb-saas { --cat-accent: var(--accent-orange); }
+        .player-cat-bi-op { --cat-accent: var(--accent-yellow); }
+        .player-cat-hardware { --cat-accent: var(--accent-green); }
+        .player-cat-other { --cat-accent: var(--text-tertiary); }
+
+        .player-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .player-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: var(--text-primary);
+        }
+
+        .player-num {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .player-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .cat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--cat-accent);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .player-type {
+            color: var(--text-tertiary);
+            padding: 3px 9px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .player-summary {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin-bottom: 14px;
+        }
+
+        .dim-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 16px;
+        }
+
+        .dim-chip {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        .dim-chip.partial { opacity: 0.6; }
+        .dim-chip.partial::before { content: '◐ '; }
+        .dim-chip.full::before { content: '✅ '; }
+
+        .player-expand {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        .player-expand:hover {
+            background: rgba(131, 56, 236, 0.12);
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+
+        .player.open .player-expand {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+        }
+
+        .player.open .player-expand i { transform: rotate(180deg); }
+
+        .player-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .player.open .player-detail { max-height: 500px; }
+
+        .detail-inner {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.025);
+            border-radius: 10px;
+            border-left: 3px solid var(--cat-accent);
+        }
+
+        .detail-inner p {
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 8px;
+        }
+
+        .detail-inner p:last-child { margin-bottom: 0; }
+        .detail-inner strong { color: var(--text-primary); }
+        .detail-inner a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--accent-cyan);
+            font-size: 0.8rem;
+        }
+
+        /* ============ Frequency Insights ============ */
+        .freq-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) { .freq-grid { grid-template-columns: 1fr; } }
+
+        .freq-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+        }
+
+        .freq-card.hot { border-left: 4px solid var(--accent-pink); }
+        .freq-card.scarce { border-left: 4px solid var(--accent-cyan); }
+
+        .freq-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .freq-title i { font-size: 1rem; }
+        .freq-card.hot .freq-title i { color: var(--accent-pink); }
+        .freq-card.scarce .freq-title i { color: var(--accent-cyan); }
+
+        .freq-sub {
+            font-size: 0.82rem;
+            color: var(--text-tertiary);
+            margin-bottom: 20px;
+        }
+
+        .freq-list { list-style: none; }
+        .freq-list li {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .freq-list li:last-child { border-bottom: none; }
+
+        .freq-rank {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .rank-num {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .rank-content { flex: 1; }
+        .rank-content .name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .rank-content .desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ============ Insights ============ */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 22px;
+        }
+
+        .insight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            position: relative;
+        }
+
+        .insight-card.barrier { border-top: 3px solid var(--accent-orange); }
+        .insight-card.opportunity { border-top: 3px solid var(--accent-cyan); }
+        .insight-card.demand-gap { border-top: 3px solid var(--accent-pink); }
+        .insight-card.signal { border-top: 3px solid var(--accent-purple); }
+
+        .insight-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+        }
+
+        .barrier .insight-icon { background: rgba(251, 86, 7, 0.15); color: var(--accent-orange); }
+        .opportunity .insight-icon { background: rgba(6, 214, 160, 0.15); color: var(--accent-cyan); }
+        .demand-gap .insight-icon { background: rgba(255, 0, 110, 0.15); color: var(--accent-pink); }
+        .signal .insight-icon { background: rgba(131, 56, 236, 0.15); color: var(--accent-purple); }
+
+        .insight-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .insight-body ul {
+            list-style: none;
+            padding: 0;
+        }
+        .insight-body li {
+            padding: 8px 0 8px 18px;
+            position: relative;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .insight-body li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.5;
+        }
+        .insight-body strong { color: var(--text-primary); }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 50px 40px;
+            border-top: 1px solid var(--border);
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+        }
+
+        .footer .links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .footer .links a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer .links a:hover { color: var(--accent-cyan); }
+
+        @media (max-width: 900px) {
+            .container { padding: 0 20px 60px; }
+            .hero { padding: 50px 24px 36px; }
+            .topbar { padding: 14px 18px; flex-wrap: wrap; gap: 12px; }
+            .topbar-left { width: 100%; justify-content: space-between; }
+            .topbar .meta { display: none; }
+            .tab-nav a { padding: 6px 12px; font-size: 0.8rem; }
+            .players-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <nav class="topbar">
+        <div class="topbar-left">
+            <a href="../index.html" class="back">
+                <i class="fas fa-arrow-left"></i> 作品集
+            </a>
+            <div class="tab-nav">
+                <a href="index.html"><i class="fas fa-th"></i> 数据 & 决策</a>
+                <a href="competitors.html" class="current"><i class="fas fa-chess"></i> 竞品分析</a>
+            </div>
+        </div>
+        <div class="meta">
+            <span><i class="far fa-calendar"></i> 2026-05-18</span>
+            <span><i class="far fa-folder-open"></i> Parking Research</span>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="eyebrow">
+            <i class="fas fa-chess"></i> Section 03 · 竞品 × 数据源
+        </div>
+        <h1>美国停车行业<br><span class="grad">竞品 × 数据源地图</span></h1>
+        <div class="summary">
+            <strong>三句话总结：</strong>
+            <strong style="color: var(--accent-pink);">①</strong> 行业最稀缺的数据是<strong>路边（curb / on-street）的实时空位与规则</strong> —— 这是 INRIX/TomTom/HERE/Coord/Populus 重金押注的赛道。
+            <strong style="color: var(--accent-pink);">②</strong> 车库（off-street）侧实际上已被 <strong>SpotHero（+Uber 2026 收购）/ Flash·Arrive / Metropolis（吞下 SP+）/ ParkMobile·T2 Systems 四大阵营基本瓜分</strong>，核心是 PARCS 后台数据，谁拿到运营商对接协议谁就赢。
+            <strong style="color: var(--accent-pink);">③</strong> 罚单 / 合规数据严重碎片化、且基本被几家 SaaS 锁死：<strong>Passport（800+ 城市）、Conduent、Flowbird、T2 Systems</strong> 控制几乎全部市政罚单与咪表交易数据；公开渠道仅城市 Open Data Portal 上的"已结案罚单 CSV"。
+        </div>
+        <div class="stats">
+            <div class="stat"><div class="stat-num">31</div><div class="stat-label">玩家</div></div>
+            <div class="stat"><div class="stat-num">8</div><div class="stat-label">玩家类型</div></div>
+            <div class="stat"><div class="stat-num">9</div><div class="stat-label">数据维度</div></div>
+            <div class="stat"><div class="stat-num">4</div><div class="stat-label">关键洞察</div></div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ========= Section 01: 数据维度图例 ========= -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-label"><span>数据维度图例</span></div>
+                <h2 class="section-title">9 类数据维度定义</h2>
+                <p class="section-desc">下方玩家卡片用这套编码标识各家拥有哪些类型的数据。filter 区也用同一套编码。</p>
+            </div>
+            <div class="dims-grid">
+                <div class="dim-def"><span class="dim-code dim-INF-GAR">INF-GAR</span><div><div class="dim-name">车库地理</div><div class="dim-desc">off-street 车库/lot 地理库 + 属性</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-INF-CURB">INF-CURB</span><div><div class="dim-name">路边规则</div><div class="dim-desc">CurbLR / CDS 标准化路侧规则</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-RT-OCC">RT-OCC</span><div><div class="dim-name">实时占用</div><div class="dim-desc">传感器 / PARCS / CV / 众包</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-PRICE">PRICE</span><div><div class="dim-name">价格表</div><div class="dim-desc">车库公示 / 路边费率 / API</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-TIC">TIC</span><div><div class="dim-name">罚单数据</div><div class="dim-desc">城市开放 + SaaS 后台</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-UX">UX</span><div><div class="dim-name">用户评价</div><div class="dim-desc">Reviews / POI 属性 / 评分</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-PAY">PAY</span><div><div class="dim-name">支付交易</div><div class="dim-desc">session 级支付数据</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-TRAF">TRAF</span><div><div class="dim-name">实时交通</div><div class="dim-desc">probe / 探针 / UGC 报告</div></div></div>
+                <div class="dim-def"><span class="dim-code dim-CV">CV/LPR</span><div><div class="dim-name">视觉/车牌</div><div class="dim-desc">摄像传感 / ALPR</div></div></div>
+            </div>
+        </section>
+
+        <!-- ========= Section 02: 31 玩家卡片 ========= -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-label"><span>玩家全景</span></div>
+                <h2 class="section-title">31 家玩家及其数据来源</h2>
+                <p class="section-desc">点击「按类型」筛选玩家类型；点击「按数据」高亮拥有该类型数据的玩家（其他玩家变灰）。点卡片底部「展开」看 3-5 句数据策略详解。</p>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-row">
+                    <div class="filter-label">按玩家类型筛选（单选）</div>
+                    <div class="filter-chips" id="cat-chips">
+                        <button class="chip active" data-cat="all">全部 <span class="count">31</span></button>
+                        <button class="chip" data-cat="c-end">C 端找位 & 支付 <span class="count">5</span></button>
+                        <button class="chip" data-cat="map">地图栈 <span class="count">3</span></button>
+                        <button class="chip" data-cat="data-vendor">交通数据商 <span class="count">3</span></button>
+                        <button class="chip" data-cat="enforcement">罚单 & 智能停车 <span class="count">7</span></button>
+                        <button class="chip" data-cat="curb-saas">路侧 SaaS <span class="count">3</span></button>
+                        <button class="chip" data-cat="bi-op">BI / 运营 <span class="count">3</span></button>
+                        <button class="chip" data-cat="hardware">硬件 / 传感 <span class="count">3</span></button>
+                        <button class="chip" data-cat="other">众包 / 其他 <span class="count">4</span></button>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-label">按数据维度高亮（多选 · 拥有这些数据的玩家会高亮，其他变灰）</div>
+                    <div class="filter-chips" id="dim-chips">
+                        <button class="chip" data-dim="INF-GAR"><span class="dim-code dim-INF-GAR">INF-GAR</span> 车库地理</button>
+                        <button class="chip" data-dim="INF-CURB"><span class="dim-code dim-INF-CURB">INF-CURB</span> 路边规则</button>
+                        <button class="chip" data-dim="RT-OCC"><span class="dim-code dim-RT-OCC">RT-OCC</span> 实时占用</button>
+                        <button class="chip" data-dim="PRICE"><span class="dim-code dim-PRICE">PRICE</span> 价格</button>
+                        <button class="chip" data-dim="TIC"><span class="dim-code dim-TIC">TIC</span> 罚单</button>
+                        <button class="chip" data-dim="UX"><span class="dim-code dim-UX">UX</span> 评价</button>
+                        <button class="chip" data-dim="PAY"><span class="dim-code dim-PAY">PAY</span> 支付</button>
+                        <button class="chip" data-dim="TRAF"><span class="dim-code dim-TRAF">TRAF</span> 交通</button>
+                        <button class="chip" data-dim="CV"><span class="dim-code dim-CV">CV/LPR</span> 视觉</button>
+                    </div>
+                </div>
+                <div class="filter-meta">
+                    <span id="filter-status">显示全部 31 家</span>
+                    <button class="filter-reset" id="reset-btn"><i class="fas fa-undo"></i> 重置筛选</button>
+                </div>
+            </div>
+
+            <div class="players-grid" id="players-grid"></div>
+        </section>
+
+        <!-- ========= Section 03: 数据源使用频次 ========= -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-label"><span>使用频次反推</span></div>
+                <h2 class="section-title">数据维度的红海 vs 蓝海</h2>
+                <p class="section-desc">把上表"✅"按维度数一遍 —— 你会发现"实时占用"看似人人都做但来源极度分裂，"路边规则"才是真壁垒。</p>
+            </div>
+
+            <div class="freq-grid">
+                <div class="freq-card hot">
+                    <h3 class="freq-title"><i class="fas fa-fire"></i> Top 3 最热门数据类型（红海）</h3>
+                    <p class="freq-sub">几乎所有玩家都在做 —— 进入这些维度差异化极难</p>
+                    <ol class="freq-list">
+                        <li class="freq-rank">
+                            <span class="rank-num">1</span>
+                            <div class="rank-content">
+                                <div class="name">PAY · 支付交易（12+ 家）</div>
+                                <div class="desc">每家 App/operator 必备，已饱和。SpotHero / ParkWhiz / ParkMobile / PayByPhone / Metropolis 等。</div>
+                            </div>
+                        </li>
+                        <li class="freq-rank">
+                            <span class="rank-num">2</span>
+                            <div class="rank-content">
+                                <div class="name">RT-OCC · 实时占用（15+ 家）</div>
+                                <div class="desc">表面上人人都"在搞"，但来源严重分裂（PARCS / 传感器 / 众包 / probe）→ 大家拿到的不是同一个东西。</div>
+                            </div>
+                        </li>
+                        <li class="freq-rank">
+                            <span class="rank-num">3</span>
+                            <div class="rank-content">
+                                <div class="name">INF-GAR · 车库地理（13+ 家）</div>
+                                <div class="desc">由 4 大派别瓜分（SpotHero / Flash / Metropolis / HERE-TomTom-INRIX 数据商）。</div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="freq-card scarce">
+                    <h3 class="freq-title"><i class="fas fa-gem"></i> Top 3 最稀缺数据类型（蓝海 + 高壁垒）</h3>
+                    <p class="freq-sub">壁垒最高 —— 谁拿到谁就独占</p>
+                    <ol class="freq-list">
+                        <li class="freq-rank">
+                            <span class="rank-num">1</span>
+                            <div class="rank-content">
+                                <div class="name">INF-CURB · 路边规则数字化</div>
+                                <div class="desc">全美 < 200 城市数字化，标准（CurbLR/CDS）仍未普及。掌握者：Coord（历史）/ Populus / CurbIQ / Passport / ParkMobile（与城市合同）。</div>
+                            </div>
+                        </li>
+                        <li class="freq-rank">
+                            <span class="rank-num">2</span>
+                            <div class="rank-content">
+                                <div class="name">TIC · 罚单实时后台数据</div>
+                                <div class="desc">锁在 Passport（800+ 城）/ Conduent（NYC 等）/ T2 系统里。公开 Open Data Portal 上的罚单 CSV 通常滞后 6-12 个月。</div>
+                            </div>
+                        </li>
+                        <li class="freq-rank">
+                            <span class="rank-num">3</span>
+                            <div class="rank-content">
+                                <div class="name">车库 PARCS 直连协议</div>
+                                <div class="desc">Skidata / Amano / TIBA / T2 / Flash 的直接合同 —— 不是技术问题是商务壁垒。SpotHero 13k+ / Flash 30k+ 的核心壁垒就在这里。</div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========= Section 04: 关键洞察 ========= -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-label"><span>So What</span></div>
+                <h2 class="section-title">4 条关键洞察</h2>
+                <p class="section-desc">产品介绍现场最该带走的"so what" —— 这套竞品图告诉我们：哪里是真壁垒，哪里是蓝海，哪里有需求但根本没数据。</p>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insight-card barrier">
+                    <div class="insight-icon"><i class="fas fa-lock"></i></div>
+                    <h3 class="insight-title">真正的壁垒在"合作协议"而非"数据本身"</h3>
+                    <div class="insight-body">
+                        <ul>
+                            <li>车库 PARCS 数据技术上任何人都能采，但能拿到的是<strong>长期合同</strong>（SpotHero/Flash/Metropolis/T2）。后来者要复制需重做几百到几万份商务关系。</li>
+                            <li>同理，路边数据壁垒是<strong>与城市政府的合同</strong>（ParkMobile/SFMTA、PayByPhone/Miami），不是技术。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="insight-card opportunity">
+                    <div class="insight-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3 class="insight-title">公开但很少人用的数据（蓝海信号）</h3>
+                    <div class="insight-body">
+                        <ul>
+                            <li><strong>城市开放数据中的"罚单 CSV + 街道清扫日历 + 311 投诉"组合</strong> —— SpotAngels 是少数把这套用起来的；C 端 App 几乎没人拿 311 当 feature。</li>
+                            <li><strong>CurbLR / CDS 格式的城市规则</strong> —— 开源、可下载，但目前的 C 端 App 几乎没人渲染规则（除 SpotAngels）。</li>
+                            <li><strong>Google Popular Times</strong> —— 网页前端可见但无官方 API，第三方爬虫说明需求巨大但供给不存在。</li>
+                            <li><strong>场馆 + 体育赛事 schedule</strong> —— 除 ParkWhiz × Ticketmaster 之外没人系统用。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="insight-card demand-gap">
+                    <div class="insight-icon"><i class="fas fa-question-circle"></i></div>
+                    <h3 class="insight-title">大家都想要但根本没有的数据（需求 &gt; 供给）</h3>
+                    <div class="insight-body">
+                        <ul>
+                            <li><strong>路边的"真实实时占用"</strong> —— 传感器贵、维护贵；CV 方案（Cleverciti、SpotAngels）还在早期；INRIX/TomTom 的"概率"是模型不是真值。</li>
+                            <li><strong>跨运营商的统一车库可用车位 feed</strong> —— SpotHero/Flash 已有大部分但每家不互通；HERE/INRIX 聚合但覆盖稀疏。</li>
+                            <li><strong>罚单的"风险预测"层级数据</strong> —— 商业 SaaS（Passport）有但不开放；SpotAngels 在做但极不准。</li>
+                            <li><strong>EV 充电桩在车库内的实时可用位</strong> —— SpotHero 2025 才加 EV filter，仍是粗粒度。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="insight-card signal">
+                    <div class="insight-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3 class="insight-title">给产品的速读信号</h3>
+                    <div class="insight-body">
+                        <ul>
+                            <li>入场优先考虑<strong>"路边规则 + 罚单风险 + 街道清扫日历"组合</strong>，这是公开数据未被充分利用的甜区。</li>
+                            <li>不要试图复制 SpotHero / Metropolis 的车库供给 —— 商务成本极高；除非走 B2B2C（接入它们做下游）。</li>
+                            <li>实时占用的"金标准"在 PARCS 和传感器后台，但消费者侧"够用"是 INRIX/TomTom 的概率模型 + Google Popular Times，这是低成本切入点。</li>
+                            <li><strong>罚单数据是真正可"差异化"的 moat</strong>，但需要逐城市攻克 Open Data Portal + 推算未公开部分。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>调研日期 2026-05-18 · 完整 Markdown 详情参见 <code>parking_research/_competitor_data_map.md</code> · 共 31 家玩家覆盖 8 角色 × 9 维度</p>
+        <div class="links">
+            <a href="../index.html">作品集</a>
+            <a href="index.html">数据 & 决策</a>
+            <a href="#">本页顶</a>
+        </div>
+    </footer>
+
+    <script>
+        // ============ Player Data ============
+        // dim values: 'full' (✅) or 'partial' (◐); missing = no data
+        const players = [
+            // C 端找位 & 支付
+            { num: 1, name: 'SpotHero', cat: 'c-end', type: 'C 端预订',
+              summary: '13,000+ 合作车库，已被 Uber 收购（2026 Q1 公告）',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'UX': 'partial', 'PAY': 'full' },
+              detail: '<p><strong>商业模式</strong>：B2C 车库预订 + B2B HeroConnect API（GroundTruth、Hertz、Audi、Honda、Uber）</p><p><strong>核心数据</strong>：13,000+ 合作车库的实时空位、价格、长期分时段定价（>300 城市）</p><p><strong>数据来源</strong>：直接对接 PARCS 系统（Skidata / Amano / TIBA / T2 / HUB Parking），通过 ParkHub 等中台分发</p><p><strong>数据壁垒</strong>：与 60+ 体育/场馆官方合作（球队预订独家供给）；2025 加入 EV charging filter；2026 被 Uber 收购</p>' },
+            { num: 2, name: 'ParkWhiz / Arrive / Flash', cat: 'c-end', type: 'C+B 端',
+              summary: '同一家公司（2021 合并）；4,000+ 直采车库 + Flash 30,000+ 合作位（接 Waze）',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'partial', 'RT-OCC': 'full', 'PRICE': 'full', 'UX': 'partial', 'PAY': 'full', 'TRAF': 'partial' },
+              detail: '<p><strong>商业模式</strong>：C 端 ParkWhiz/BestParking + B 端 Flash OS（车库运营系统）</p><p><strong>核心数据</strong>：4,000+ 直采车库（ParkWhiz）+ 30,000+ Flash 合作位（接 Waze）</p><p><strong>数据来源</strong>：自有 Flash PARCS OS + 收购 sPARK 推荐引擎 + 集成 INRIX/TomTom 路边数据 + Ticketmaster 事件</p><p><strong>数据壁垒</strong>：B+C 一体；2021 Flash×Arrive 合并使其同时拥有供应侧 OS 和需求侧入口</p>' },
+            { num: 3, name: 'ParkMobile', cat: 'c-end', type: '路边支付',
+              summary: '5,000+ 城市；VW 集团旗下；ParkMobile 360 整合 meter+permit+citation',
+              dims: { 'INF-GAR': 'partial', 'INF-CURB': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full' },
+              detail: '<p><strong>商业模式</strong>：B2B2C 路边/车库 mobile pay，5,000+ 城市</p><p><strong>核心数据</strong>：每笔 session（时长、费率、车辆、位置）、与城市 enforcement 整合后的 citation</p><p><strong>数据来源</strong>：城市直接合同（SFMTA 2025 接入 26k on-street 车位）+ Flowbird/Parkeon meter 后台 + 自有 ParkMobile 360 整合层</p><p><strong>数据壁垒</strong>：与 SFMTA、Fresno、Clearwater、Orlando、Chattanooga 等城市深度合同</p>' },
+            { num: 4, name: 'PayByPhone', cat: 'c-end', type: '路边支付',
+              summary: 'VW Financial Services 全资子；5M+ 年下载、$550M+ 年交易、1,300+ 站点',
+              dims: { 'INF-GAR': 'partial', 'INF-CURB': 'full', 'PRICE': 'full', 'TIC': 'partial', 'PAY': 'full' },
+              detail: '<p><strong>商业模式</strong>：mobile pay；Volkswagen Financial Services 全资子公司</p><p><strong>核心数据</strong>：5M+ 年下载、$550M+ 年交易、1,300+ 站点</p><p><strong>数据来源</strong>：与城市签 mobile pay 合同（Baltimore、KC、Miami…）；通过 SKIDATA Connect 集成 PARCS</p><p><strong>数据壁垒</strong>：Miami 90%+ 城市渗透；VW 集团车厂集成可能性</p>' },
+            { num: 5, name: 'Premium Parking', cat: 'c-end', type: '运营商+App',
+              summary: '700+ 城市自营/管理；text-to-park 模式；LPR-first 无人值守',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TIC': 'partial', 'PAY': 'full', 'CV': 'full' },
+              detail: '<p><strong>商业模式</strong>：自营 + 管理停车场运营商，主推 text-to-park</p><p><strong>核心数据</strong>：自营 700+ 城市的 lot 全套数据 + LPR 罚单回收</p><p><strong>数据壁垒</strong>：LPR-first，无人值守模式</p>' },
+
+            // 地图栈
+            { num: 6, name: 'Google Maps', cat: 'map', type: '地图栈',
+              summary: 'parking_options 含 free/paid lot, garage, street；Popular Times 仅前端可见无 API',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'partial', 'RT-OCC': 'partial', 'UX': 'full', 'TRAF': 'full' },
+              detail: '<p>Places API 提供 <code>parking_options</code>（free/paid lot, free/paid street, valet, garage）</p><p>Geocoding API 提供 <code>SearchDestinations</code> 含详细到目的地的停车结构</p><p><strong>Popular Times 未对外开放 API</strong>，仅在前端可见 —— 第三方爬虫（populartimes、Outscraper）说明需求巨大但供给不存在</p><p>自有 probe 数据 + 用户评分</p>' },
+            { num: 7, name: 'Apple Maps', cat: 'map', type: '地图栈',
+              summary: '底图 TomTom + OSM；POI/Reviews 用 Yelp；停车数据来自 TomTom Off-Street + OSM',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'partial', 'UX': 'full', 'TRAF': 'full' },
+              detail: '<p><strong>地图底图</strong>：TomTom（核心）+ OSM + 11 家其他供应商</p><p><strong>POI/Reviews</strong>：Yelp（点击 parking lot 显示 Yelp 评论与距离）</p><p>停车专用数据基本来自 TomTom Off-Street + OSM</p><p>"Nearby" 类别含 parking lot，依赖 Yelp</p>' },
+            { num: 8, name: 'Waze', cat: 'map', type: '地图栈',
+              summary: '核心是 UGC 实时交通；停车数据来自 INRIX + Flash 30k+ 车库集成 + SpotHero SDK',
+              dims: { 'INF-GAR': 'partial', 'INF-CURB': 'partial', 'RT-OCC': 'partial', 'TRAF': 'full' },
+              detail: '<p>自身核心是 UGC 实时交通 probe</p><p><strong>停车数据</strong>：INRIX 全球供应（合同）+ Flash 30,000+ 车库集成 + SpotHero SDK 预订</p><p>用户报告"是否有位"通过 Waze Transport SDK</p>' },
+
+            // B 端交通数据商
+            { num: 9, name: 'INRIX', cat: 'data-vendor', type: '交通数据商',
+              summary: 'Off-Street 350k+ lots, 22k 城市；On-Street 1,200+ 城市；新产品 Curb Analytics',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TRAF': 'full', 'CV': 'partial' },
+              detail: '<p><strong>Off-Street</strong>：350,000+ 位点、22,000+ 城市、145 国；与 APCOA、ABM、Colonial、ICON 等大运营商独家关系</p><p><strong>On-Street</strong>：1,200+ 城市；混合传感器、车载 probe、CV、历史占用</p><p><strong>路边新产品</strong>：Curb Analytics（含 loading zone）</p><p>客户：Waze、车厂、城市</p>' },
+            { num: 10, name: 'TomTom', cat: 'data-vendor', type: '交通数据商',
+              summary: '600M 连接设备 probe；On-Street 50+ 国；Off-Street 80+ 国；Parking Availability API 10 min 刷新',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TRAF': 'full' },
+              detail: '<p>600M 连接设备 probe</p><p><strong>On-Street API</strong>（50+ 国，找位概率 + 平均搜索时长）</p><p><strong>Off-Street</strong>（80+ 国，每日更新；价格 API）</p><p><strong>Parking Availability API</strong>：10 分钟刷新</p><p>是 Apple Maps 核心供应商</p>' },
+            { num: 11, name: 'HERE', cat: 'data-vendor', type: '交通数据商',
+              summary: 'On-Street + Off-Street API；实时占用 + 概率 + 费率 + 规则；与 INRIX 欧洲联合 ecosystem',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TRAF': 'full' },
+              detail: '<p>On-Street + Off-Street API；实时占用 + 概率 + 费率 + 规则</p><p>与 INRIX 在欧洲构建联合 ecosystem</p>' },
+
+            // B 端罚单 & 智能停车
+            { num: 12, name: 'Passport', cat: 'enforcement', type: '罚单/curb SaaS',
+              summary: '800+ 城市/大学/私人运营商；整合 mobile pay + enforcement + permit + payment',
+              dims: { 'INF-GAR': 'partial', 'INF-CURB': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full', 'CV': 'full' },
+              detail: '<p>800+ 城市/大学/私人运营商</p><p>整合 mobile pay + enforcement + permit + payment 一套 SaaS</p><p>与 Flowbird meter feed 整合：单一报告视图</p><p><strong>关键技术</strong>：LPR、photo enforcement</p>' },
+            { num: 13, name: 'Flowbird (Parkeon)', cat: 'enforcement', type: '咪表硬件+SaaS',
+              summary: '全球 4,350 城市、80 国；on-street 咪表市占 ~70%；feed Passport',
+              dims: { 'INF-CURB': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full' },
+              detail: '<p>全球 4,350 城市、80 国；on-street 咪表市占 ~70%</p><p><strong>数据</strong>：meter session（时长/费率/位置）→ 直接 feed 给 Passport 等 SaaS</p>' },
+            { num: 14, name: 'Conduent', cat: 'enforcement', type: '罚单 BPO',
+              summary: 'BPO 模式：城市把违章罚单处理后台外包；NYC DOF、芝加哥、各州 DMV',
+              dims: { 'TIC': 'full', 'CV': 'full' },
+              detail: '<p>BPO（业务流程外包）模式：城市把违章罚单的处理后台外包给 Conduent</p><p><strong>主要客户</strong>：NYC DOF、芝加哥（历史合同）、各州 DMV</p><p>提供：citation 处理、永久档案、付款、听证；与 LPR + GIS 集成</p>' },
+            { num: 15, name: 'T2 Systems', cat: 'enforcement', type: '停车 SaaS（Verra Mobility 旗下）',
+              summary: '2,000+ 客户；高校/中型城市主导；Flex/UNIFI/Velocity 平台',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full', 'CV': 'full' },
+              detail: '<p>2,000+ 客户，覆盖高校（Duke、George Mason）、市政、机场、医院</p><p><strong>核心平台</strong>：Flex / UNIFI / Velocity</p><p><strong>数据</strong>：permit 销售、LPR 巡查、PARCS、enforcement</p>' },
+            { num: 16, name: 'Streetline (Kapsch)', cat: 'enforcement', type: '智能停车',
+              summary: '2015 被 Kapsch TrafficCom 收购（不是 Cubic，常被误传）；地下传感器 + Hybrid Platform API',
+              dims: { 'INF-CURB': 'full', 'RT-OCC': 'full' },
+              detail: '<p><strong>澄清</strong>：Streetline 2015 被 Kapsch TrafficCom 收购，不是 Cubic（外部报道常误标）</p><p>路面磁感传感器 + 云 inference + Hybrid Platform API</p>' },
+            { num: 17, name: 'Cleverciti', cat: 'enforcement', type: '智能传感（ParkHelp 2025 收购）',
+              summary: '桅杆式 AI 摄像传感器；600k+ 监测车位、100+ 城市；CleverCompliance 实时违章',
+              dims: { 'INF-CURB': 'partial', 'RT-OCC': 'full', 'TIC': 'full', 'CV': 'full' },
+              detail: '<p>桅杆式 AI 摄像传感器（一传感器最多覆盖 100 车位）</p><p>600,000+ 监测车位，100+ 城市</p><p><strong>美国部署</strong>：Leavenworth WA、Bethlehem PA、Bend OR、Denison Parking</p><p>CleverCompliance 比对占用 vs 支付 → 实时违章告警</p>' },
+            { num: 18, name: 'Vade', cat: 'enforcement', type: '智能 enforcement（未公开）',
+              summary: '信息有限/推测；报道中常与 Cleverciti/Genetec 合并出现',
+              dims: { 'RT-OCC': 'full', 'TIC': 'full', 'CV': 'full' },
+              detail: '<p><strong>信息有限/推测</strong>：报道中常与 Cleverciti / Genetec 合并出现；未找到独立公开商业模式</p><p>推测为 enforcement-as-a-service 模式</p>' },
+
+            // 路侧 SaaS
+            { num: 19, name: 'Coord', cat: 'curb-saas', type: '路侧 SaaS（Sidewalk Labs 衍生）',
+              summary: '数字化 curb inventory + Collector App；输出 CurbLR 标准；2022 后业务弱化',
+              dims: { 'INF-CURB': 'full', 'PRICE': 'partial' },
+              detail: '<p>数字化 curb inventory + Collector 移动 app</p><p>输出 <strong>CurbLR 标准数据</strong></p><p>2022 后业务弱化，资产被 Lacuna 等接手；CurbLR 标准仍是事实参考</p>' },
+            { num: 20, name: 'Populus', cat: 'curb-saas', type: '路侧 SaaS',
+              summary: 'Curb Manager；NOLA / Boston / Pittsburgh 等十余城市',
+              dims: { 'INF-CURB': 'full', 'RT-OCC': 'partial' },
+              detail: '<p>Curb Manager：让城市数字化 curb 规则、测量需求、动态管理</p><p>客户：NOLA、Boston、Pittsburgh、十余个美国城市</p>' },
+            { num: 21, name: 'CurbIQ (Arcadis)', cat: 'curb-saas', type: '路侧 SaaS',
+              summary: '数字化 curb 规则（CurbLR + CDS）；自带预测停车模型',
+              dims: { 'INF-CURB': 'full', 'RT-OCC': 'partial', 'PRICE': 'partial' },
+              detail: '<p>数字化 curb 规则（CurbLR + CDS 标准）</p><p>客户：城市、高校、机场</p><p>自带预测停车模型</p>' },
+
+            // BI / 运营
+            { num: 22, name: 'Smarking', cat: 'bi-op', type: 'BI/分析（JustPark 2024 收购）',
+              summary: '2,500+ locations；AI 分析平台；客户覆盖商业地产、市政、医院、大学、机场、运营商',
+              dims: { 'INF-GAR': 'partial', 'RT-OCC': 'full', 'PRICE': 'full' },
+              detail: '<p>2,500+ locations，AI 分析平台</p><p><strong>数据</strong>：PARCS + payment app + pay station + meter + LPR</p><p><strong>客户</strong>：商业地产、市政、医院、大学、机场、运营商</p>' },
+            { num: 23, name: 'Reef Technology', cat: 'bi-op', type: '物理运营',
+              summary: '全球 4,500+ 车场（多数合作运营）；将多余空间用作 ghost kitchen / 物流 hub',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'PAY': 'full' },
+              detail: '<p>全球 4,500+ 车场（多数为合作运营），将多余空间用作 ghost kitchen / 物流 hub</p><p><strong>数据</strong>：自营场地占用 + 经营 + 商品销售</p>' },
+            { num: 24, name: 'Metropolis', cat: 'bi-op', type: 'C+AI 运营（吞 SP+）',
+              summary: '美国最大停车运营商；4,000+ locations；$5B 估值 + $1.6B 融资（2025/11）',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'UX': 'full', 'PAY': 'full', 'CV': 'full' },
+              detail: '<p>美国最大停车运营商（收购 SP+ 之后），4,000+ locations</p><p><strong>核心技术</strong>：CV "vehicle fingerprint"，无 ticket、无 app、无刷卡</p><p><strong>数据</strong>：自营 lot 全套（payment、occupancy、CV）</p><p>$5B 估值，$1.6B 融资（2025/11）</p>' },
+
+            // 硬件 / 传感
+            { num: 25, name: 'IPS Group', cat: 'hardware', type: '咪表 + 传感器',
+              summary: '咪表 + 地磁/雷达传感器；1B+ 传感器事件历史；San Diego 总部',
+              dims: { 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full' },
+              detail: '<p>咪表（meter）+ 地磁/雷达传感器</p><p>1B+ 传感器事件历史</p><p>客户：北美各大中城市</p>' },
+            { num: 26, name: 'Park Assist (TKH Security)', cat: 'hardware', type: '车库 CV',
+              summary: '车库内 space-by-space 摄像传感器；HD video 24/7 → 云；带 LPR 寻车',
+              dims: { 'RT-OCC': 'full', 'CV': 'full' },
+              detail: '<p>车库内 space-by-space 摄像传感器（HD video 24/7 → 云）</p><p>带 LPR 寻车功能（输车牌找位置）</p>' },
+            { num: 27, name: 'Genetec AutoVu', cat: 'hardware', type: 'LPR 平台',
+              summary: '警车/罚单车上的 ALPR 平台；Richmond、Fort Lauderdale 案例',
+              dims: { 'INF-CURB': 'full', 'TIC': 'full', 'CV': 'full' },
+              detail: '<p>警车/罚单车上的 ALPR 平台</p><p>客户：执法机构（Richmond、Fort Lauderdale 等）</p><p><strong>数据</strong>：长期累计的车牌时空轨迹 + scofflaw 识别</p>' },
+
+            // 众包 / 其他
+            { num: 28, name: 'SpotAngels', cat: 'other', type: 'C 端众包',
+              summary: '"Waze of Parking"；100+ 城市；众包路边规则 + 标志 OCR + CV 车辆计数',
+              dims: { 'INF-GAR': 'partial', 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'partial', 'TIC': 'partial', 'UX': 'partial', 'CV': 'full' },
+              detail: '<p>"Waze of Parking"，100+ 城市</p><p><strong>数据来源</strong>：用户报告（赚 Spotcoins）+ 街景 CV 标志识别 + 视频车辆计数</p><p><strong>主要价值</strong>：路边规则 + 实时占用 + garage 折扣</p>' },
+            { num: 29, name: 'HONK', cat: 'other', type: '车库 SaaS',
+              summary: '加拿大起家车库 SaaS + 司机 App；面向中小运营商',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'PAY': 'full', 'CV': 'full' },
+              detail: '<p>加拿大起家车库 SaaS + 司机 App</p><p><strong>数据</strong>：LPR + cashless gate + 后台 analytics</p>' },
+            { num: 30, name: 'Uber Parking', cat: 'other', type: 'C 端 super-app（2026）',
+              summary: '通过收购 SpotHero 进入（2026 公告，H1 closing）；Uber One 会员可能含 parking 优惠',
+              dims: { 'INF-GAR': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'UX': 'full', 'PAY': 'full', 'TRAF': 'full' },
+              detail: '<p>通过收购 SpotHero 进入；预计 2026 H1 closing</p><p>后续 Uber One 会员可能含 parking 优惠</p><p><strong>战略意图</strong>：把 ride + parking 拼到 mobility super-app</p>' },
+            { num: 31, name: 'SKIDATA Connect', cat: 'other', type: 'PARCS middleware',
+              summary: '关键中间件：把 PayByPhone/ParkMobile/EasyPark 与 PARCS 后台打通',
+              dims: { 'INF-GAR': 'full', 'INF-CURB': 'full', 'RT-OCC': 'full', 'PRICE': 'full', 'TIC': 'full', 'PAY': 'full' },
+              detail: '<p>不是 C 端品牌，但作为关键 middleware：把 PayByPhone、ParkMobile、EasyPark 与 PARCS 后台打通</p><p>是"curb-meets-garage"的现实桥梁</p>' }
+        ];
+
+        const catLabels = {
+            'c-end': 'C 端预订 / 支付',
+            'map': '地图栈',
+            'data-vendor': '交通数据商',
+            'enforcement': '罚单 & 智能停车',
+            'curb-saas': '路侧 SaaS',
+            'bi-op': 'BI / 运营',
+            'hardware': '硬件 / 传感',
+            'other': '众包 / 其他'
+        };
+
+        // State
+        let activeCat = 'all';
+        const activeDims = new Set();
+
+        const grid = document.getElementById('players-grid');
+        const filterStatus = document.getElementById('filter-status');
+
+        function renderPlayers() {
+            grid.innerHTML = '';
+            players.forEach((p, idx) => {
+                const card = document.createElement('div');
+                card.className = `player player-cat-${p.cat}`;
+
+                // Category filter
+                if (activeCat !== 'all' && p.cat !== activeCat) {
+                    card.classList.add('hidden');
+                }
+
+                // Dim filter: highlight matching, dim non-matching
+                if (activeDims.size > 0) {
+                    const hasAll = [...activeDims].every(d => p.dims[d] === 'full' || p.dims[d] === 'partial');
+                    if (!hasAll) card.classList.add('dim');
+                }
+
+                const dimsHtml = Object.entries(p.dims).map(([d, v]) =>
+                    `<span class="dim-chip dim-${d} ${v}">${d}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="player-head">
+                        <h3 class="player-name">${p.name}</h3>
+                        <span class="player-num">#${String(p.num).padStart(2, '0')}</span>
+                    </div>
+                    <div class="player-meta">
+                        <span class="cat-badge">${catLabels[p.cat]}</span>
+                        <span class="player-type">${p.type}</span>
+                    </div>
+                    <p class="player-summary">${p.summary}</p>
+                    <div class="dim-chips">${dimsHtml}</div>
+                    <button class="player-expand"><i class="fas fa-chevron-down"></i> 数据策略详解</button>
+                    <div class="player-detail"><div class="detail-inner">${p.detail}</div></div>
+                `;
+
+                card.querySelector('.player-expand').addEventListener('click', () => {
+                    card.classList.toggle('open');
+                });
+
+                grid.appendChild(card);
+            });
+            updateStatus();
+        }
+
+        function updateStatus() {
+            const visible = [...grid.children].filter(c => !c.classList.contains('hidden'));
+            const highlighted = visible.filter(c => !c.classList.contains('dim'));
+            let msg;
+            if (activeCat === 'all' && activeDims.size === 0) {
+                msg = `显示全部 ${players.length} 家`;
+            } else if (activeCat !== 'all' && activeDims.size === 0) {
+                msg = `分类「${catLabels[activeCat]}」共 ${visible.length} 家`;
+            } else if (activeCat === 'all' && activeDims.size > 0) {
+                msg = `高亮 ${highlighted.length} 家 / 总 ${players.length} 家（拥有 ${[...activeDims].join(' + ')}）`;
+            } else {
+                msg = `分类「${catLabels[activeCat]}」中高亮 ${highlighted.length} / ${visible.length} 家`;
+            }
+            filterStatus.textContent = msg;
+        }
+
+        // Category filter
+        document.querySelectorAll('#cat-chips .chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeCat = chip.dataset.cat;
+                renderPlayers();
+            });
+        });
+
+        // Dim filter (multi-select)
+        document.querySelectorAll('#dim-chips .chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const d = chip.dataset.dim;
+                if (activeDims.has(d)) {
+                    activeDims.delete(d);
+                    chip.classList.remove('active');
+                } else {
+                    activeDims.add(d);
+                    chip.classList.add('active');
+                }
+                renderPlayers();
+            });
+        });
+
+        // Reset
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            activeCat = 'all';
+            activeDims.clear();
+            document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === 'all'));
+            document.querySelectorAll('#dim-chips .chip').forEach(c => c.classList.remove('active'));
+            renderPlayers();
+        });
+
+        renderPlayers();
+    </script>
+</body>
+</html>
