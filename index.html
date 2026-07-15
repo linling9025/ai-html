@@ -382,6 +382,20 @@
             color: var(--accent-pink);
         }
 
+        .card.ecommerce {
+            --card-accent: var(--accent-orange);
+        }
+
+        .card.ecommerce .card-icon {
+            background: linear-gradient(135deg, #fb5607, #ff006e);
+            color: white;
+        }
+
+        .card.ecommerce .card-badge {
+            background: rgba(251, 86, 7, 0.15);
+            color: var(--accent-orange);
+        }
+
         /* Footer */
         .footer {
             position: relative;
@@ -582,6 +596,33 @@
         </div>
 
         <div class="cards-grid">
+            <!-- E-commerce Monetization Card -->
+            <a href="ecommerce/index.html" class="card ecommerce">
+                <div class="card-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h2 class="card-title">
+                    E-commerce Monetization
+                    <span class="card-badge">Deep Research</span>
+                </h2>
+                <p class="card-desc">
+                    美国电商「流量与变现层」深度调研 - 7 种变现模式 × 分发平台 × 品类的完整打分排行，含 5-8 份作战手册。以「数据抓取优势」为最高权重，为小团队挑 A+B 打法。
+                </p>
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-ranking-star"></i>
+                        打法排行
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-flag-checkered"></i>
+                        作战手册
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
             <!-- SafeFuel Card -->
             <a href="SafeFuel_PRD_Prototype.html" class="card fuel">
                 <div class="card-icon">
