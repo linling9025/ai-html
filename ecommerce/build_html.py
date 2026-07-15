@@ -1,28 +1,50 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""将本报告 Markdown 转为暗色卡片 + 顶部 Tab 分章的可分享 HTML。
-对标 /Users/linling/Documents/code/ai/ai-html 的风格（Outfit + 霓虹渐变 + 卡片）。
-改了 md 后重跑 `python3 build_html.py` 即可同步更新 HTML。"""
+"""ai-html 发布版：将「行业认知报告」Markdown 转为暗色卡片 + 顶部 Tab 分章的 index.html。
+与 ai-spider 工作区的教学版同源，但为公开发布做了两处调整：
+  ① <title>/H1 去掉"教学版"字样；② 移除"落到你身上"(Part C) 个人化章节（保留局限/方法论）。
+改了 md 后重跑 `python3 build_html.py` 即可同步。"""
 import re, html
 from pathlib import Path
 
-SRC = Path(__file__).parent / "美国电商流量与变现层调研报告.md"
-OUT = Path(__file__).parent / "美国电商流量与变现层调研报告.html"
+SRC = Path(__file__).parent / "美国电商流量与变现层-行业认知报告.md"
+OUT = Path(__file__).parent / "index.html"
 
 ACCENTS = ['#06d6a0', '#8338ec', '#ff006e', '#3a86ff', '#22c55e', '#fb5607', '#fbbf24']
 
-# 每个 ## 章节归入哪个 tab（关键词匹配）→ (tab_id, tab_label, icon)
-def tab_of(h2):
-    t = h2
-    if '执行摘要' in t or '行业速览' in t: return ('overview', '概览', 'fa-compass')
-    if t.startswith('1.') or '变现模式' in t: return ('models', '变现模式', 'fa-coins')
-    if t.startswith('2.') or '竞品' in t: return ('competitors', '竞品拆解', 'fa-chess')
-    if t.startswith('3.') or '分发平台' in t: return ('platforms', '平台地图', 'fa-diagram-project')
-    if t.startswith('4.') or '品类' in t: return ('categories', '品类矩阵', 'fa-layer-group')
-    if t.startswith('5.') or '综合建议' in t: return ('strategy', '综合建议', 'fa-flag-checkered')
-    return ('sources', '来源 & 方法', 'fa-book-open')
+TAB_META = {
+    'overview':    ('概览',       'fa-compass'),
+    'foundation':  ('打地基',     'fa-cubes-stacked'),
+    'channels':    ('获客渠道',   'fa-route'),
+    'models':      ('盈利模式',   'fa-coins'),
+    'lifecycle':   ('生命周期',   'fa-chart-line'),
+    'competitors': ('竞品拆解',   'fa-chess'),
+    'notes':       ('说明与方法', 'fa-circle-info'),
+    'sources':     ('参考文献',   'fa-book-open'),
+}
+TAB_ORDER = list(TAB_META.keys())   # '_skip' 不在其中 → 不渲染
 
-TAB_ORDER = ['overview', 'models', 'competitors', 'platforms', 'categories', 'strategy', 'sources']
+
+def classify(level, t):
+    if level == 2:
+        if '执行摘要' in t: return ('overview', 'title')
+        if t.startswith('Part A'): return None
+        if t.startswith('Part B'): return ('competitors', 'title')
+        if t.startswith('Part C'): return ('_skip', 'title')   # 移除"落到你身上"
+        if '局限' in t: return ('notes', 'title')
+        if '方法论' in t: return ('notes', 'card')
+        if '参考文献' in t: return ('sources', 'title')
+        return ('overview', 'title')
+    if level == 3:
+        if t.startswith('A0'): return ('foundation', 'title')
+        if t.startswith('A1'): return ('channels', 'title')
+        if t.startswith('A2'): return ('models', 'title')
+        if t.startswith('A3'): return ('lifecycle', 'title')
+        if t.startswith('A4'): return ('lifecycle', 'card')
+        if re.match(r'B\d', t): return ('competitors', 'card')
+        return None
+    return None
+
 
 def inline(text):
     text = html.escape(text)
@@ -31,14 +53,13 @@ def inline(text):
     text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
     return text
 
+
 def render_blocks(lines):
-    """把不含标题的内容行渲染为 HTML（表格/列表/引用/段落）。"""
     out, i = [], 0
     while i < len(lines):
         line = lines[i]
         if re.match(r'^---+\s*$', line) or line.strip() == '':
             i += 1; continue
-        # 表格
         if line.strip().startswith('|') and i+1 < len(lines) and re.match(r'^\s*\|[\s:|-]+\|\s*$', lines[i+1]):
             header = [c.strip() for c in line.strip().strip('|').split('|')]
             i += 2; rows = []
@@ -51,20 +72,19 @@ def render_blocks(lines):
                 t.append('<tr>' + ''.join(f'<td>{inline(c)}</td>' for c in r) + '</tr>')
             t.append('</tbody></table></div>')
             out.append(''.join(t)); continue
-        # 引用块 → callout
         if line.startswith('>'):
             buf = []
             while i < len(lines) and lines[i].startswith('>'):
-                buf.append(lines[i].lstrip('>').strip()); i += 1
-            out.append(f'<div class="callout"><i class="fas fa-triangle-exclamation"></i><div>{inline(" ".join(buf))}</div></div>')
+                seg = lines[i].lstrip('>').strip()
+                if seg: buf.append(seg)
+                i += 1
+            out.append(f'<div class="callout"><i class="fas fa-lightbulb"></i><div>{" ".join(inline(x) for x in buf)}</div></div>')
             continue
-        # 无序列表
         if re.match(r'^\s*[-*] ', line):
             out.append('<ul>')
             while i < len(lines) and re.match(r'^\s*[-*] ', lines[i]):
                 out.append(f'<li>{inline(re.sub(r"^\s*[-*] ", "", lines[i]))}</li>'); i += 1
             out.append('</ul>'); continue
-        # 有序列表
         if re.match(r'^\s*\d+\. ', line):
             out.append('<ol>')
             while i < len(lines) and re.match(r'^\s*\d+\. ', lines[i]):
@@ -73,62 +93,55 @@ def render_blocks(lines):
         out.append(f'<p>{inline(line.strip())}</p>'); i += 1
     return '\n'.join(out)
 
-# ---- 解析 markdown 为 tab → segments ----
+
 md = SRC.read_text(encoding='utf-8')
 lines = md.split('\n')
 
-panels = {}          # tab_id -> list of segments
-tab_meta = {}        # tab_id -> (label, icon)
-cur_tab = None
+panels = {}
+cur_tab = 'overview'
 seg_buf = []
-segments = []        # segments of current tab
 
-def flush_content():
+def add(tab, seg):
+    panels.setdefault(tab, []).append(seg)
+
+def flush():
     global seg_buf
-    if seg_buf:
-        segments.append(('content', seg_buf)); seg_buf = []
-
-def start_tab(tid):
-    global segments, cur_tab
-    if cur_tab is not None:
-        flush_content(); panels[cur_tab] = panels.get(cur_tab, []) + segments
-    segments = panels.get(tid, [])[:] if tid in panels else []
-    # 若之前已存 panel，取回续写
-    if tid in panels:
-        segments = panels[tid]; panels[tid] = segments  # same ref
-    cur_tab = tid
+    if any(l.strip() for l in seg_buf):
+        add(cur_tab, ('content', seg_buf))
+    seg_buf = []
 
 for line in lines:
     if line.startswith('# ') and not line.startswith('## '):
-        continue  # 跳过 H1
+        continue
     if line.startswith('## '):
-        h2 = line[3:].strip()
-        tid, label, icon = tab_of(h2)
-        if tid not in tab_meta: tab_meta[tid] = (label, icon)
-        # 切换/进入该 tab
-        flush_content()
-        if cur_tab is not None:
-            panels[cur_tab] = segments
-        cur_tab = tid
-        segments = panels.setdefault(tid, [])
-        segments.append(('h2', h2))
+        text = line[3:].strip()
+        cls = classify(2, text)
+        flush()
+        if cls is None:
+            continue
+        tab, mode = cls
+        cur_tab = tab
+        add(tab, ('h2' if mode == 'title' else 'card', text))
         continue
     if line.startswith('#### '):
-        flush_content(); segments.append(('card', line[5:].strip())); continue
+        flush(); add(cur_tab, ('card', line[5:].strip())); continue
     if line.startswith('### '):
-        flush_content(); segments.append(('card', line[4:].strip())); continue
+        text = line[4:].strip()
+        cls = classify(3, text)
+        flush()
+        if cls is None:
+            add(cur_tab, ('card', text)); continue
+        tab, mode = cls
+        cur_tab = tab
+        add(tab, ('h2' if mode == 'title' else 'card', text))
+        continue
     seg_buf.append(line)
-# 收尾
-flush_content()
-if cur_tab is not None:
-    panels[cur_tab] = segments
+flush()
 
-# ---- 渲染每个 panel ----
+
 def render_panel(tid):
     segs = panels.get(tid, [])
-    out = []
-    open_card = False
-    ci = 0
+    out, open_card, ci = [], False, 0
     def close():
         nonlocal open_card
         if open_card:
@@ -143,27 +156,27 @@ def render_panel(tid):
             out.append(f'<div class="card" style="--c:{color}"><div class="card-head"><span class="dot"></span>'
                        f'<h3 class="card-title">{inline(val)}</h3></div><div class="card-body">')
             open_card = True
-        else:  # content
+        else:
             body = render_blocks(val)
             if body.strip():
                 out.append(body if open_card else f'<div class="lead">{body}</div>')
     close()
     return '\n'.join(out)
 
-# ---- 组装 tab 导航 + 面板 ----
+
 nav, pane = [], []
 for idx, tid in enumerate(TAB_ORDER):
-    if tid not in tab_meta: continue
-    label, icon = tab_meta[tid]
+    if tid not in panels: continue
+    label, icon = TAB_META[tid]
     active = ' active' if idx == 0 else ''
     nav.append(f'<button class="tab{active}" data-tab="{tid}"><i class="fas {icon}"></i>{label}</button>')
     pane.append(f'<section class="panel{active}" id="panel-{tid}">{render_panel(tid)}</section>')
 
 METRICS = [
-    ("$136亿", "2024 美国联盟营销广告支出", "北美 16% 电商交易由联盟驱动", "#06d6a0"),
-    ("8.1/10", "最优打法综合评分", "数据驱动 Deal 聚合引擎 + 多渠道分发", "#8338ec"),
-    ("$90亿", "TikTok Shop 美国 2024 GMV", "同比 +650%，但受地缘政策悬顶", "#ff006e"),
-    ("仅 4 个", "可直挂联盟裸链的渠道", "Pinterest / Threads / 自建站 / Newsletter", "#3a86ff"),
+    ("$113亿", "联盟驱动的美国电商销售额", "占全美电商 9.4%（PMA 口径）", "#06d6a0"),
+    ("17.6%", "联盟+合作占电商销售份额", "Adobe 2024 假日季，+6% YoY", "#8338ec"),
+    ("−91%", "纯 SEO 测评站流量崩塌", "HouseFresh：HCU + AI 摘要三杀", "#ff006e"),
+    ("31%→18%", "Ibotta EBITDA 利润率", "2024 峰值，2025 回落", "#3a86ff"),
 ]
 metrics_html = ''.join(
     f'<div class="stat" style="--c:{c}"><div class="stat-num">{v}</div>'
@@ -227,8 +240,8 @@ a:hover{text-decoration:underline;}
 ul,ol{margin:10px 0 12px;padding-left:22px;}
 li{margin:5px 0;}
 li::marker{color:var(--tx3);}
-.callout{display:flex;gap:12px;background:linear-gradient(135deg,rgba(251,86,7,.09),rgba(255,0,110,.06));border:1px solid rgba(251,86,7,.28);border-radius:14px;padding:14px 16px;margin:14px 0;font-size:13.5px;color:var(--tx2);}
-.callout i{color:var(--orange);margin-top:3px;}
+.callout{display:flex;gap:12px;background:linear-gradient(135deg,rgba(6,214,160,.09),rgba(131,56,236,.07));border:1px solid rgba(6,214,160,.25);border-radius:14px;padding:14px 16px;margin:14px 0;font-size:13.5px;color:var(--tx2);}
+.callout i{color:var(--cyan);margin-top:3px;}
 .table-wrap{overflow-x:auto;margin:16px 0;border-radius:14px;border:1px solid rgba(255,255,255,.08);}
 table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px;}
 th{background:rgba(131,56,236,.16);color:#e9d5ff;text-align:left;padding:11px 13px;font-weight:700;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.08);}
@@ -247,24 +260,24 @@ footer{margin-top:40px;padding-top:22px;border-top:1px solid rgba(255,255,255,.0
 
 TPL = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>美国电商流量与变现层 · 深度调研</title>
+<title>美国电商流量与变现层 · 行业认知报告</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>__CSS__</style></head><body>
 <div class="bg-grid"></div><div class="bg-glow g1"></div><div class="bg-glow g2"></div>
 <div class="wrap">
  <nav class="topbar">
-   <span class="brand"><i class="fas fa-bolt"></i> Deep Research</span>
-   <span class="meta"><span><i class="far fa-calendar"></i> 2026-07</span><span><i class="far fa-folder-open"></i> E-commerce Monetization</span><span><i class="fas fa-link"></i> __SRC__ 来源</span></span>
+   <span class="brand"><i class="fas fa-graduation-cap"></i> Industry Primer</span>
+   <span class="meta"><span><i class="far fa-calendar"></i> 2026-07</span><span><i class="far fa-folder-open"></i> E-commerce · 流量与变现层</span><span><i class="fas fa-link"></i> __SRC__ 来源</span></span>
  </nav>
  <header class="hero">
-   <div class="eyebrow-top"><i class="fas fa-chart-pie"></i> 面向决策 · 以"适不适合你"为尺子</div>
-   <h1>美国电商「流量与变现层」<br><span class="grad">深度调研与打法排行</span></h1>
-   <p class="sub">数据窗口 2024–2025。打分权重：数据抓取契合 30% · 冷启动 25% · 联盟政策 20% · 护城河 15% · 天花板 10%。点击下方标签分章阅读。</p>
+   <div class="eyebrow-top"><i class="fas fa-book-open-reader"></i> 行业认知 · 看懂全貌</div>
+   <h1>美国电商「流量与变现层」<br><span class="grad">行业认知报告</span></h1>
+   <p class="sub">帮你"看懂行业"而非"告诉你该做什么"。数据窗口 2024–2025，每个关键数字标注来源与置信度；先分类后填充（MECE），行业结构为主体。点击下方标签分章阅读。</p>
    <div class="stats">__METRICS__</div>
  </header>
  <div class="tabs">__NAV__</div>
  __PANES__
- <footer>本报告由多 Agent 并行调研 + 交叉验证生成；打分为基于既定权重的主观量化估计，用于横向排序而非绝对判断。涉及税务/合规内容属一般性信息，非持牌意见。所有抓取行为须遵守各站服务条款与当地法律。</footer>
+ <footer>本报告为行业认知材料，非投资或经营建议；由多来源并行调研 + 交叉验证生成。所引第三方数据存在口径与时点差异（尤其私有公司营收、渠道占比为估算），关键决策前请以一手财报/付费报告交叉验证。</footer>
 </div>
 <script>
 document.querySelectorAll('.tab').forEach(function(t){
