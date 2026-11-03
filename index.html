@@ -396,6 +396,20 @@
             color: var(--accent-orange);
         }
 
+        .card.journalist {
+            --card-accent: #1d5f86;
+        }
+
+        .card.journalist .card-icon {
+            background: linear-gradient(135deg, #1d5f86, #3a86ff);
+            color: white;
+        }
+
+        .card.journalist .card-badge {
+            background: rgba(29, 95, 134, 0.15);
+            color: #1d5f86;
+        }
+
         /* Footer */
         .footer {
             position: relative;
@@ -596,6 +610,33 @@
         </div>
 
         <div class="cards-grid">
+            <!-- Journalist Platform Research Card -->
+            <a href="journalist/index.html" class="card journalist">
+                <div class="card-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h2 class="card-title">
+                    记者平台调研
+                    <span class="card-badge">Market Research</span>
+                </h2>
+                <p class="card-desc">
+                    美国记者需求与工具市场调研 — 跨全部条线（政府政治、文娱、经济、健康、犯罪法律等）的无偏调研：记者到底写什么、哪些能自己解决、哪些是痛点，以及竞品格局与市场覆盖。每条结论配可打开的原始资料。
+                </p>
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-users"></i>
+                        5 类人群
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-chess"></i>
+                        竞品格局
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
             <!-- E-commerce Monetization Card -->
             <a href="ecommerce/index.html" class="card ecommerce">
                 <div class="card-icon">
