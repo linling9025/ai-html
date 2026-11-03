@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>记者平台调研概述</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 单栏备忘录；宽表横向滚动；群体卡片三列（能自己做/痛点/竞品）窄屏堆叠 */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#18212c; --muted:#5a6573; --line:#dde1e7;
+  --accent:#1d5f86; --accent-soft:#e3eef5;
+  --red:#b4442f; --red-soft:#f8e6e1; --amber:#9a6a12; --amber-soft:#f6edd9; --green:#2f7a4f; --green-soft:#e2f1e7;
+  --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --surface:#1a2129; --ink:#e6e9ee; --muted:#9aa5b2; --line:#2c3540;
+  --accent:#7cb8dc; --accent-soft:#1d3342;
+  --red:#ec8e7b; --red-soft:#3a2420; --amber:#e1b866; --amber-soft:#352b17; --green:#7fc79a; --green-soft:#1c3226; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --surface:#1a2129; --ink:#e6e9ee; --muted:#9aa5b2; --line:#2c3540;
+  --accent:#7cb8dc; --accent-soft:#1d3342;
+  --red:#ec8e7b; --red-soft:#3a2420; --amber:#e1b866; --amber-soft:#352b17; --green:#7fc79a; --green-soft:#1c3226; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:44px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:clamp(26px,4vw,34px)}
+h2{font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 .tag{font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.04em}
+h3{font-size:18px}
+p{margin:0}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:700}
+.lede{color:var(--muted);max-width:70ch}
+header{display:grid;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:20px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;color:var(--muted)}
+.meta code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);color:var(--accent);padding:1px 6px;border-radius:4px}
+section{display:grid;gap:16px;min-width:0}
+.callout{background:var(--accent-soft);border-radius:10px;padding:18px 20px;display:grid;gap:8px}
+.callout b{color:var(--accent)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:700;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td b{font-weight:700}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.keys{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:k}
+.keys li{counter-increment:k;display:grid;grid-template-columns:34px 1fr;gap:4px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.keys li::before{content:counter(k);font-family:var(--mono);font-size:18px;color:var(--accent);grid-row:span 2}
+.keys strong{font-size:16px}
+.keys span{color:var(--muted);font-size:14px}
+.group{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px}
+.group-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.group-head .who{color:var(--muted);font-size:13px}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.col{border-radius:8px;padding:12px 14px;display:grid;gap:6px;align-content:start;min-width:0}
+.col h4{margin:0;font-size:12px;letter-spacing:.04em}
+.col ul{margin:0;padding-left:18px;font-size:14px;display:grid;gap:4px}
+.can{background:var(--green-soft)} .can h4{color:var(--green)}
+.pain{background:var(--red-soft)} .pain h4{color:var(--red)}
+.comp{background:var(--accent-soft)} .comp h4{color:var(--accent)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.p-red{background:var(--red-soft);color:var(--red)} .p-amber{background:var(--amber-soft);color:var(--amber)} .p-green{background:var(--green-soft);color:var(--green)}
+.judge{border-left:3px solid var(--accent);padding:4px 0 4px 16px;display:grid;gap:10px}
+.judge ol{margin:0;padding-left:20px;display:grid;gap:8px}
+.note{font-size:13px;color:var(--muted)}
+.foot ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px;color:var(--muted)}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">调研概述 · 美国市场</div>
+  <h1>美国记者写什么、怎么工作、哪里最卡</h1>
+  <p class="lede">两份调研报告的速读版：《记者需求调研》和《记者工具市场格局》。调研不预设任何产品方向，先摸清美国记者的真实工作，再在最后对照我们的现有能力（市政会议、警用电台安全事件）。</p>
+  <div class="meta">
+    <span>日期 2026-11-03</span>
+    <span>完整报告 <code>journalist/journalist_needs_report.md</code> · <code>journalist/competitor_landscape_report.md</code></span>
+  </div>
+</header>
+
+<section>
+  <div class="callout">
+    <p><b>一句话结论</b></p>
+    <p>记者缺的不是写稿工具，而是<b>"替人手不足的编辑部，持续盯住一类正在关门、下沉的公共信息"</b>。市政会议和警情只是这类信息里的两个实例——地方选举结果、法院新案、许可、裁员申报是更空的同类。付费方是编辑部、电视台集团和非新闻客户，不是记者个人。</p>
+  </div>
+</section>
+
+<section>
+  <h2>覆盖人群 <span class="tag">5 个记者群体 × 9 个工作环节 × 全部条线</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>群体</th><th>指谁</th><th>规模参考</th></tr></thead>
+    <tbody>
+      <tr><td><b>地方条线记者</b></td><td>地方报社 / 数字媒体跑固定条线的记者</td><td>全美 1,000 多个县连 1 名全职本地记者的工作量都没有</td></tr>
+      <tr><td><b>电视台编辑台</b></td><td>地方台派题编辑、记者、制片</td><td class="num">26,458 名全职新闻员工，689 家自制本地新闻的台</td></tr>
+      <tr><td><b>独立 / 超本地记者</b></td><td>newsletter、超本地站、小型非营利</td><td>非营利新闻机构收入中位数约 52.5 万美元</td></tr>
+      <tr><td><b>全国 / 调查记者</b></td><td>全国媒体记者、调查记者</td><td>—</td></tr>
+      <tr><td><b>自由撰稿人与学生记者</b></td><td>自由职业者、学生报</td><td>约占记者样本 28%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">九个环节：发现线索 → 背景研究 → 找信源 → 采访与素材 → 核实 → 写作与制作 → 发布与分发 → 受众与变现 → 职业与生存。两份报告用同一套环节。</p>
+</section>
+
+<section>
+  <h2>证据维度 <span class="tag">每条结论都附可打开的原始链接</span></h2>
+  <div class="tbl"><table>
+    <thead><tr><th>证据类型</th><th>规模</th><th>用来证明什么</th><th>局限</th></tr></thead>
+    <tbody>
+      <tr><td><b>招聘 JD（自采分类）</b></td><td class="num">1,277 条 + 274 个资助岗</td><td>编辑部在招什么条线、要求做什么</td><td>严重偏电视台（67%），地方报业接口拿不到</td></tr>
+      <tr><td><b>行业调查</b><br><span class="note">Pew、Muck Rack、RTDNA、INN、Syracuse、各条线协会</span></td><td class="num">约 40 个来源</td><td>条线分布、痛点排序、时间与工作量</td><td>Pew 条线数据是 2022 年；商业调查样本偏收公关稿的记者</td></tr>
+      <tr><td><b>记者原话</b><br><span class="note">Reddit 三社区<b>无关键词抽样</b></span></td><td class="num">2,073 帖逐条编码，1,032 条相关</td><td>真实讨论重心、具体痛点、原话</td><td>Reddit 用户偏年轻、偏求职者，职业话题被放大</td></tr>
+      <tr><td><b>条线 / 环节专题 + 竞品</b></td><td class="num">约 300 URL，130 个产品</td><td>每条线的来源、凑合方案、竞品、谁付钱</td><td>部分页面被反爬拦截，已标注</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">这是重做后的版本：第一版把现有产品写进了取证和检索词，导致报告只围绕会议和警情；重做时删掉所有产品信息，Reddit 改用无关键词抽样，让话题比例反映真实讨论。</p>
+</section>
+
+<section>
+  <h2>记者到底写什么条线 <span class="tag">治安和市政只是其中两小块</span></h2>
+  <p class="note">2022 年全美记者自报的主要条线（可多选，一人平均跑 4 条）：</p>
+  <div class="tbl"><table>
+    <thead><tr><th>条线</th><th>占比</th><th>条线</th><th>占比</th></tr></thead>
+    <tbody>
+      <tr><td>政府与政治</td><td class="num">28%</td><td>教育与家庭</td><td class="num">9%</td></tr>
+      <tr><td>文娱与旅游</td><td class="num">27%</td><td>体育</td><td class="num">8%</td></tr>
+      <tr><td>经济与产业</td><td class="num">22%</td><td>环境与能源</td><td class="num">8%</td></tr>
+      <tr><td>健康</td><td class="num">13%</td><td>科学与技术</td><td class="num">8%</td></tr>
+      <tr><td><b>犯罪与法律</b></td><td class="num"><b>11%</b></td><td>综合 / 无特定</td><td class="num">9%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">来源 Pew 2022。犯罪法律只排第五；市政会议和治安在记者的条线版图里都只是一个角。电视台记者 80% 不分条线，是"被派题 + 直播 + 自拍自剪"。</p>
+</section>
+
+<section>
+  <h2>核心机会覆盖多少记者 <span class="tag">没有一个机会服务全体</span></h2>
+  <div class="callout">
+    <p>我们建议的主攻方向"信息源收缩 / 记录监测"，<b>只覆盖面向政府和记录的那部分条线，约四到五成记者</b>。它是一个服务记录密集型条线的垂直机会，不是服务全体记者的横向机会。<b>真正全体共同的只有一个：人手不足 / 一人多岗</b>——但它本身不是产品，只是"监测类工具能替编辑部省人"这个价值主张的底层原因。</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>条线</th><th>占记者比例</th><th>"信息源收缩 / 记录监测"适用吗</th></tr></thead>
+    <tbody>
+      <tr><td>政府 / 政治</td><td class="num">28%</td><td><span class="pill p-green">✓ 强</span></td></tr>
+      <tr><td><b>文娱 / 旅游</b></td><td class="num"><b>27%</b></td><td><span class="pill p-red">✗ 完全不适用（痛点是投稿和稿费）</span></td></tr>
+      <tr><td>经济 / 产业</td><td class="num">22%</td><td><span class="pill p-amber">~ 仅地方商业</span></td></tr>
+      <tr><td>健康</td><td class="num">13%</td><td><span class="pill p-amber">~ 一半（另一半是专家失联）</span></td></tr>
+      <tr><td>犯罪 / 法律</td><td class="num">11%</td><td><span class="pill p-green">✓</span></td></tr>
+      <tr><td>教育</td><td class="num">9%</td><td><span class="pill p-amber">~ 主要是公关把关</span></td></tr>
+      <tr><td>体育</td><td class="num">8%</td><td><span class="pill p-red">✗（是数据收集，不是源关门）</span></td></tr>
+      <tr><td>环境 / 能源</td><td class="num">8%</td><td><span class="pill p-green">✓</span></td></tr>
+      <tr><td>科学</td><td class="num">8%</td><td><span class="pill p-amber">~ 一半</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>关键结论</h2>
+  <ol class="keys">
+    <li><strong>记者缺"人手"，不缺写稿工具</strong><span>1,000 多个县没有一名全职本地记者的工作量；小报社一人每周 55 小时包办整张报纸；52% 的独立出版人把"平衡新闻与商业运营"列为最大挑战之一。</span></li>
+    <li><strong>AI 用来"盯和整理"有人要，用来"写"没人要还在引发反抗</strong><span>非营利机构用 AI 做会议转写摘要占 60%，起草稿件只有 6%。McClatchy 自上而下用 AI 改写稿件，30 多名记者撤下署名。</span></li>
+    <li><strong>"上游信息源在关门"是个恶化中的痛点，但只覆盖约四到五成记者</strong><span>公共记录越来越难拿（56%）、联邦数据下线、警方加密、官员回避——集中在面向政府和记录的条线（政治、犯罪、环境、地方商业）。<b>最大的条线文娱旅游（27%）、以及体育、天气都不在内。</b>真正全体共同的只有"人手不足"。</span></li>
+    <li><strong>最难自己解决的是"下沉到地方的记录类信息"</strong><span>联邦 FOIA 平均 276 天、成功率 26.6%；地方选举结果、竞选财务、地方法院、许可、LLC 实际业主，都没有面向记者的好产品。</span></li>
+    <li><strong>几个条线浮现出清晰的产品空白</strong><span>地方选举结果与竞选财务、按地域推送的企业申报提醒、高中体育比分数据收集、跨辖区地产早期信号——都是证据支持、现有工具没覆盖好的。</span></li>
+    <li><strong>声量最大但最难用工具解决的是收入与生计</strong><span>独立记者靠广告、自由撰稿人被拖欠（91%）、在职记者"想走走不了"。自由撰稿费率中位数约 0.50 美元/词，6 年没涨。这部分不是信息产品能直接解决的。</span></li>
+    <li><strong>记者个人几乎不为新闻专用工具付钱</strong><span>活得好的是"记者免费、另一边付钱"（Muck Rack 靠 PR、Hamlet 靠地产开发商）。免费给记者的工具会周期性死掉（CrowdTangle、HARO、Open States）。</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>各人群：现在能做什么、痛在哪、竞品情况</h2>
+  <p class="note">这里是每个群体<b>最典型</b>的痛点，不是它覆盖的每条条线都成立——同一个地方记者跑法院和跑文娱，痛点完全不同。按条线的细分和"每个机会覆盖多少记者"见完整报告。</p>
+
+  <div class="group">
+    <div class="group-head"><h3>地方条线记者</h3><span class="who">一人跑多条线，什么都干</span></div>
+    <div class="cols">
+      <div class="col can"><h4>能自己解决</h4><ul><li>采访转写、通用背景研究、文档检索</li><li>单场会议 / 文件的摘要</li></ul></div>
+      <div class="col pain"><h4>痛点</h4><ul><li>一人跑 3–4 条线，持续盯不过来</li><li>公共记录被拖延、要价高</li><li>官员越来越回避记者</li></ul></div>
+      <div class="col comp"><h4>竞品</h4><ul><li>会议：LocalLens(APM)、Hamlet、Hearst 自建、Documenters(人工)</li><li>大报自建爬虫，小编辑部做不起</li><li><span class="pill p-amber">有人做，有缺口</span></li></ul></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h3>电视台编辑台</h3><span class="who">岗位在消失，最依赖实时</span></div>
+    <div class="cols">
+      <div class="col can"><h4>能自己解决</h4><ul><li>字幕、标题、转写、改写</li><li>社交平台监测（人工）</li></ul></div>
+      <div class="col pain"><h4>痛点</h4><ul><li>派题岗被砍，很多台已没有派题编辑</li><li>警用电台加密，替代信源分散</li><li>核实观众视频和 AI 生成视频</li></ul></div>
+      <div class="col comp"><h4>竞品</h4><ul><li>Dataminr（贵，5 人以下不划算）</li><li>PSST（免费，2026 秋上线）</li><li>消费端 CrimeRadar 误报频发</li><li><span class="pill p-amber">有人做，有缺口</span></li></ul></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h3>独立 / 超本地记者</h3><span class="who">先活下去</span></div>
+    <div class="cols">
+      <div class="col can"><h4>能自己解决</h4><ul><li>newsletter 搭建（95% 已在做）</li><li>基础受众数据</li></ul></div>
+      <div class="col pain"><h4>痛点</h4><ul><li>变现：五分之四几乎全靠广告</li><li>一人兼顾采编和商业运营</li><li>动态追踪全靠手工</li></ul></div>
+      <div class="col comp"><h4>竞品</h4><ul><li>Substack、beehiiv、Newspack 平台齐全</li><li>但小媒体付不起，多靠基金会补贴</li><li><span class="pill p-red">拥挤</span></li></ul></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h3>全国 / 调查记者</h3><span class="who">瓶颈在记录和法律</span></div>
+    <div class="cols">
+      <div class="col can"><h4>能自己解决</h4><ul><li>大批文档检索分析（Pinpoint、LLM 筛选后人工核实）</li><li>联邦法院案件（CourtListener 免费）</li></ul></div>
+      <div class="col pain"><h4>痛点</h4><ul><li>FOIA 积压近 34 万件，平均等待超 240 天</li><li>约 70% 认为信息获取是最大障碍</li><li>财经记者 80% 时间花在核实来源上</li></ul></div>
+      <div class="col comp"><h4>竞品</h4><ul><li>MuckRock、Big Local News（公益）</li><li>Trellis、Clio Docket 只卖给律师</li><li><span class="pill p-amber">联邦层强，州县层空</span></li></ul></div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><h3>自由撰稿人与学生记者</h3><span class="who">问题在"活"和"钱"</span></div>
+    <div class="cols">
+      <div class="col can"><h4>能自己解决</h4><ul><li>低价通用工具</li><li>私下社群交换费率和编辑联系方式</li></ul></div>
+      <div class="col pain"><h4>痛点</h4><ul><li>找到愿付钱又会回复的编辑（55% 靠老关系，冷投仅 26%）</li><li>被拖欠（91%）；稿费 6 年没涨</li><li>AI 抢活、AI 检测误判；学生拿不到学校记录</li></ul></div>
+      <div class="col comp"><h4>竞品</h4><ul><li>基本靠立法、工会和公益热线</li><li>付费能力最低，更偏全国选题</li><li><span class="pill p-green">工具空白，但不是信息产品</span></li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>竞品格局与空白</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>领域</th><th>状态</th><th>主要玩家（付费方）</th><th>还空着的部分</th></tr></thead>
+    <tbody>
+      <tr><td><b>下沉地方记录</b><br><span class="note">选举结果/竞选财务/地方法院/许可/LLC</span></td><td><span class="pill p-green">多数空白</span></td><td>律所、地产、政务工具（Trellis、Shovels、TRD）</td><td>几乎没有面向记者的产品；商业买家已为同类数据付费</td></tr>
+      <tr><td><b>会议 / 政务</b></td><td><span class="pill p-amber">有缺口</span></td><td>Hamlet(开发商)、LocalLens/APM、Hearst 自建、CalMatters</td><td>跨辖区、按条线订阅、议题跟踪；单场摘要已红海</td></tr>
+      <tr><td><b>突发 / 警情</b></td><td><span class="pill p-amber">有缺口</span></td><td>Dataminr(新闻机构)、PSST(免费)、CrimeRadar(消费者)</td><td>加密后替代信源聚合；准确、可追溯、面向派题台</td></tr>
+      <tr><td><b>申报 / 裁员提醒</b></td><td><span class="pill p-green">基本空白</span></td><td>Big Local News(部分州，会员制)</td><td>按地域推送；原有的 Sqoop 已关</td></tr>
+      <tr><td><b>高中体育</b></td><td><span class="pill p-amber">数据被集中</span></td><td>MaxPreps/NFHS(PlayOn 系)</td><td>比分数据的收集核对无工具；已证明可变现</td></tr>
+      <tr><td><b>找信源</b></td><td><span class="pill p-red">专家拥挤</span> <span class="pill p-green">本地空白</span></td><td>Muck Rack、Qwoted、HARO(都由 PR 付费)</td><td>本地普通人信源；专家真伪核验</td></tr>
+      <tr><td><b>转写/写稿/分发/变现</b></td><td><span class="pill p-red">拥挤</span></td><td>Otter、Trint、Nota、Substack、Newspack</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">贯穿全市场的规律：向记者个人收费的活不好，哪个环节平台或基金会撤资哪个环节就塌。活得好的是"记者免费、另一边付钱"的双边模式。</p>
+</section>
+
+<section>
+  <h2>对记者平台的含义 <span class="tag">这是我们的判断，不是证据</span></h2>
+  <div class="judge">
+    <ol>
+      <li><b>把两项能力重新归位</b>成"地方公共信息监测"这一个大类里的两个实例，而不是两个孤立产品。这个大类的共性是"公共信息源在收缩 + 记者人手不足"。</li>
+      <li><b>能力 1（会议）：</b>不和免费工具拼单场转写摘要，拼"覆盖广度 × 准确可追溯 × 议题跟踪"——你条线上所有相关政府的议题当天到邮箱，每条点回原始文件。</li>
+      <li><b>能力 2（警情）：</b>先做不依赖电台的那一半——聚合接警日志、警方社媒、明文频道、新闻，每条保留原始来源、定位为"线索"。用户定为电视台派题台。</li>
+      <li><b>并列评估"下沉地方记录"作为第三个主攻方向。</b>痛度高、供给最空、商业买家现成，可支撑双边模式，和仓库已有的公共记录调查设计可复用。</li>
+      <li><b>认清覆盖面：</b>以上方向合起来也只触及约四到五成记者（记录密集型条线），文娱这个最大条线碰不到。要么把几个记录型方向拼起来做大盘子，要么接受这是个垂直产品，不是全体记者的平台。</li>
+      <li><b>卖给编辑部、电视台集团和非新闻客户，不卖给记者个人。</b></li>
+    </ol>
+  </div>
+</section>
+
+<section class="foot">
+  <h2>待验证与证据缺口</h2>
+  <ul>
+    <li>招聘 JD 样本偏电视台（67%），地方报业的条线分布置信度中等。</li>
+    <li>没有美国本土、记者自报、按任务拆分的时间调查；Pew 条线数据是 2022 年。</li>
+    <li>"工具费由个人还是雇主出"没有直接调查，用间接证据拼出。</li>
+    <li>电视台派题编辑的一手说法仍少，"timeline"形式没有记者直接要它的原话，建议做 5–10 个访谈并用原型验证。</li>
+    <li>消费端 AI scanner app CrimeRadar 与我方的关系待内部确认。</li>
+  </ul>
+</section>
+
+</div>
+
+</body>
+</html>
